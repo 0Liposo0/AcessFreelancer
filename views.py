@@ -369,6 +369,8 @@ def create_page_user(page):
 
 def create_page_initial_adm(page):
 
+    page.bgcolor = ft.Colors.GREY_500
+
     sp = SupaBase(page)
     buttons = Buttons(page)
     loading = LoadingPages(page)
@@ -866,7 +868,7 @@ def create_ficha_supro(page, subproject, project):
 
     loading = LoadingPages(page=page)
 
-    base = SupaBase(page=None)
+    base = SupaBase(page=page)
 
     get_base_Project = base.get_subproject_data(subproject)
     get_info1 = get_base_Project.json()
@@ -966,7 +968,8 @@ def create_ficha_supro(page, subproject, project):
         border=ft.border.all(2, ft.colors.BLUE),  # Borda azul
         border_radius=10,  # Bordas arredondadas
         bgcolor=ft.colors.WHITE,  # Cor de fundo do container
-        width=800 if page.width > 800 else page.width * 0.9,  # Largura responsiva
+        width=800 if page.width > 800 else page.width * 0.9, # Largura responsiva
+        height=900,
     )
 
     ficha_cadastral_container = ft.Container(
@@ -976,12 +979,13 @@ def create_ficha_supro(page, subproject, project):
         border_radius=10,  # Bordas arredondadas
         bgcolor=ft.colors.WHITE,  # Cor de fundo do container
         width=800 if page.width > 800 else page.width * 0.9,  # Largura responsiva
+        height=900, 
     )
 
     # Layout responsivo com as duas fichas lado a lado
     layout = ft.ResponsiveRow(
         [
-            ft.Column([ficha_subprojeto_container], col={"sm": 12, "md": 6}),
+            ft.Column([ficha_subprojeto_container], col={"sm": 13, "md": 6,}), 
             ft.Column([ficha_cadastral_container], col={"sm": 12, "md": 6}),
         ],
         alignment=ft.MainAxisAlignment.CENTER,
@@ -989,7 +993,7 @@ def create_ficha_supro(page, subproject, project):
     )
 
 # Adiciona o layout à página
-    page.add(layout)
+    return layout
 
 
 
