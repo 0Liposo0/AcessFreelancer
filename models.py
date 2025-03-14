@@ -1577,7 +1577,7 @@ class SupaBase:
 
         return response
     
-    def add_user(self, list_add_user, id):
+    def create_user_data(self, name, username, pix, email):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1585,62 +1585,20 @@ class SupaBase:
             "Content-Type": "application/json",
         }
 
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        response1 = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
-            headers=headers,
-            params={"select": "email", "email": f"eq.{list_add_user[1]}"}
-        )
-
-        if response1.status_code == 200 and response1.json():
-            # Se o e-mail já existir, mostre a mensagem e retorne
-            snack_bar = ft.SnackBar(
-                content=ft.Text("E-mail já cadastrado"),
-                bgcolor=ft.Colors.RED
-            )
-            self.page.overlay.append(snack_bar)
-            snack_bar.open = True
-            self.page.update()
-            response1.status_code == 199
-            return response1
-         
-        response2 = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
-            headers=headers,
-            params={"select": "usuario", "usuario": f"eq.{list_add_user[0]}"}
-        )
-
-        if response2.status_code == 200 and response2.json():
-            # Se o usuario já existir, mostre a mensagem e retorne
-            snack_bar = ft.SnackBar(
-                content=ft.Text("Nome de usuario já cadastrado"),
-                bgcolor=ft.Colors.RED
-            )
-            self.page.overlay.append(snack_bar)
-            snack_bar.open = True
-            self.page.update()
-            response2.status_code == 198
-            return response2 
-
-        data = {
-            "user_id": id,
-            "usuario": list_add_user[0],
-            "email": list_add_user[1],
-            "numero": list_add_user[2],
-            "senha": list_add_user[3],
-            "permission": list_add_user[4],  
+        data = { 
+                "name": name,
+                "username": username,
+                "payment": pix,
+                "email": email,                    
         }
 
-        response3 = requests.post(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
+        response = requests.post(
+            f'{self.supabase_url}/rest/v1/users',
             headers=headers,
             json=data,
         )
 
-        return response3
-
+        return response
 
 
     def edit_point(self, image, list_forms, previous_data, object):

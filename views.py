@@ -369,7 +369,7 @@ def create_page_user(page):
 
 def create_page_initial_adm(page):
 
-    page.bgcolor = ft.Colors.GREY_500
+    page.bgcolor = ft.Colors.GREY_200
 
     sp = SupaBase(page)
     buttons = Buttons(page)
@@ -391,11 +391,20 @@ def create_page_initial_adm(page):
                                       color=ft.Colors.GREY,
                                       col=12,
                                       padding=5,)       
-                                        
+    btn_new_free = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_new_freelancer(page)),
+                                        text= "Cadastrar Freelancer",
+                                        color=ft.Colors.GREY,
+                                        col=12,
+                                        padding=5,)    
+
+
     drawer = ft.NavigationDrawer(
 
 
         controls=[
+
+            ft.Divider(thickness=1),
+            btn_new_free,
 
             ft.Divider(thickness=1),
             btn_projeto,
@@ -406,8 +415,6 @@ def create_page_initial_adm(page):
             )
         
     
-
-
     def go_home():
         loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page=page))
 
@@ -600,7 +607,7 @@ def create_page_initial_adm(page):
 
     container1 = ft.Container(
         content=form4,
-        bgcolor=ft.colors.GREY_200,
+        bgcolor=ft.colors.WHITE,
         padding=30,
         alignment=ft.alignment.top_center,
         expand=True,
@@ -995,7 +1002,90 @@ def create_ficha_supro(page, subproject, project):
 # Adiciona o layout à página
     return layout
 
+def create_page_new_freelancer(page):
 
+    loading = LoadingPages(page=page)
+    
+    def go_home():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Soluções e Engenharia"),
+        bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+        actions=[ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),],
+    )
+
+    # Campos do formulário
+    campos = {
+        "nome": ft.TextField(label="Nome", hint_text="Digite o nome", bgcolor=ft.Colors.WHITE),
+        "Usuario": ft.TextField(label="Usuario", hint_text="Digite o Usuario",bgcolor=ft.Colors.WHITE),
+        "pix": ft.TextField(label="PIX", hint_text="Digite o chave PIX",bgcolor=ft.Colors.WHITE),
+        "email": ft.TextField(label="Email", hint_text="Digite o email",bgcolor=ft.Colors.WHITE),
+        
+    }
+
+
+
+    # Função para enviar os dados (simulação)
+    def enviar_dados(e):
+        
+        name_data = campos["nome"].value
+        user_data = campos["Usuario"].value
+        pix_data = campos["pix"].value
+        email_data = campos["email"].value
+
+        list_field = [name_data, user_data, pix_data, email_data]  
+
+        if any(field == "" or field is None for field in list_field):
+            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+        else:
+            sp = SupaBase(page)
+            sp.create_user_data(name=name_data, username=user_data, pix=pix_data, email=email_data)
+            snack_bar = ft.SnackBar(content=ft.Text("Dados enviados com sucesso"), bgcolor=ft.Colors.GREEN)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+
+    # Botão para enviar os dados
+    botao_enviar = ft.ElevatedButton("Enviar", on_click=enviar_dados)
+
+    
+    # Layout do formulário de cadastro
+    formulario_cadastro = ft.Column(
+        [ft.Text("Cadastro de Dados", size=24, weight=ft.FontWeight.BOLD)] + list(campos.values()) + [botao_enviar],
+        spacing=20,
+        expand=True,
+
+    )
+
+    # Layout principal da página
+    layout_principal = ft.ResponsiveRow(
+        [
+            ft.Column(
+                col={"sm": 12, "md": 8, "lg": 6},  # Define o tamanho do container em diferentes breakpoints
+                controls=[
+                    formulario_cadastro,
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,  # Centraliza verticalmente
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza horizontalmente
+                spacing=20,
+                scroll=ft.ScrollMode.AUTO,  # Habilita o scroll dentro da coluna
+            )
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,  # Centraliza o ResponsiveRow na página
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza verticalmente o ResponsiveRow
+        
+        
+    )
+
+    # Adiciona o layout principal à página
+    return layout_principal
 
 
 
