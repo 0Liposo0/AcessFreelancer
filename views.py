@@ -403,6 +403,11 @@ def create_page_initial_adm(page):
                                         color=ft.Colors.GREY,
                                         col=12,
                                         padding=5,)
+    btn_new_delivery = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page, month="Fevereiro")),
+                                         text= "Relatório Financeiro",
+                                        color=ft.Colors.GREY,
+                                        col=12,
+                                        padding=5,)
 
     drawer = ft.NavigationDrawer(
 
@@ -414,6 +419,9 @@ def create_page_initial_adm(page):
 
             ft.Divider(thickness=1),
             btn_new_free,
+
+            ft.Divider(thickness=1),
+            btn_new_delivery,
 
             ft.Divider(thickness=1),
             btn_projeto,
@@ -1244,7 +1252,195 @@ def create_page_new_delivery(page):
     return layout
 
 
+def create_page_payment(page, month):
 
+    textthemes = TextTheme()
+    buttons = Buttons(page)
+    sp = SupaBase(page)
+    texttheme1 = textthemes.create_text_theme1()
+    loading = LoadingPages(page)
+
+    dropdown1 = ft.Dropdown(
+        options=[
+            ft.dropdown.Option("Janeiro"),
+            ft.dropdown.Option("Fevereiro"),
+            ft.dropdown.Option("Março"),
+            ft.dropdown.Option("Abril"),
+            ft.dropdown.Option("Maio"),
+            ft.dropdown.Option("Junho"),
+            ft.dropdown.Option("Julho"),
+            ft.dropdown.Option("Agosto"),
+            ft.dropdown.Option("Setembro"),
+            ft.dropdown.Option("Outubro"),
+            ft.dropdown.Option("Novembro"),
+            ft.dropdown.Option("Dezembro"),
+        ],
+        value=month,
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        on_change= lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page, month=dropdown1.value)),
+        col=6)
+
+    dropdown2 = ft.Dropdown(options=[
+        ft.dropdown.Option("2025"),
+    ],
+    value="2025",
+    text_style=ft.TextStyle(color=ft.Colors.BLACK),
+    bgcolor=ft.Colors.WHITE,
+    col=6)
+
+
+    meses_pt = {
+    "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6,
+    "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12
+    }
+
+    mes = meses_pt[dropdown1.value]
+
+    selected_data = datetime(int(dropdown2.value), mes, 1)
+
+    data_list = []
+
+    get_all_user_data = sp.get_all_user_data()
+    data_all_users = get_all_user_data.json()
+
+    for row1 in data_all_users:
+
+        name = row1["name"]
+        username = row1["username"]
+        payment = row1["payment"]
+
+        total_deliverys = sp.get_deliverys_data_total(username=username)
+        data_total_deliverys = total_deliverys.json()
+        
+        total_polygons = 0
+        total_errors = 0
+        total_photos = 0
+        number_total_deliverys = 0
+        delivery_07 = [0, 0]
+        delivery_14 = [0, 0]
+        delivery_21 = [0, 0]
+        delivery_28 = [0, 0]
+
+        for row in data_total_deliverys:
+
+            date = row["date"]
+            polygons = row["polygons"]
+            errors = row["errors"]
+            discount = row["discount"]
+            delay = row["delay"]
+            photos = row["photos"]
+
+            data_obj = datetime.strptime(date, "%d/%m/%Y")
+
+            if data_obj.month == selected_data.month and data_obj.year == selected_data.year:
+
+                total_polygons += int(polygons)
+                total_errors += int(errors)
+                total_photos += int(photos)
+                number_total_deliverys += 1
+
+
+                def add_polygons(delivery, polygons):
+                    delivery[0] = polygons
+
+                def add_photos(delivery, photos):
+                    delivery[1] = photos
+
+                dicio1 = {
+                    7: lambda: add_polygons(delivery_07, int(polygons)),
+                    14: lambda: add_polygons(delivery_14, int(polygons)),
+                    21: lambda: add_polygons(delivery_21, int(polygons)),
+                    28: lambda: add_polygons(delivery_28, int(polygons)),
+                }
+                dicio2 = {
+                    7: lambda: add_photos(delivery_07, int(photos)),
+                    14: lambda: add_photos(delivery_14, int(photos)),
+                    21: lambda: add_photos(delivery_21, int(photos)),
+                    28: lambda: add_photos(delivery_28, int(photos)),
+                }
+
+                call_function1 = dicio1.get(data_obj.day, lambda: None)()
+                call_function2 = dicio2.get(data_obj.day, lambda: None)()
+
+ 
+        total = f"R$ {(float((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]) * 0.50)) + (float((delivery_07[1]+delivery_14[1]+delivery_21[1]+delivery_28[1]) * 0.20))}"
+
+        if number_total_deliverys > 0:
+
+            linha = ft.DataRow(cells=[
+                            ft.DataCell(ft.Text(value=name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
+                            ft.DataCell(ft.Text(value=payment, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER)),
+                            ft.DataCell(ft.Text(value=f"{delivery_07[0]} / {delivery_07[1]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                            ft.DataCell(ft.Text(value=f"{delivery_14[0]} / {delivery_14[1]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                            ft.DataCell(ft.Text(value=f"{delivery_21[0]} / {delivery_21[1]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                            ft.DataCell(ft.Text(value=f"{delivery_28[0]} / {delivery_28[1]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                            ft.DataCell(ft.Text(value=total, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER)),
+                        ])        
+
+            data_list.append(linha)
+
+    form4 = ft.Column(
+        controls=[
+            ft.Container(
+                padding=0,  
+                expand=True,  
+                theme=texttheme1,
+                content=ft.DataTable(
+                    data_row_max_height=50,
+                    column_spacing=40,  
+                    expand=True,  
+                    columns=[
+                        ft.DataColumn(ft.Text(value="Nome", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Pix", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Entrega dia 07", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Entrega dia 14", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Entrega dia 21", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Entrega dia 28", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Total", text_align=ft.TextAlign.CENTER)),  
+                    ],
+                    rows=data_list,  
+                ),
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,  
+        alignment=ft.MainAxisAlignment.CENTER,  
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        height=300,  
+        expand=True,  
+    )
+
+
+ 
+    container_form2 = ft.Container(content=ft.Column([dropdown1, dropdown2, form4]),
+                                    alignment=ft.alignment.center,
+                                    bgcolor=ft.Colors.WHITE,
+                                    border_radius=20,
+                                    padding=10,
+                                    height=((page.height) / 1.3),
+                                    col={"xs" : 12, "lg" : 8},
+                                    )
+    
+
+    container2 = ft.Container(content=ft.ResponsiveRow(controls=[container_form2],
+                                                 alignment=ft.MainAxisAlignment.CENTER,
+                                                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                 spacing=10,
+                                                 ),
+                                                 
+                              alignment=ft.alignment.center,
+                              col=12,
+                              )
+
+
+
+    return ft.ResponsiveRow(
+        col=12,
+        expand=True,
+        controls=[container2],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
 
 
 
