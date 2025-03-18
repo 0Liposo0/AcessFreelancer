@@ -1403,6 +1403,28 @@ class SupaBase:
 
         return response
     
+    def get_user_deliverys_data(self, subproject, username):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                "name_subproject": f"eq.{subproject}",
+                "username": f"eq.{username}",
+                "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
   
     def get_deliverys_data_total(self, username):
 
