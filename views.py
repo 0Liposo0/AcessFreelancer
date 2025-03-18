@@ -215,7 +215,7 @@ def create_page_user(page):
 
     #....................................................................
 
-    user2 = sp.get_user_data(username=dict_profile["username"])
+    user2 = sp.get_user_data(users=dict_profile["username"])
     data2 = user2.json()
     row2 = data2[0]
     row2["weekly_deliveries"] = number_total_deliverys
@@ -377,12 +377,7 @@ def create_page_initial_adm(page):
     buttons = Buttons(page)
     loading = LoadingPages(page)
 
-    freelancer_data = []
-
-    request_user = sp.get_all_user_data()
-    data_users = request_user.json()
-
-
+    
     btn_exit = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)),
                                       text="Logout",
                                       color=ft.Colors.RED,
@@ -452,6 +447,77 @@ def create_page_initial_adm(page):
     )
 
 
+    request_all_subprojects = sp.get_all_subprojects()
+    request_all_subprojects_json = request_all_subprojects.json()
+    dicio_all_subprojects = {}
+
+    for row in request_all_subprojects_json:
+
+        name_subproject = row["name_subproject"]
+        predicted_lots = row["predicted_lots"]
+        lots_done = row["lots_done"]
+        deliverys = row["deliverys"]
+        recommended_medium = row["recommended_medium"]  
+        percent = row["percent"]
+        ortofoto = row["ortofoto"]
+        project = row["project"]
+        final_delivery = row["final_delivery"]
+        current_average = row["current_average"]
+
+        dicio_all_subprojects[name_subproject] = {
+                                                "name_subproject": name_subproject,
+                                                "predicted_lots": predicted_lots,
+                                                "lots_done": lots_done,
+                                                "deliverys": deliverys,
+                                                "recommended_medium": recommended_medium,
+                                                "percent": percent, "ortofoto": ortofoto,
+                                                "project": project,
+                                                "final_delivery": final_delivery,
+                                                "current_average": current_average
+                                                }
+
+
+    request_all_deliverys = sp.get_all_deliverys()
+    request_all_deliverys_json = request_all_deliverys.json()
+    dicio_all_deliverys = {}
+
+    for row in request_all_deliverys_json:
+        
+        id = row["id"]
+        username = row["username"]
+        date = row["date"]
+        name_subproject = row["name_subproject"]
+        project = row["project"]
+        polygons = row["polygons"]
+        photos = row["photos"]
+        errors = row["errors"]
+        discount = row["discount"]
+        delay = row["delay"]
+        warning = row["warning"]
+        file = row["file"]
+
+        dicio_all_deliverys[id] = {
+                                    "id": id,
+                                    "username": username,
+                                    "date": date,
+                                    "name_subproject": name_subproject,
+                                    "project": project,
+                                    "polygons": polygons,
+                                    "photos": photos,
+                                    "errors": errors,
+                                    "discount": discount,
+                                    "delay": delay,
+                                    "warning": warning,
+                                    "file": file
+                                    }
+
+
+    freelancer_data = []
+
+    request_user = sp.get_all_user_data()
+    data_users = request_user.json()
+
+
     for row in data_users:
 
         permission = row["permission"]
@@ -468,9 +534,7 @@ def create_page_initial_adm(page):
             linha = ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value=first_name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=20)),
                         ft.DataCell(ft.Text(value=".", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=20)),
-                        #ft.DataCell(ft.Text(value=".", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=10)),
                         ft.DataCell(ft.Text(value=".", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=20)),
-                        #ft.DataCell(ft.Text(value=".", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=10)),
                         ft.DataCell(ft.Text(value=".", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=20)),    
                     ])
 
@@ -479,17 +543,24 @@ def create_page_initial_adm(page):
             continue
 
 
-        subproject = sp.get_subproject_data(subproject=current_subproject)
-        data_subproject = subproject.json()
-        row2 = data_subproject[0]
-        total_deliverys_subproject = row2["deliverys"]
-        recommended_medium_subproject = row2["recommended_medium"]
+        subproject = dicio_all_subprojects[current_subproject]
+        
+        total_deliverys_subproject = subproject["deliverys"]
+        recommended_medium_subproject = subproject["recommended_medium"]
 
         polygons_made = 0
         delay_made  = 0
         current_deliverys_made = 0
-        current_deliverys = sp.get_deliverys_data(current_subproject)
-        data_current_deliverys = current_deliverys.json()
+
+        data_current_deliverys = []
+
+        for item in dicio_all_deliverys.items():
+            
+            if item[1]["name_subproject"] == current_subproject:
+                data_current_deliverys.append(item[1])
+
+       
+
         if data_current_deliverys == []:
             polygons_made = 1
             current_deliverys_made = 1
@@ -515,9 +586,7 @@ def create_page_initial_adm(page):
         linha = ft.DataRow(cells=[
                         ft.DataCell(ft.Text(value=first_name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=20)),
                         ft.DataCell(ft.Text(value=current_subproject, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=20)),
-                        #ft.DataCell(ft.Text(value=f"{int(average_deliverys)} / {recommended_medium_subproject}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=10)),
                         ft.DataCell(ft.Text(value=f"{int(polygons_made)} / {polygons_recommended} / {missing_lots}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=20)),
-                        #ft.DataCell(ft.Text(value=missing_lots, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=10)),
                         ft.DataCell(ft.Text(value=f"{current_deliverys_made} / {total_deliverys_subproject} / {recommended_medium_subproject}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.colors.BLACK, size=20)),    
                     ])
 
@@ -575,14 +644,19 @@ def create_page_initial_adm(page):
 
         for item in list_current_subprojects:
 
-            request = sp.get_deliverys_data(item)
-            json_request = request.json()
+            data_current_deliverys2 = []
 
-            if len(json_request) == 0:
+            for item2 in dicio_all_deliverys.items():
+                
+                if item2[1]["name_subproject"] == item:
+                    data_current_deliverys2.append(item2[1])
+
+
+            if len(data_current_deliverys2) == 0:
                 polygons2 = 0
             else:
-                for item2 in json_request:
-                    polygons2 = item2["polygons"]
+                for item3 in data_current_deliverys2:
+                    polygons2 = item3["polygons"]
                     project_polygons += int(polygons2)
 
         percent_project = (int(project_polygons) * 100) / int(predicted_lots)

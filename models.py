@@ -1196,27 +1196,6 @@ class SupaBase:
         return response
     
  
-    def get_user_data(self, username):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = { "username": f"eq.{username}",
-                   "select": "*"
-        }
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/users',
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
-
     def post_to_deliverys_data(self, id, username, date, name_subproject, project, polygons, errors, discount, warning, delay, file, photos):
             
         headers= {
@@ -1314,6 +1293,9 @@ class SupaBase:
         return response
     
   
+
+
+
     def get_subproject_data(self, subproject):
 
         headers = {
@@ -1356,7 +1338,51 @@ class SupaBase:
 
         return response
     
+    def get_all_subprojects(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        
+        params = { 
+                   "select": "*"        
+                   }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/subprojects',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
  
+
+
+
+
+    def get_all_deliverys(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
     def get_deliverys_data(self, subproject):
 
         headers = {
@@ -1398,6 +1424,9 @@ class SupaBase:
 
         return response
     
+
+
+
   
     def get_free_label(self, subproject):
             headers = {
@@ -1434,7 +1463,9 @@ class SupaBase:
             f'{self.supabase_url}/rest/v1/users',
             headers=headers,
             params=params,
-        )        
+        )   
+
+        return response     
 
   
     def create_user_data(self, name, username, pix, email):
@@ -1535,486 +1566,6 @@ class SupaBase:
         return response
 
   
-    def get_user_id(self):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-        "select": "user_id", "order": "user_id.desc", "limit": 1,
-        }
-
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
-            headers=headers,
-            params=params,
-        )
-
-        next_id = response.json()[0]["user_id"] if response.json() else 0
-        new_id = int(next_id) + 1
-
-        return new_id
-
-
-    def get_cities(self):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-            "select": "name, call_name, lat, lon, acronym, objects", 
-        }
-
-        response = requests.get(
-            f"{self.supabase_url}/rest/v1/cities",
-            headers=headers,
-            params=params,
-        )
-
-        return response
-
-
-
-    
-    def add_point(self, list_forms, coordinates, image, angle, object):
-
-        sp = SupaBase(self.page)
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-        number = str(list_forms[0])
-        new_number = number.zfill(4)
-
-        geo_objects = Objects(page=None)
-        method_map = geo_objects.add_point_object(new_number)
-
-        method_map2 = geo_objects.sp_add_point1_object()
-
-        point_color = method_map2[object][list_forms[2]]
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        response1 = requests.get(
-            f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
-            headers=headers,
-            params={"select": "name", "name": f"eq.{method_map[object]}"}
-        )
-
-        if response1.status_code == 200 and response1.json():
-            # Se o ponto já existir, mostre a mensagem e retorne
-            snack_bar = ft.SnackBar(
-                content=ft.Text(f"{method_map[object]} já foi cadastrado, ponto não adicionado"),
-                bgcolor=ft.Colors.RED
-            )
-            self.page.overlay.append(snack_bar)
-            snack_bar.open = True
-            response1.status_code = 199
-            return response1
-
-        if image != None:
-            try:
-                sp.add_storage(method_map[object], image.src, angle, object)
-            except:
-                snack_bar = ft.SnackBar(
-                        content=ft.Text(f"O dispositivo negou acesso a imagem"),
-                        bgcolor=ft.Colors.AMBER,
-                        duration=1000,
-                    )
-                self.page.overlay.append(snack_bar)
-                snack_bar.open = True
-
-        method_map3 = geo_objects.sp_add_point2_object(list_forms, method_map, object)
-
-        response2 = requests.post(
-            f'{self.supabase_url}/rest/v1/form_{object}_{current_profile["city_call_name"]}',
-            headers=headers,
-            json=method_map3[object],
-        )
-
-        data_atual = datetime.now()
-        data_formatada = data_atual.strftime("%d/%m/%Y")
-
-        profile = CurrentProfile()
-        dict_profile = profile.return_current_profile()
-
-        method_map4 = geo_objects.sp_add_point3_object(list_forms, method_map, object, coordinates, point_color, data_formatada, dict_profile)
-    
-        response3 = requests.post(
-            f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
-            headers=headers,
-            json=method_map4[object],
-        )
-        
-        return response3
-    
-    def add_os(self, list_add_os, object):
-
-        number = int(list_add_os[1].split('-')[1])
-
-        geo_objects = Objects(page=None)
-        method_map = geo_objects.sp_add_os_object(list_add_os, number)
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}',
-            headers=headers,
-            params={"select": "order_id", "order_id": f"eq.{method_map[object]["order_id"]}"}
-        )
-
-        if response.status_code == 200 and response.json():
-            snack_bar = ft.SnackBar(
-                content=ft.Text(f"{list_add_os[5]} já foi cadastrado, ordem {method_map[object]["order_id"]} não adicionada"),
-                bgcolor=ft.Colors.RED
-            )
-            self.page.overlay.append(snack_bar)
-            snack_bar.open = True
-            self.page.update()
-            return
-
-
-        response = requests.post(
-            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}',
-            headers=headers,
-            json=method_map[object],
-        )
-
-        return response
-    
-   
-   
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        data = { 
-                "name": name,
-                "username": username,
-                "payment": pix,
-                "email": email,                    
-        }
-
-        response = requests.post(
-            f'{self.supabase_url}/rest/v1/users',
-            headers=headers,
-            json=data,
-        )
-
-        return response
-
-
-    def edit_point(self, image, list_forms, previous_data, object):
-
-        sp = SupaBase(self.page)
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-        number = str(list_forms[0])
-        new_number = number.zfill(4)
-
-        geo_objects = Objects(page=None)
-        method_map = geo_objects.add_point_object(new_number)
-        
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        previous_method_map = geo_objects.sp_edit_point_object(previous_data)
-        
-        current_method_map = geo_objects.sp_add_point2_object(list_forms, method_map, object)
-
-        changed = False
-
-        if object == "post" and current_method_map[object]["type"] != previous_method_map[object]["type"]:
-
-            if current_method_map[object]["type"] == "Lâmpada LED":
-                point_color = "white"
-            if current_method_map[object]["type"] == "Lâmpada de vapor de sódio":
-                point_color = "yellow"
-            if current_method_map[object]["type"] == ".":
-                point_color = "blue"
-
-            response1 = requests.get(
-                f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
-                headers=headers,
-                params={"select": "name", "name": f'eq.{previous_method_map[object]["name"]}'}
-            )
-
-            data2 = { "color": point_color, "type": current_method_map[object]["type"]}
-
-            response2 = requests.patch(
-                f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}?name=eq.{previous_method_map[object]["name"]}',
-                headers=headers,
-                json=data2,
-            )
-
-        if previous_method_map[object]["name"] != method_map[object]:
-
-            response1 = requests.get(
-                f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}',
-                headers=headers,
-                params={"select": "name", "name": f"eq.{method_map[object]}"}
-            )
-
-            if response1.status_code == 200 and response1.json():
-                snack_bar = ft.SnackBar(
-                    content=ft.Text(f"{method_map[object]} já foi cadastrado, ponto não editado"),
-                    bgcolor=ft.Colors.RED
-                )
-                self.page.overlay.append(snack_bar)
-                snack_bar.open = True
-                response1.status_code = 199
-                return response1
-
-            data3 = { "name": method_map[object]}
-
-            response2 = requests.patch(
-                f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}?name=eq.{previous_method_map[object]["name"]}',
-                headers=headers,
-                json=data3,
-            )
-
-            if image.data == "foto":
-                changed = True
-                try:
-                    headers2 = {
-                        "apikey": self.supabase_key,
-                        "Authorization": f"Bearer {self.supabase_key}",
-                    }
-                    url = sp.get_storage(previous_method_map[object]["name"], object)
-                    get_bytes = requests.get(url, headers=headers2)
-                    bytes = get_bytes.content
-                    if url != "Nulo":
-                        sp.delete_storage(previous_method_map[object]["name"], object)
-                    if "supabase" not in image.src:
-                        sp.add_storage(method_map[object], image.src, angle_image=0, object=object)
-                    else:
-                        sp.add_storage(method_map[object], bytes, angle_image=0, object=object, new=False)
-
-                except:
-                    snack_bar = ft.SnackBar(
-                            content=ft.Text(f"O dispositivo negou acesso a imagem"),
-                            bgcolor=ft.Colors.AMBER,
-                            duration=1000,
-                        )
-                    self.page.overlay.append(snack_bar)
-                    snack_bar.open = True
-
-        if image.data == "foto" and changed == False:
-            if "supabase" not in image.src:
-                try:
-                    url = sp.get_storage(previous_method_map[object]["name"], object)
-                    if url != "Nulo":
-                        sp.delete_storage(previous_method_map[object]["name"], object)
-                    sp.add_storage(method_map[object], image.src, angle_image=0, object=object, new=True)    
-                except:
-                    snack_bar = ft.SnackBar(
-                            content=ft.Text(f"O dispositivo negou acesso a imagem"),
-                            bgcolor=ft.Colors.AMBER,
-                            duration=1000,
-                        )
-                    self.page.overlay.append(snack_bar)
-                    snack_bar.open = True
-
-        response3 = requests.patch(
-            f'{self.supabase_url}/rest/v1/form_{object}_{current_profile["city_call_name"]}?name=eq.{previous_method_map[object]["name"]}',
-            headers=headers,
-            json=current_method_map[object],
-        )
-
-        return response3
-
-    def edit_os(self, list_edited_os_forms, object):
-
-        number = int(list_edited_os_forms[1].split('-')[1])
-
-        geo_objects = Objects(page=None)
-        method_map = geo_objects.sp_edit_os_object(list_edited_os_forms, number)
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        response = requests.patch(
-            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}?order_id=eq.{list_edited_os_forms[5]}',
-            headers=headers,
-            json=method_map[object],
-        )
-
-        return response
-    
-    def edit_user(self, list_edited_user_forms, previus_name):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-      
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        if list_edited_user_forms[0] != previus_name:
-
-            response1 = requests.get(
-                f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
-                headers=headers,
-                params={"select": "usuario", "usuario": f"eq.{list_edited_user_forms[0]}"}
-            )
-
-            if response1.status_code == 200 and response1.json():
-                # Se o usuario já existir, mostre a mensagem e retorne
-                snack_bar = ft.SnackBar(
-                    content=ft.Text("Nome de usuario já cadastrado"),
-                    bgcolor=ft.Colors.RED
-                )
-                self.page.overlay.append(snack_bar)
-                snack_bar.open = True
-                self.page.update()
-
-                return
-
-        data = {
-            "usuario": list_edited_user_forms[0],
-            "numero": list_edited_user_forms[2],
-            "senha": list_edited_user_forms[3],
-            "permission": list_edited_user_forms[4],
-        }
-
-        response = requests.patch(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{previus_name}',
-            headers=headers,
-            json=data,
-        )
-
-        return response
-
-
-
-    def delete_point(self, name, object):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        response1 = requests.delete(
-            f'{self.supabase_url}/rest/v1/point_{object}_{current_profile["city_call_name"]}?name=eq.{name}',
-            headers=headers,
-        )
-
-        response2 = requests.delete(
-            f'{self.supabase_url}/rest/v1/form_{object}_{current_profile["city_call_name"]}?name=eq.{name}',
-            headers=headers,
-        )
-
-
-        storage_path = f'{current_profile["city_call_name"]}/{object}/{name}.jpg'
-        headers2 = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "image/jpeg",
-        }
-        url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
-        response3 = requests.delete(
-            url,
-            headers=headers2,
-        )
-
-        list_response = [response1, response2, response3]
-
-        return list_response
-
-    def delete_storage(self, name, object):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "image/jpeg",
-        }
-
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        storage_path = f'{current_profile["city_call_name"]}/{object}/{name}.jpg'
-        
-        url = f"{self.supabase_url}/storage/v1/object/{storage_path}"
-
-        response = requests.delete(
-            url,
-            headers=headers,
-        )
-
-        return response
-
-    def delete_os(self, order, object):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        response = requests.delete(
-            f'{self.supabase_url}/rest/v1/order_{object}_{current_profile["city_call_name"]}?order_id=eq.{order}',
-            headers=headers,
-        )
-
-        return response
-    
-    def delete_user(self, user):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        response = requests.delete(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}?usuario=eq.{user}',
-            headers=headers,
-        )
-
-        return response
 
     def check_login(self, username, password):
 
@@ -2041,81 +1592,7 @@ class SupaBase:
 
         return response
     
-    def register(self, username, email, number, password1, password2):
 
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        response1 = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
-            headers=headers,
-            params={"select": "email", "email": f"eq.{email}"}
-        )
-
-        if response1.status_code == 200 and response1.json():
-            # Se o e-mail já existir, mostre a mensagem e retorne
-            snack_bar = ft.SnackBar(
-                content=ft.Text("E-mail já cadastrado"),
-                bgcolor=ft.Colors.RED
-            )
-            self.page.overlay.append(snack_bar)
-            snack_bar.open = True
-            self.page.update()
-
-            return
-         
-        response2 = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
-            headers=headers,
-            params={"select": "usuario", "usuario": f"eq.{username}"}
-        )
-
-        if response2.status_code == 200 and response2.json():
-            # Se o usuario já existir, mostre a mensagem e retorne
-            snack_bar = ft.SnackBar(
-                content=ft.Text("Nome de usuario já cadastrado"),
-                bgcolor=ft.Colors.RED
-            )
-            self.page.overlay.append(snack_bar)
-            snack_bar.open = True
-            self.page.update()
-
-            return 
-
-        response3 = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
-            headers=headers,
-            params={"select": "user_id", "order": "user_id.desc", "limit": 1},
-        )
-
-        if response3.status_code == 200:
-            max_user_id = response3.json()[0]["user_id"] if response3.json() else 0
-            new_user_id = max_user_id + 1
-
-            # Dados para inserir no Supabase
-            data = {
-                "user_id": new_user_id,
-                "usuario": username,
-                "email": email,
-                "numero": number,
-                "senha": password1,
-                "permission": "convidado",
-            }
-
-            # Fazer a solicitação POST para inserir o novo registro
-            response4 = requests.post(
-                f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
-                headers=headers,
-                json=data,
-            )
-
-            return response4
    
    
 class CurrentMapPoints:
