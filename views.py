@@ -89,6 +89,7 @@ def create_page_login(page):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
+
 def create_page_user(page):
 
     loading = LoadingPages(page)
@@ -367,6 +368,7 @@ def create_page_user(page):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
+
 def create_page_initial_adm(page):
 
     page.bgcolor = ft.Colors.GREY_200
@@ -396,12 +398,19 @@ def create_page_initial_adm(page):
                                         color=ft.Colors.GREY,
                                         col=12,
                                         padding=5,)    
-
+    btn_new_proj = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_new_delivery(page)),
+                                         text= "Cadastrar Entrega",
+                                        color=ft.Colors.GREY,
+                                        col=12,
+                                        padding=5,)
 
     drawer = ft.NavigationDrawer(
 
 
         controls=[
+
+            ft.Divider(thickness=1),
+            btn_new_proj,
 
             ft.Divider(thickness=1),
             btn_new_free,
@@ -643,6 +652,7 @@ def create_page_initial_adm(page):
 
     return layout
 
+
 def verificar(username, password, page):
 
     loading = LoadingPages(page)
@@ -686,6 +696,7 @@ def verificar(username, password, page):
         page.overlay.append(snack_bar)
         snack_bar.open = True
         page.update()
+
 
 def create_page_project(page):
 
@@ -777,6 +788,7 @@ def create_page_project(page):
     )
 
     return layout
+
 
 def creat_page_subproject(page, project):
     
@@ -871,6 +883,7 @@ def creat_page_subproject(page, project):
 
     return layout
 
+
 def create_ficha_supro(page, subproject, project):
 
     loading = LoadingPages(page=page)
@@ -891,6 +904,51 @@ def create_ficha_supro(page, subproject, project):
     def go_home():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
+
+
+
+    
+    def editar_dados(data_list):
+        
+        name = data_list[0].value
+        username = data_list[1].value
+
+        current_project = data_list[2].value
+        total_deliverys = data_list[3].value
+
+        weekly_deliveries = data_list[4].value
+        polygons_made = data_list[5].value
+
+        polygons_wrong = data_list[6].value
+        warnings = data_list[7].value
+
+        delays = data_list[8].value
+        password = data_list[9].value
+
+        permission = data_list[10].value
+    
+        supa_list = [
+        name, username, current_project, total_deliverys, weekly_deliveries, polygons_made, polygons_wrong, warnings, delays, password, permission
+        ]
+
+        print(password)
+        print(supa_list[9])
+
+        if any(field == "" or field is None for field in supa_list):
+            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+        else:
+            sp = SupaBase(page)
+            sp.edit_user_data(supa_list)
+            snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+    
+        
     # AppBar
     page.appbar = ft.AppBar(
         leading_width=40,
@@ -911,10 +969,11 @@ def create_ficha_supro(page, subproject, project):
     ortofoto_field = ft.TextField(label="Ortofoto", value=get_info2["ortofoto"], width=300)
     projeto_field = ft.TextField(label="Projeto", value=get_info2["project"], width=300)
     entrega_final_field = ft.TextField(label="Entrega Final", value=get_info2["final_delivery"], width=300)
-
+    
     # Layout responsivo usando ft.ResponsiveRow
     ficha_subprojeto = ft.Column(
         [
+                     
             ft.Text("Ficha Subprojeto", size=24, weight=ft.FontWeight.BOLD),
             nome_user_field,
             name_field,
@@ -926,6 +985,9 @@ def create_ficha_supro(page, subproject, project):
             ortofoto_field,
             projeto_field,
             entrega_final_field,
+            
+             
+            
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -946,6 +1008,13 @@ def create_ficha_supro(page, subproject, project):
     senha = ft.TextField(label="Senha", value=get_info4["password"], width=300)
     permissao = ft.TextField(label="Permissão", value=get_info4["permission"], width=300)
 
+    
+    data_list = [
+        nome, usuario, projeto_atual, entrega_total, entrega_semanal, poligonos_feitos, poligonos_errados, advertencias, atrasos, senha, permissao
+    ]
+
+    botao_edit = ft.ElevatedButton("Editar", on_click=lambda e: editar_dados(data_list))
+
     # Layout responsivo usando ft.ResponsiveRow
     ficha_cadastral = ft.Column(
         [
@@ -961,6 +1030,8 @@ def create_ficha_supro(page, subproject, project):
             atrasos,
             senha,
             permissao,
+            botao_edit,
+            
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -977,6 +1048,7 @@ def create_ficha_supro(page, subproject, project):
         bgcolor=ft.colors.WHITE,  # Cor de fundo do container
         width=800 if page.width > 800 else page.width * 0.9, # Largura responsiva
         height=900,
+
     )
 
     ficha_cadastral_container = ft.Container(
@@ -987,13 +1059,18 @@ def create_ficha_supro(page, subproject, project):
         bgcolor=ft.colors.WHITE,  # Cor de fundo do container
         width=800 if page.width > 800 else page.width * 0.9,  # Largura responsiva
         height=900, 
+    
     )
+
+    
 
     # Layout responsivo com as duas fichas lado a lado
     layout = ft.ResponsiveRow(
         [
             ft.Column([ficha_subprojeto_container], col={"sm": 13, "md": 6,}), 
             ft.Column([ficha_cadastral_container], col={"sm": 12, "md": 6}),
+            
+            
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         spacing=20,
@@ -1001,6 +1078,7 @@ def create_ficha_supro(page, subproject, project):
 
 # Adiciona o layout à página
     return layout
+
 
 def create_page_new_freelancer(page):
 
@@ -1023,7 +1101,6 @@ def create_page_new_freelancer(page):
         "Usuario": ft.TextField(label="Usuario", hint_text="Digite o Usuario",bgcolor=ft.Colors.WHITE),
         "pix": ft.TextField(label="PIX", hint_text="Digite o chave PIX",bgcolor=ft.Colors.WHITE),
         "email": ft.TextField(label="Email", hint_text="Digite o email",bgcolor=ft.Colors.WHITE),
-        
     }
 
 
@@ -1052,13 +1129,17 @@ def create_page_new_freelancer(page):
             page.update()
 
 
+    
+
+
     # Botão para enviar os dados
     botao_enviar = ft.ElevatedButton("Enviar", on_click=enviar_dados)
-
+    
     
     # Layout do formulário de cadastro
     formulario_cadastro = ft.Column(
         [ft.Text("Cadastro de Dados", size=24, weight=ft.FontWeight.BOLD)] + list(campos.values()) + [botao_enviar],
+
         spacing=20,
         expand=True,
 
@@ -1088,10 +1169,79 @@ def create_page_new_freelancer(page):
     return layout_principal
 
 
+def create_page_new_delivery(page):
+
+    base = SupaBase(page=page)
+
+    loading = LoadingPages(page=page)
+
+    def go_home():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Soluções e Engenharia"),
+        bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+        actions=[ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),],
+    )
+
+    
+    content = {
+                "id": ft.TextField(label="ID", hint_text="Digite o ID", bgcolor=ft.Colors.WHITE, expand= False, width=50),
+                "username": ft.TextField(label="Usuario", hint_text="Digite o Usuario", bgcolor=ft.Colors.WHITE, expand= False, width=100),
+                "date": ft.TextField(label="Data", hint_text="Digite a Data", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "name_subproject": ft.TextField(label="Nome do Subprojeto", hint_text="Digite o Nome do Subprojeto", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "project": ft.TextField(label="Projeto", hint_text="Digite o Projeto", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "polygons": ft.TextField(label="Poligonos", hint_text="Digite o Poligonos", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "errors": ft.TextField(label="Erros", hint_text="Digite o Erros", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "discount": ft.TextField(label="Desconto", hint_text="Digite o Desconto", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "warnings": ft.TextField(label="Advertencias", hint_text="Digite o Advertencias", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "delay": ft.TextField(label="Atraso", hint_text="Digite o Atraso", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "file": ft.TextField(label="Arquivos", hint_text="Digite o Arquivos", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "photos": ft.TextField(label="Fotos", hint_text="Digite o Fotos", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+    }
+
+    
+
+    list_content = [content["id"], content["username"], content["date"], content["name_subproject"], 
+                    content["project"], content["polygons"], content["errors"], content["discount"], 
+                    content["warnings"], content["delay"], content["file"], content["photos"]]
 
 
+    def send_to_data(e):
+        
+      
+    
+        if any(field.value == "" or field.value is None for field in list_content):
+            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+        else:
+            sp = SupaBase(page)
+            sp.post_to_deliverys_data(content["id"].value, content["username"].value, content["date"].value, content["name_subproject"].value,
+                                      content["project"].value, content["polygons"].value, content["errors"].value, content["discount"].value,
+                                        content["warnings"].value, content["delay"].value, content["file"].value, content["photos"].value),
+            snack_bar = ft.SnackBar(content=ft.Text("Dados enviados com sucesso"), bgcolor=ft.Colors.GREEN)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
 
+ 
+    btn_send = ft.ElevatedButton("Enviar", on_click=send_to_data)        
+    layout = ft.ResponsiveRow(
+    [
+        
+        *list_content,
+        btn_send,
+            
+    ],
+        alignment=ft.MainAxisAlignment.CENTER,  
+        vertical_alignment=ft.CrossAxisAlignment.CENTER, 
+    )
 
+    return layout
 
 
 

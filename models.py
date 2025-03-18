@@ -1124,11 +1124,14 @@ class SupaBase:
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvd3RheHR2cGF3dWt3emV5b2lmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzIyODQsImV4cCI6MjA1NTA0ODI4NH0.DWq3PkIZaLS6qq-tLu6vmFI4ESiXuof7477izTfsR9k"
         )
 
+
     def get_url(self):
         return self.supabase_url
     
+
     def get_key(self):
         return self.supabase_key
+
 
     def get_storage(self):
 
@@ -1143,6 +1146,7 @@ class SupaBase:
         else:
             url = "Nulo"
             return url
+
 
     def get_form_user(self, user):
 
@@ -1168,6 +1172,7 @@ class SupaBase:
 
         return response
     
+  
     def get_forms(self, name, object):
 
         headers = {
@@ -1190,6 +1195,7 @@ class SupaBase:
 
         return response
     
+ 
     def get_user_data(self, username):
 
         headers = {
@@ -1210,8 +1216,34 @@ class SupaBase:
 
         return response
     
-
-
+    def post_to_deliverys_data(self, id, username, date, name_subproject, project, polygons, errors, discount, warning, delay, file, photos):
+            
+        headers= {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+                }
+        get_data= { 
+                "id": id,
+                "username": username,
+                "date": date,
+                "name_subproject": name_subproject,
+                "project": project,
+                "polygons": polygons,
+                "errors": errors,
+                "discount": discount,
+                "warning": warning,
+                "delay": delay,
+                "file": file,
+                "photos": photos,
+                }
+        response = requests.post(
+            f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            json=get_data,
+        )
+        return response
+    
     def get_all_user_data(self):
 
         headers = {
@@ -1233,6 +1265,7 @@ class SupaBase:
 
         return response
     
+ 
     def get_all_project_data(self):
 
         headers = {
@@ -1254,6 +1287,7 @@ class SupaBase:
 
         return response
     
+  
     def get_subproject_data(self, subproject):
 
         headers = {
@@ -1274,6 +1308,7 @@ class SupaBase:
 
         return response
     
+  
     def get_all_subproject_data(self, project):
 
         headers = {
@@ -1295,6 +1330,7 @@ class SupaBase:
 
         return response
     
+ 
     def get_deliverys_data(self, subproject):
 
         headers = {
@@ -1315,6 +1351,7 @@ class SupaBase:
 
         return response
     
+  
     def get_deliverys_data_total(self, username):
 
         headers = {
@@ -1335,6 +1372,7 @@ class SupaBase:
 
         return response
     
+  
     def get_free_label(self, subproject):
             headers = {
             "apikey": self.supabase_key,
@@ -1351,6 +1389,7 @@ class SupaBase:
             )   
             return response
 
+  
     def get_user_data(self, users):
 
 
@@ -1371,8 +1410,63 @@ class SupaBase:
             params=params,
         )        
 
-        
+  
+    def create_user_data(self, name, username, pix, email):
 
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        data = { 
+                "name": name,
+                "username": username,
+                "payment": pix,
+                "email": email,                    
+        }
+
+        response = requests.post(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            json=data,
+        )
+
+        return response    
+
+  
+    def edit_user_data(self, supa_list):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        data = { 
+            "name": supa_list[0],
+            "username": supa_list[1],
+            "current_project": supa_list[2],
+            "total_deliverys": supa_list[3],
+            "weekly_deliveries": supa_list[4],
+            "polygons_made": supa_list[5],
+            "polygons_wrong": supa_list[6],     
+            "warnings": supa_list[7],
+            "delays": supa_list[8],
+            "password": supa_list[9],
+            "permission": supa_list[10],
+                                   
+        }
+
+        response = requests.patch(
+            f'{self.supabase_url}/rest/v1/users?username=eq.{supa_list[1]}',
+            headers=headers,
+            json=data,
+        )
+
+        return response    
+
+   
     def get_projects_data(self):
 
         # É esse aqui
@@ -1392,6 +1486,7 @@ class SupaBase:
         )   
         return response
 
+   
     def get_user_data_SubPro(self, subproject):
 
         headers = {
@@ -1413,6 +1508,7 @@ class SupaBase:
 
         return response
 
+  
     def get_user_id(self):
 
         headers = {
@@ -1438,6 +1534,7 @@ class SupaBase:
         new_id = int(next_id) + 1
 
         return new_id
+
 
     def get_cities(self):
 
@@ -1577,7 +1674,8 @@ class SupaBase:
 
         return response
     
-    def create_user_data(self, name, username, pix, email):
+   
+   
 
         headers = {
             "apikey": self.supabase_key,
