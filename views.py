@@ -1260,6 +1260,18 @@ def create_page_payment(page, month):
     texttheme1 = textthemes.create_text_theme1()
     loading = LoadingPages(page)
 
+
+    def go_home():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Soluções e Engenharia"),
+        bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+        actions=[ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),],
+    )
+
     dropdown1 = ft.Dropdown(
         options=[
             ft.dropdown.Option("Janeiro"),
