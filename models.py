@@ -1216,6 +1216,7 @@ class SupaBase:
 
         return response
     
+
     def post_to_deliverys_data(self, id, username, date, name_subproject, project, polygons, errors, discount, warning, delay, file, photos):
             
         headers= {
@@ -1244,6 +1245,7 @@ class SupaBase:
         )
         return response
     
+
     def get_all_user_data(self):
 
         headers = {
@@ -1265,6 +1267,30 @@ class SupaBase:
 
         return response
     
+
+    def get_new_project_data(self, name_project, current_subprojects, final_delivery, predicted_lots, lots_done, percent):
+            
+            headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+            }
+            get_pjc = { 
+                "name_project": name_project,
+                "current_subprojects": current_subprojects,
+                "final_delivery": final_delivery,
+                "predicted_lots": predicted_lots,
+                "lots_done": lots_done,
+                "percent": percent,          
+            }
+
+            response = requests.post(
+                f'{self.supabase_url}/rest/v1/projects',
+                headers=headers,
+                json=get_pjc,
+            ) 
+            print(response.json())
+
  
     def get_all_project_data(self):
 

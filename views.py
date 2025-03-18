@@ -398,7 +398,7 @@ def create_page_initial_adm(page):
                                         color=ft.Colors.GREY,
                                         col=12,
                                         padding=5,)    
-    btn_new_proj = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_new_delivery(page)),
+    btn_new_sub_proj = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_new_delivery(page)),
                                          text= "Cadastrar Entrega",
                                         color=ft.Colors.GREY,
                                         col=12,
@@ -408,14 +408,20 @@ def create_page_initial_adm(page):
                                         color=ft.Colors.GREY,
                                         col=12,
                                         padding=5,)
-
+    btn_new_pro= buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_new_project(page)),
+                                            text= "Cadastrar Projeto",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=5,)
     drawer = ft.NavigationDrawer(
 
 
         controls=[
+            ft.Divider(thickness=1),
+            btn_new_pro,
 
             ft.Divider(thickness=1),
-            btn_new_proj,
+            btn_new_sub_proj,
 
             ft.Divider(thickness=1),
             btn_new_free,
@@ -1455,6 +1461,70 @@ def create_page_payment(page, month):
     )
 
 
+def create_page_new_project(page):
+    base = SupaBase(page=page)
+
+    loading = LoadingPages(page=page)
+
+    def go_home():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Soluções e Engenharia"),
+        bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+        actions=[ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),],
+    )
+
+    
+    content = {
+                "Projeto": ft.TextField(label="Projeto", hint_text="Digite o Projeto", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "Projeto Atual": ft.TextField(label="Projeto Atual", hint_text="Digite o Nome", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "Entrega Final": ft.TextField(label="Entrega Final", hint_text="Digite a data", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "Lotes Previstos": ft.TextField(label="Lotes Previstos", hint_text="Digite a Quantidade", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "Lotes Feitos": ft.TextField(label="Lotes Feitos", hint_text="Digite a Quantidade", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+                "Porcentagem": ft.TextField(label="Porcentagem", hint_text="Digite a Porcentagem", bgcolor=ft.Colors.WHITE, expand= False, width=300),
+    }
+
+    
+
+    list_content = [content["Projeto"], content["Projeto Atual"], content["Entrega Final"], content["Lotes Previstos"],
+                    content["Lotes Feitos"], content["Porcentagem"]]
+
+
+    def send_to_data(e):
+        
+      
+    
+        if any(field.value == "" or field.value is None for field in list_content):
+            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+        else:
+            sp = SupaBase(page)
+            sp.get_new_project_data(content["Projeto"].value, content["Projeto Atual"].value, content["Entrega Final"].value, content["Lotes Previstos"].value,
+                                      content["Lotes Feitos"].value, content["Porcentagem"].value),
+            snack_bar = ft.SnackBar(content=ft.Text("Dados enviados com sucesso"), bgcolor=ft.Colors.GREEN)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+ 
+    btn_send = ft.ElevatedButton("Enviar", on_click=send_to_data)        
+    layout = ft.ResponsiveRow(
+    [
+        
+        *list_content,
+        btn_send,
+            
+    ],
+        alignment=ft.MainAxisAlignment.CENTER,  
+        vertical_alignment=ft.CrossAxisAlignment.CENTER, 
+    )
+
+    return layout
 
 
 
