@@ -103,33 +103,36 @@ def create_page_user(page):
     profile = CurrentProfile() 
     dict_profile = profile.return_current_profile()
 
-    url_imagem1 = web_images.get_image_url(name="perfil")
 
     perfil = ft.Column(
-            alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            controls=[ft.Container(
-                width=200,
-                height=200,
-                alignment=ft.alignment.center,
-                image=ft.Image(
-                src=url_imagem1,  
-                ),
-                bgcolor=ft.Colors.GREY,
-                border=ft.Border(
-                    left=ft.BorderSide(2, ft.Colors.BLACK),  
-                    top=ft.BorderSide(2, ft.Colors.BLACK),    
-                    right=ft.BorderSide(2, ft.Colors.BLACK), 
-                    bottom=ft.BorderSide(2, ft.Colors.BLACK) 
-                ),
-                border_radius=ft.border_radius.all(100),
-            )
-            ]
+    alignment=ft.MainAxisAlignment.CENTER,
+    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+    controls=[
+        ft.Container(
+            width=200,
+            height=200,
+            alignment=ft.alignment.center,
+            content=ft.Image(  # Mova a imagem para o content
+                src=f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/freelancers//{dict_profile["username"]}.jpg",  
+                fit=ft.ImageFit.COVER,
+                expand=True,
+            ),
+            border=ft.Border(
+                left=ft.BorderSide(2, ft.Colors.BLACK),  
+                top=ft.BorderSide(2, ft.Colors.BLACK),    
+                right=ft.BorderSide(2, ft.Colors.BLACK), 
+                bottom=ft.BorderSide(2, ft.Colors.BLACK) 
+            ),
+            bgcolor=ft.Colors.BLACK,
+            border_radius=ft.border_radius.all(100),
+            clip_behavior=ft.ClipBehavior.HARD_EDGE,
         )
+    ]
+)
 
     #....................................................................
 
-    total_deliverys = sp.get_deliverys_data_total(username=dict_profile["username"])
+    total_deliverys = sp.get_deliverys_data_total(username=dict_profile["username"])  #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
     data_total_deliverys = total_deliverys.json()
     
     total_polygons = 0
@@ -137,7 +140,7 @@ def create_page_user(page):
     total_delays = 0
     number_total_deliverys = 0
 
-    for row in data_total_deliverys:
+    for row in data_total_deliverys:  #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
 
         id = row["id"]
         date = row["date"]
@@ -154,9 +157,13 @@ def create_page_user(page):
         if delay == "Sim":
             total_delays += 1
 
+    #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
     #....................................................................
 
-    current_deliverys = sp.get_user_deliverys_data(subproject=dict_profile["current_project"], username=dict_profile["username"])
+    #Filtrando entregas baseado no projeto atual
+
+    
+    current_deliverys = sp.get_user_deliverys_data(subproject=dict_profile["current_project"], username=dict_profile["username"])  #Filtrando entregas baseado no projeto atual
     data_current_deliverys = current_deliverys.json()
     
     dicio_current_deliverys = {}
@@ -164,38 +171,36 @@ def create_page_user(page):
     number_current_deliverys = 0
 
     date_cash = "07/03/2025"
-    last_date = "07/02/2025"
-    data_atual = datetime.now()
 
-    temp_list = []
+    temp_list = [] 
 
-    for row in data_current_deliverys:
+    if dict_profile["current_project"] != ".":
+        for row in data_current_deliverys:   #Filtrando entregas baseado no projeto atual
 
-        id = row["id"]
-        date = row["date"]
-        name_subproject = row["name_subproject"]
-        polygons = row["polygons"]
-        photos = row["photos"]
-        errors = row["errors"]
-        discount = row["discount"]
-        delay = row["delay"]
+            date = row["date"]
+            name_subproject = row["name_subproject"]
+            polygons = row["polygons"]
+            photos = row["photos"]
+            errors = row["errors"]
+            discount = row["discount"]
+            delay = row["delay"]
 
-        date_delivery_dt = datetime.strptime(date, "%d/%m/%Y")
+            date_delivery_dt = datetime.strptime(date, "%d/%m/%Y")
 
-        linha = ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value=date, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                        ft.DataCell(ft.Text(value=name_subproject, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                        ft.DataCell(ft.Text(value=polygons, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                        ft.DataCell(ft.Text(value=photos, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                        ft.DataCell(ft.Text(value=errors, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                        ft.DataCell(ft.Text(value=discount, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                        ft.DataCell(ft.Text(value=delay, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                    ])
+            linha = ft.DataRow(cells=[
+                            ft.DataCell(ft.Text(value=date, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=name_subproject, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=polygons, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=photos, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=errors, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=discount, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=delay, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                        ])
 
-        temp_list.append((date_delivery_dt, linha))
+            temp_list.append((date_delivery_dt, linha))
 
-        number_current_deliverys += 1
-        subproject_polygons += int(polygons)
+            number_current_deliverys += 1
+            subproject_polygons += int(polygons)
 
     # Ordena a lista pela data (mais recente primeiro)
     temp_list.sort(reverse=True, key=lambda x: x[0])
@@ -205,7 +210,10 @@ def create_page_user(page):
 
     #....................................................................
 
-    cash_total_polygons = 0
+
+
+
+    cash_total_polygons = 0    # Iniciando o processo de calculo financeiro
     cash_total_errors = 0
     cash_total_photos = 0
     cash_number_total_deliverys = 0
@@ -214,50 +222,50 @@ def create_page_user(page):
     delivery_21 = [0, 0]
     delivery_28 = [0, 0]
 
+    if dict_profile["current_project"] != ".":
+        for row in data_current_deliverys:
 
-    for row in data_current_deliverys:
+                date = row["date"]
+                polygons = row["polygons"]
+                errors = row["errors"]
+                discount = row["discount"]
+                delay = row["delay"]
+                photos = row["photos"]
 
-            date = row["date"]
-            polygons = row["polygons"]
-            errors = row["errors"]
-            discount = row["discount"]
-            delay = row["delay"]
-            photos = row["photos"]
+                data_obj = datetime.strptime(date, "%d/%m/%Y")
 
-            data_obj = datetime.strptime(date, "%d/%m/%Y")
+                if data_obj.month == 2 and data_obj.year == 2025:
 
-            if data_obj.month == 2 and data_obj.year == 2025:
-
-                cash_total_polygons += int(polygons)
-                cash_total_errors += int(errors)
-                cash_total_photos += int(photos)
-                cash_number_total_deliverys += 1
+                    cash_total_polygons += int(polygons)
+                    cash_total_errors += int(errors)
+                    cash_total_photos += int(photos)
+                    cash_number_total_deliverys += 1
 
 
-                def add_polygons(delivery, polygons):
-                    delivery[0] = polygons
+                    def add_polygons(delivery, polygons):
+                        delivery[0] = polygons
 
-                def add_photos(delivery, photos):
-                    delivery[1] = photos
+                    def add_photos(delivery, photos):
+                        delivery[1] = photos
 
-                dicio1 = {
-                    7: lambda: add_polygons(delivery_07, int(polygons)),
-                    14: lambda: add_polygons(delivery_14, int(polygons)),
-                    21: lambda: add_polygons(delivery_21, int(polygons)),
-                    28: lambda: add_polygons(delivery_28, int(polygons)),
-                }
-                dicio2 = {
-                    7: lambda: add_photos(delivery_07, int(photos)),
-                    14: lambda: add_photos(delivery_14, int(photos)),
-                    21: lambda: add_photos(delivery_21, int(photos)),
-                    28: lambda: add_photos(delivery_28, int(photos)),
-                }
+                    dicio1 = {
+                        7: lambda: add_polygons(delivery_07, int(polygons)),
+                        14: lambda: add_polygons(delivery_14, int(polygons)),
+                        21: lambda: add_polygons(delivery_21, int(polygons)),
+                        28: lambda: add_polygons(delivery_28, int(polygons)),
+                    }
+                    dicio2 = {
+                        7: lambda: add_photos(delivery_07, int(photos)),
+                        14: lambda: add_photos(delivery_14, int(photos)),
+                        21: lambda: add_photos(delivery_21, int(photos)),
+                        28: lambda: add_photos(delivery_28, int(photos)),
+                    }
 
-                call_function1 = dicio1.get(data_obj.day, lambda: None)()
-                call_function2 = dicio2.get(data_obj.day, lambda: None)()
+                    call_function1 = dicio1.get(data_obj.day, lambda: None)()
+                    call_function2 = dicio2.get(data_obj.day, lambda: None)()
 
  
-    user2 = sp.get_user_data(users=dict_profile["username"])
+    user2 = sp.get_user_data(users=dict_profile["username"])   #Atualizando dados do usuario
     data2 = user2.json()
     row2 = data2[0]
     row2["weekly_deliveries"] = number_total_deliverys
@@ -266,14 +274,18 @@ def create_page_user(page):
     row2["delays"] = total_delays
 
 
-    subproject3 = sp.get_subproject_data(subproject=dict_profile["current_project"])
-    data3 = subproject3.json()
-    row3 = data3[0]
-    row3["lots_done"] = subproject_polygons
-    percent = (subproject_polygons * 100) / (int(row3["predicted_lots"]))
-    row3["percent"] = f"{percent:.2f} %"
-    current_average = subproject_polygons / number_current_deliverys
-    row3["current_average"] = f"{current_average:.2f}"
+    if dict_profile["current_project"] != ".":
+        subproject3 = sp.get_subproject_data(subproject=dict_profile["current_project"]) #Atualizando dados do projeto atual
+        data3 = subproject3.json()
+        row3 = data3[0]
+        row3["lots_done"] = subproject_polygons
+        percent = (subproject_polygons * 100) / (int(row3["predicted_lots"]))
+        row3["percent"] = f"{percent:.2f} %"
+        current_average = 0
+        if number_current_deliverys != 0:
+            current_average = subproject_polygons / number_current_deliverys
+
+        row3["current_average"] = f"{current_average:.2f}"
 
 
 
@@ -287,10 +299,17 @@ def create_page_user(page):
 
 
     table1 = geo_objects.view_user_data(row2)
-    table2 = geo_objects.view_user_data2(row3)
+
+    table2 = ft.Container()
+    if dict_profile["current_project"] != ".":
+        table2 = geo_objects.view_user_data2(row3)
+
     table3 = geo_objects.view_user_data3(total_cash_polygons_made, total_cash_photos_made, total_cash)
     form1 = forms.create_forms_post(table1, "Informções", "Freelancer", ft.MainAxisAlignment.START)
-    form2 = forms.create_forms_post(table2, "Informações", "Projeto", ft.MainAxisAlignment.START)
+
+    form2 = ft.Container()
+    if dict_profile["current_project"] != ".":
+        form2 = forms.create_forms_post(table2, "Informações", "Projeto", ft.MainAxisAlignment.START)
 
     
     form3 = forms.create_forms_post(table3, "Pagamento", date_cash, ft.MainAxisAlignment.START)
