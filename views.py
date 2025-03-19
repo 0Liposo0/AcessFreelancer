@@ -947,15 +947,10 @@ def create_page_project(page):
 
 
 def creat_page_subproject(page, project):
-    
-    loading= LoadingPages(page=page)
-
+    loading = LoadingPages(page=page)
     base = SupaBase(page=None)
     get_base = base.get_all_subproject_data(project)
     get_json = get_base.json()
-
-     
-    
 
     history_list = ft.ListView(
         controls=[],
@@ -963,82 +958,81 @@ def creat_page_subproject(page, project):
         spacing=0,  # Removendo espaçamento entre os itens da lista
     )
 
-    for city in get_json: 
+    for city in get_json:
         name_subproject = city["name_subproject"]
 
         def create_on_click(subproject):
-            return lambda e: loading.new_loading_page(page=page,
-                                                    call_layout= lambda:create_ficha_supro(page=page, subproject=subproject, project=project),
-                                                    )
+            return lambda e: loading.new_loading_page(
+                page=page,
+                call_layout=lambda: create_ficha_supro(page=page, subproject=subproject, project=project),
+            )
 
-        history_list.controls.append(ft.ListTile(title=ft.Text(f"{name_subproject}"), on_click=create_on_click(name_subproject)))
-
-
+        history_list.controls.append(
+            ft.ListTile(title=ft.Text(f"{name_subproject}"), on_click=create_on_click(name_subproject))
+        )
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page=page))
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
+
     def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page=page))
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
     page.appbar = ft.AppBar(
-    leading_width=40,
-    center_title=True,
-    title=ft.Text("Atta'm Soluções e Engenharia"),
-    bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
-    actions=[ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),ft.IconButton(ft.icons.KEYBOARD_RETURN, 
-                                                        on_click=lambda e: go_back())],
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Soluções e Engenharia"),
+        bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+        actions=[
+            ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),
+            ft.IconButton(ft.icons.KEYBOARD_RETURN, on_click=lambda e: go_back()),
+        ],
     )
 
     # Campo de pesquisa
     search_field = ft.TextField(
-    label="Pesquisar",
-    hint_text="Digite para pesquisar...",
-    border_color=ft.colors.BLUE_800,
-    filled=True,
-    bgcolor=ft.colors.WHITE,
-    expand=True,  # Expande para ocupar o espaço disponível
+        label="Pesquisar",
+        hint_text="Digite para pesquisar...",
+        border_color=ft.colors.BLUE_800,
+        filled=True,
+        bgcolor=ft.colors.WHITE,
+        expand=True,  # Expande para ocupar o espaço disponível
+        width=300,  # Definindo um tamanho fixo para o campo de pesquisa
     )
 
     # Container principal
     main_container = ft.Container(
-    content=ft.Column(
-        [
-            ft.Text("Subprojetos de Cidades", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.BLUE_800),
-            ft.Row(
-                controls=[search_field],
-                expand=True,
-            ),
-            ft.Divider(height=20, color=ft.colors.TRANSPARENT),  # Espaçamento
-            history_list,
-        
-
-        ],
-        expand=True,
-        spacing=10,
-    ),
-    bgcolor=ft.colors.WHITE,
-    padding=20,
-    border_radius=10,
-    expand=True,
+        content=ft.Column(
+            [
+                ft.Text("Subprojetos de Cidades", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.BLUE_800),
+                ft.Row(
+                    controls=[search_field],
+                    alignment=ft.MainAxisAlignment.CENTER,  # Centraliza o campo de pesquisa
+                ),
+                ft.Divider(height=20, color=ft.colors.TRANSPARENT),  # Espaçamento
+                history_list,
+            ],
+            spacing=10,
+            alignment=ft.MainAxisAlignment.CENTER,  # Centraliza verticalmente
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza horizontalmente
+        ),
+        bgcolor=ft.colors.WHITE,
+        padding=20,
+        border_radius=10,
+        col=6,
+        alignment=ft.alignment.center,
     )
 
     # Layout da página
     layout = ft.ResponsiveRow(
-    columns=12,
-    controls=[
-        ft.Column(
-            col={"sm": 12, "md": 8, "lg": 6},  # Define o tamanho do container em diferentes breakpoints
-            controls=[main_container],
-            alignment=ft.MainAxisAlignment.CENTER,  # Centraliza verticalmente
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza horizontalmente
-        )
-            
-    ],
+        columns=12,
+        controls=[
+            main_container
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
     )
 
-
     return layout
-
+#Pronto
 
 def create_ficha_supro(page, subproject, project):
 
@@ -1232,9 +1226,9 @@ def create_ficha_supro(page, subproject, project):
         spacing=20,
     )
 
-# Adiciona o layout à página
-    return layout
 
+    return layout
+#pronto
 
 def create_page_new_freelancer(page):
 
@@ -1318,12 +1312,11 @@ def create_page_new_freelancer(page):
         alignment=ft.MainAxisAlignment.CENTER,  # Centraliza o ResponsiveRow na página
         vertical_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza verticalmente o ResponsiveRow
         
-        
     )
 
     # Adiciona o layout principal à página
     return layout_principal
-
+#pronto
 
 def create_page_new_delivery(page):
 
@@ -1342,33 +1335,29 @@ def create_page_new_delivery(page):
         actions=[ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),],
     )
 
-    
-    content = {
-                "id": ft.TextField(label="ID", hint_text="Digite o ID", bgcolor=ft.Colors.WHITE, expand= False, width=50),
-                "username": ft.TextField(label="Usuario", hint_text="Digite o Usuario", bgcolor=ft.Colors.WHITE, expand= False, width=100),
-                "date": ft.TextField(label="Data", hint_text="Digite a Data", bgcolor=ft.Colors.WHITE, expand= False, width=300),
-                "name_subproject": ft.TextField(label="Nome do Subprojeto", hint_text="Digite o Nome do Subprojeto", bgcolor=ft.Colors.WHITE, expand= False, width=300),
-                "project": ft.TextField(label="Projeto", hint_text="Digite o Projeto", bgcolor=ft.Colors.WHITE, expand= False, width=300),
-                "polygons": ft.TextField(label="Poligonos", hint_text="Digite o Poligonos", bgcolor=ft.Colors.WHITE, expand= False, width=300),
-                "errors": ft.TextField(label="Erros", hint_text="Digite o Erros", bgcolor=ft.Colors.WHITE, expand= False, width=300),
-                "discount": ft.TextField(label="Desconto", hint_text="Digite o Desconto", bgcolor=ft.Colors.WHITE, expand= False, width=300),
-                "warnings": ft.TextField(label="Advertencias", hint_text="Digite o Advertencias", bgcolor=ft.Colors.WHITE, expand= False, width=300),
-                "delay": ft.TextField(label="Atraso", hint_text="Digite o Atraso", bgcolor=ft.Colors.WHITE, expand= False, width=300),
-                "file": ft.TextField(label="Arquivos", hint_text="Digite o Arquivos", bgcolor=ft.Colors.WHITE, expand= False, width=300),
-                "photos": ft.TextField(label="Fotos", hint_text="Digite o Fotos", bgcolor=ft.Colors.WHITE, expand= False, width=300),
-    }
+    # Definindo um tamanho fixo para todos os TextFields
+    field_width = 300
 
-    
+    content = {
+                "id": ft.TextField(label="ID", hint_text="Digite o ID", bgcolor=ft.Colors.WHITE, width=field_width),
+                "username": ft.TextField(label="Usuario", hint_text="Digite o Usuario", bgcolor=ft.Colors.WHITE, width=field_width),
+                "date": ft.TextField(label="Data", hint_text="Digite a Data", bgcolor=ft.Colors.WHITE, width=field_width),
+                "name_subproject": ft.TextField(label="Nome do Subprojeto", hint_text="Digite o Nome do Subprojeto", bgcolor=ft.Colors.WHITE, width=field_width),
+                "project": ft.TextField(label="Projeto", hint_text="Digite o Projeto", bgcolor=ft.Colors.WHITE, width=field_width),
+                "polygons": ft.TextField(label="Poligonos", hint_text="Digite o Poligonos", bgcolor=ft.Colors.WHITE, width=field_width),
+                "errors": ft.TextField(label="Erros", hint_text="Digite o Erros", bgcolor=ft.Colors.WHITE, width=field_width),
+                "discount": ft.TextField(label="Desconto", hint_text="Digite o Desconto", bgcolor=ft.Colors.WHITE, width=field_width),
+                "warnings": ft.TextField(label="Advertencias", hint_text="Digite o Advertencias", bgcolor=ft.Colors.WHITE, width=field_width),
+                "delay": ft.TextField(label="Atraso", hint_text="Digite o Atraso", bgcolor=ft.Colors.WHITE, width=field_width),
+                "file": ft.TextField(label="Arquivos", hint_text="Digite o Arquivos", bgcolor=ft.Colors.WHITE, width=field_width),
+                "photos": ft.TextField(label="Fotos", hint_text="Digite o Fotos", bgcolor=ft.Colors.WHITE, width=field_width),
+    }
 
     list_content = [content["id"], content["username"], content["date"], content["name_subproject"], 
                     content["project"], content["polygons"], content["errors"], content["discount"], 
                     content["warnings"], content["delay"], content["file"], content["photos"]]
 
-
     def send_to_data(e):
-        
-      
-    
         if any(field.value == "" or field.value is None for field in list_content):
             snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
             page.overlay.append(snack_bar)
@@ -1384,21 +1373,22 @@ def create_page_new_delivery(page):
             snack_bar.open = True
             page.update()
 
- 
     btn_send = ft.ElevatedButton("Enviar", on_click=send_to_data)        
     layout = ft.ResponsiveRow(
-    [
-        
-        *list_content,
-        btn_send,
-            
-    ],
+        [
+            ft.Column(
+                [*list_content, btn_send],
+                col={"sm": 12, "md": 8, "lg": 6},
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+        ],
         alignment=ft.MainAxisAlignment.CENTER,  
         vertical_alignment=ft.CrossAxisAlignment.CENTER, 
     )
 
     return layout
-
+#pronto
 
 def create_page_payment(page, month):
 
@@ -1641,7 +1631,7 @@ def create_page_payment(page, month):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
-
+#pronto
 
 def create_page_new_project(page):
     base = SupaBase(page=page)
@@ -1696,18 +1686,20 @@ def create_page_new_project(page):
  
     btn_send = ft.ElevatedButton("Enviar", on_click=send_to_data)        
     layout = ft.ResponsiveRow(
-    [
-        
-        *list_content,
-        btn_send,
-            
-    ],
+        [
+            ft.Column(
+                [*list_content, btn_send],
+                col={"sm": 12, "md": 8, "lg": 6},
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+        ],
         alignment=ft.MainAxisAlignment.CENTER,  
         vertical_alignment=ft.CrossAxisAlignment.CENTER, 
     )
 
     return layout
-
+#Pronto
 
 
 
