@@ -476,10 +476,18 @@ def create_page_initial_adm(page):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=5,)
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
+                                            text= "Ver Entregas",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=5,)
     drawer = ft.NavigationDrawer(
 
 
         controls=[
+            ft.Divider(thickness=1),
+            btn_see_deliverys,
+            
             ft.Divider(thickness=1),
             btn_new_pro,
 
@@ -1701,11 +1709,101 @@ def create_page_new_project(page):
     return layout
 #Pronto
 
+def create_page_see_deliverys(page):
+    loading = LoadingPages(page=page)
+    base = SupaBase(page=None)
+    get_base = base.get_all_deliverys()
+    get_json = get_base.json()
 
+    def go_back():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
+    def go_home():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
+    # Lista para exibir as entregas
+    history_list = ft.ListView(
+        controls=[],
+        expand=True,
+        spacing=0,  # Removendo espaçamento entre os itens da lista
+    )
 
+    # Preenche a lista com os dados das entregas
+    for delev in get_json:
+        delivery = {
+            "id": delev["id"],
+            "username": delev["username"],
+            "date": delev["date"],
+            "name_subproject": delev["name_subproject"],
+            "project": delev["project"],
+            "polygons": delev["polygons"],
+            "errors": delev["errors"],
+            "discount": delev["discount"],
+            "warning": delev["warning"],
+            "delay": delev["delay"],
+            "file": delev["file"],
+            "photos": delev["photos"],
+        }
 
+        # Adiciona um ListTile para cada entrega (sem título e com fonte maior)
+        history_list.controls.append(
+            ft.ListTile(
+                subtitle=ft.Text(
+                    f"{delivery['username']} | "
+                    f"{delivery['date']} | "
+                    f"{delivery['polygons']} | "
+                    f"{delivery['photos']}",
+                    color=ft.colors.BLACK,  # Cor preta para o texto
+                    size=16,  # Tamanho da fonte aumentado
+                ),
+            )
+        )
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Soluções e Engenharia"),
+        bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+        actions=[
+            ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),
+            ft.IconButton(ft.icons.KEYBOARD_RETURN, on_click=lambda e: go_back()),
+        ],
+    )
+
+    # Container principal
+    main_container = ft.Container(
+        content=ft.Column(
+            [
+                ft.Text("Entregas", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),  # Título em preto
+                history_list,  # Adiciona a lista de entregas
+            ],
+            expand=True,
+            spacing=0,  # Removendo espaçamento entre os elementos da coluna
+        ),
+        bgcolor=ft.colors.WHITE,
+        padding=10,  # Padding mínimo para o container
+        border_radius=10,
+        expand=True,
+    )
+
+    # Layout da página
+    layout = ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            ft.Column(
+                col={"sm": 12, "md": 8, "lg": 6},
+                controls=[main_container],
+                alignment=ft.MainAxisAlignment.CENTER,  # Centraliza verticalmente
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza horizontalmente
+            )
+        ],
+        expand=True,
+        alignment=ft.MainAxisAlignment.CENTER,  # Centraliza o ResponsiveRow na página
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza verticalmente o ResponsiveRow
+    )
+
+    return layout
 
 
 
