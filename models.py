@@ -1131,6 +1131,29 @@ class SupaBase:
     def get_key(self):
         return self.supabase_key
 
+    def get_file_id(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "select": "id", "order": "id.desc", "limit": 1,
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/files',
+            headers=headers,
+            params=params,
+        )
+
+        next_id = response.json()[0]["id"] if response.json() else 0
+        new_id = int(next_id) + 1
+
+        return new_id
+
     def get_storage(self):
 
         profile = CurrentProfile()
@@ -1223,6 +1246,68 @@ class SupaBase:
 
         return response
     
+    def get_all_subproject_data(self, project):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        
+        params = { 
+                   "project": f"eq.{project}",
+                   "select": "*"        
+                   }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/subprojects',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def get_subproject_data(self, subproject):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { "name_subproject": f"eq.{subproject}",
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/subprojects',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def get_user_data_SubPro(self, subproject):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "current_project": f"eq.{subproject}",
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
     def get_all_deliverys(self):
 
         headers = {
@@ -1377,6 +1462,32 @@ class SupaBase:
         )
         return response
      
+    def post_to_files(self, id, date, username, subproject, type, amount, url):
+            
+        headers= {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+                }
+        
+        data= { 
+                "id": id,
+                "username": username,
+                "date": date,
+                "subproject": subproject,
+                "type": type,
+                "amount": amount,
+                "url": url,
+                }
+        
+        response = requests.post(
+            f'{self.supabase_url}/rest/v1/files',
+            headers=headers,
+            json=data,
+        )
+
+        return response
+
     def get_new_project_data(self, name_project, current_subprojects, final_delivery, predicted_lots, lots_done, percent):
             
             headers = {
@@ -1420,6 +1531,50 @@ class SupaBase:
 
         return response
 
+    def get_user_deliverys_data(self, subproject, username):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                "name_subproject": f"eq.{subproject}",
+                "username": f"eq.{username}",
+                "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+
+    def add_file_storage(self, file, name_file):
+
+        headers = {
+            'Authorization': f'Bearer {self.supabase_key}',
+            'Content-Type': 'image/vnd.dwg'
+        }
+
+        bytes = []
+        bytes.append(file)
+
+        if not self.page.web:
+            with open(file.path, 'rb') as file_data:
+                bytes[0] = file_data.read()
+
+        response = requests.post(
+                f'{self.supabase_url}/storage/v1/object/files/{name_file}',  
+                headers=headers,
+                data=bytes[0]
+            )
+
+        return response
 
 
     def create_user_data(self, name, username, pix, email):
@@ -1562,6 +1717,27 @@ class SupaBase:
 
         return response
     
+    def check_file(self, date, username):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+        "username": f"eq.{username}",   
+        "date": f"eq.{date}",
+        "select": "date",
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/files',
+            headers=headers,
+            params=params,
+        )
+
+        return response
 
     
    

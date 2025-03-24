@@ -96,13 +96,7 @@ def create_page_login(page):#############################################
     )
 
 
-def create_page_user(page):############################################
-
-    page.theme = ft.Theme(
-        color_scheme=ft.ColorScheme(
-            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
-        ),
-    )
+def create_page_user(page):
 
     loading = LoadingPages(page)
     web_images = Web_Image(page)
@@ -143,14 +137,15 @@ def create_page_user(page):############################################
 )
 
     #....................................................................
+    #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
 
-    total_deliverys = sp.get_deliverys_data_total(username=dict_profile["username"])  #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
+    total_deliverys = sp.get_deliverys_data_total(username=dict_profile["username"])  
     data_total_deliverys = total_deliverys.json()
     
-    total_polygons = 0
-    total_errors = 0
-    total_delays = 0
-    number_total_deliverys = 0
+    total_polygons = 0  # Todos os poligonos que o usuario fez
+    total_errors = 0  # Todos os erros que o usuario cometeu
+    total_delays = 0  # Todos os atrasos que o usuario cometeu
+    number_total_deliverys = 0  # Todos as entregas que o usuario fez
 
     for row in data_total_deliverys:  #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
 
@@ -172,15 +167,15 @@ def create_page_user(page):############################################
     #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
     #....................................................................
 
+    #....................................................................
     #Filtrando entregas baseado no projeto atual
 
-    
-    current_deliverys = sp.get_user_deliverys_data(subproject=dict_profile["current_project"], username=dict_profile["username"])  #Filtrando entregas baseado no projeto atual
+    current_deliverys = sp.get_user_deliverys_data(subproject=dict_profile["current_project"], username=dict_profile["username"]) 
     data_current_deliverys = current_deliverys.json()
     
     dicio_current_deliverys = {}
-    subproject_polygons = 0
-    number_current_deliverys = 0
+    subproject_polygons = 0   # Todos os poligonos feitos no subprojeto   
+    number_current_deliverys = 0  # Todos as entregas feitas no subprojeto
 
     date_cash = "07/03/2025"
 
@@ -220,12 +215,14 @@ def create_page_user(page):############################################
     # Cria uma lista ordenada para ser usada no Flet
     dicio_current_deliverys = [linha for _, linha in temp_list]
 
+    #Filtrando entregas baseado no projeto atual
     #....................................................................
 
 
+    #....................................................................
+    # Processo de calculo financeiro
 
-
-    cash_total_polygons = 0    # Iniciando o processo de calculo financeiro
+    cash_total_polygons = 0   
     cash_total_errors = 0
     cash_total_photos = 0
     cash_number_total_deliverys = 0
@@ -276,8 +273,14 @@ def create_page_user(page):############################################
                     call_function1 = dicio1.get(data_obj.day, lambda: None)()
                     call_function2 = dicio2.get(data_obj.day, lambda: None)()
 
- 
-    user2 = sp.get_user_data(users=dict_profile["username"])   #Atualizando dados do usuario
+    # Processo de calculo financeiro
+    #....................................................................
+
+
+    #....................................................................
+    # Atualizando dados do usuario
+
+    user2 = sp.get_user_data(users=dict_profile["username"])   
     data2 = user2.json()
     row2 = data2[0]
     row2["weekly_deliveries"] = number_total_deliverys
@@ -285,9 +288,14 @@ def create_page_user(page):############################################
     row2["polygons_wrong"] = total_errors
     row2["delays"] = total_delays
 
+    # Atualizando dados do usuario
+    #....................................................................
+
+    #....................................................................
+    # Atualizando dados do subprojeto atual
 
     if dict_profile["current_project"] != ".":
-        subproject3 = sp.get_subproject_data(subproject=dict_profile["current_project"]) #Atualizando dados do projeto atual
+        subproject3 = sp.get_subproject_data(subproject=dict_profile["current_project"]) 
         data3 = subproject3.json()
         row3 = data3[0]
         row3["lots_done"] = subproject_polygons
@@ -299,7 +307,11 @@ def create_page_user(page):############################################
 
         row3["current_average"] = f"{current_average:.2f}"
 
+    # Atualizando dados do subprojeto atual
+    #....................................................................
 
+    #....................................................................
+    # Atualizando dados financeiros
 
     total_cash_polygons = float((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]) * 0.50)
     total_cash_photos = float((delivery_07[1]+delivery_14[1]+delivery_21[1]+delivery_28[1]) * 0.20)
@@ -307,26 +319,67 @@ def create_page_user(page):############################################
     total_cash_polygons_made = int((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]))
     total_cash_photos_made = int((delivery_07[1]+delivery_14[1]+delivery_21[1]+delivery_28[1]))
 
+    # Atualizando dados financeiros
+    #....................................................................
 
+    #....................................................................
+    # Texto de verificação de entrega
 
+    text_date_file = []
+    test = ft.Text(value="")
+    text_date_file.append(test)
 
+    def change_text_date(text_date_file):
+
+        date_file = datetime.now().day
+
+        dias = {
+        i: 7 if i > 28 or i <= 7 else 
+        14 if i > 7 and i <= 14 else 
+        21 if i > 14 and i <= 21 else 
+        28 
+        for i in range(1, 32)
+        }
+
+        day_date_file = f"{dias[date_file]}/{datetime.now().strftime("%m")}/{datetime.now().year}"
+
+        request_date_file = sp.check_file(date=day_date_file, username=dict_profile["username"])
+
+        if len(request_date_file.json()) > 0:
+            text_date_file[0].value = f"Entrega de {day_date_file} realizada"
+            text_date_file[0].color = ft.colors.GREEN
+        else:
+            text_date_file[0].value = f"Entrega de {day_date_file} não realizada"
+            text_date_file[0].color = ft.colors.RED
+            
+        page.update()
+
+    change_text_date(text_date_file)    
+
+    # Texto de verificação de entrega
+    #....................................................................
+
+    #....................................................................
+    # Criação de tabelas
+
+    # Tabela do Usuario
     table1 = geo_objects.view_user_data(row2)
+    form1 = forms.create_forms_post(table1, "Informções", "Freelancer", ft.MainAxisAlignment.START)
 
+    # Tabela do subprojeto
     table2 = ft.Container()
     if dict_profile["current_project"] != ".":
         table2 = geo_objects.view_user_data2(row3)
-
-    table3 = geo_objects.view_user_data3(total_cash_polygons_made, total_cash_photos_made, total_cash)
-    form1 = forms.create_forms_post(table1, "Informções", "Freelancer", ft.MainAxisAlignment.START)
-
     form2 = ft.Container()
     if dict_profile["current_project"] != ".":
         form2 = forms.create_forms_post(table2, "Informações", "Projeto", ft.MainAxisAlignment.START)
 
-    
+    # Tabela do Financeiro
+    table3 = geo_objects.view_user_data3(total_cash_polygons_made, total_cash_photos_made, total_cash)
     form3 = forms.create_forms_post(table3, "Pagamento", date_cash, ft.MainAxisAlignment.START)
 
-
+    
+    # Tabela das entregas
     form4 = ft.Column(
         controls=[
             ft.Container(
@@ -357,10 +410,202 @@ def create_page_user(page):############################################
         expand=True,  
     )
 
+    # Tabela da ortofoto
     url_imagem1 = sp.get_storage()
     ortofoto = web_images.create_web_image(src=url_imagem1)
     container_ortofoto = ft.Container(content=(ortofoto), border_radius=20)
 
+    # Criação de tabelas
+    #....................................................................
+
+    #....................................................................
+    # Inserção de arquivo
+
+    def send_file(file_path, name_file):
+
+        container = page.overlay[1]
+        
+        response = sp.add_file_storage(file_path, name_file)
+
+        if response.status_code == 200 or response.status_code == 201:
+            id = str(sp.get_file_id())
+
+            response2 = sp.post_to_files(
+                                        id=id,   
+                                        date=container.controls[0].content.controls[3].value,
+                                        username=dict_profile["username"],
+                                        subproject=dict_profile["current_project"],
+                                        type=container.controls[0].content.controls[5].value,
+                                        amount=container.controls[0].content.controls[7].value,
+                                        url=f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/files//{name_file}"
+                                        )
+
+            if response2.status_code == 200 or response2.status_code == 201:
+                snack_bar = ft.SnackBar(
+                content=ft.Text(value="Arquivo enviado", color=ft.Colors.BLACK),
+                duration=2000,
+                bgcolor=ft.Colors.GREEN,
+                data="bar",
+                )
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                change_text_date(text_date_file)
+                overlay_copy = list(page.overlay)
+                for item in overlay_copy:
+                    if item.data == "fp" or item.data == "bar":
+                            pass
+                    else:
+                        page.overlay.remove(item)
+                page.update()
+            else:
+                snack_bar = ft.SnackBar(
+                content=ft.Text(value="Falha ao enviar arquivo", color=ft.Colors.BLACK),
+                duration=2000,
+                bgcolor=ft.Colors.RED,
+                data="bar",
+                )
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                overlay_copy = list(page.overlay)
+                for item in overlay_copy:
+                    if item.data == "fp" or item.data == "bar":
+                            pass
+                    else:
+                        page.overlay.remove(item)
+                page.update()
+
+
+    def on_image_selected(e: ft.FilePickerResultEvent):
+
+            if not e.files or len(e.files) == 0:
+                return
+            
+            file_selected = []
+            file_selected.append(e.files[0])
+            name = e.files[0].name
+
+            def get_uploaded_file_bytes():
+
+                file_path = f"uploads/{name}"    
+
+                with open(file_path, "rb") as file:
+                    file_content = file.read()
+
+                file_selected.clear()
+                file_selected.append(file_content)
+
+
+            if e.page.web:
+                #  Gerar a URL temporária
+                temp_url = e.page.get_upload_url(file_selected[0].name, 3600)
+
+                #  Criar objeto para upload
+                file_upload = ft.FilePickerUploadFile(file_selected[0].name, temp_url)
+
+                #  Realiza o upload
+                fp.upload([file_upload])
+
+                #  Chama a função para baixar os bytes do arquivo após o upload
+                get_uploaded_file_bytes()
+            
+            
+            data = (datetime.now().strftime("%d/%m/%Y")).replace("/", "")
+            name_file = f'{dict_profile["username"]}_{data}.dwg'
+            
+            btn_send = buttons.create_button(on_click=lambda e: send_file(file_selected[0], name_file),
+                                      text="Enviar",
+                                      color=ft.Colors.BLUE,
+                                      col=7,
+                                      padding=5
+                        )
+            
+            def close():
+                overlay_copy = list(page.overlay)
+                for item in overlay_copy:
+                    if item.data == "fp":
+                            pass
+                    else:
+                        page.overlay.remove(item)
+                page.update()
+
+            btn_exit = buttons.create_button(on_click=lambda e: close(),
+                                      text="Sair",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5
+                        )
+
+            container = ft.Row(
+                controls=[ ft.Container(
+                                content=ft.Column(
+                                    controls=[
+                                        ft.Text(value=f"{name}", color=ft.Colors.BLACK),
+                                        ft.Text(value="", color=ft.Colors.BLACK),
+                                        ft.Text(value="Data da entrega:", color=ft.Colors.BLACK),
+                                        ft.Dropdown(
+                                            options=[
+                                                ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}"),
+                                                ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}"),
+                                                ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}"),
+                                                ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}"),
+                                            ],
+                                            text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                            bgcolor=ft.Colors.WHITE,
+                                        ),
+                                        ft.Text(value="Tipo de entrega:", color=ft.Colors.BLACK),
+                                        ft.Dropdown(
+                                            options=[
+                                                ft.dropdown.Option("Poligonos"),
+                                                ft.dropdown.Option("Fotos"),
+                                            ],
+                                            text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                            bgcolor=ft.Colors.WHITE,
+                                        ),
+                                        ft.Text(value="Quantidade:", color=ft.Colors.BLACK),
+                                        ft.TextField(
+                                            bgcolor=ft.Colors.WHITE,
+                                            text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                            border_radius=0,
+                                        ),
+                                        btn_send,
+                                        btn_exit, 
+                                    ],
+                                ),
+                                bgcolor=ft.Colors.GREY,
+                                border_radius=20,
+                                alignment=ft.alignment.center,
+                                width=300,
+                                height=500,
+                                padding=10,
+                                col=6,   
+                            )
+                        ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+            
+
+            page.overlay.append(container)
+            page.update()
+
+
+    fp = ft.FilePicker(on_result=on_image_selected, data="fp")
+    page.overlay.append(fp)
+
+    def open_gallery(e): 
+        fp.pick_files(              
+            allow_multiple=False,
+        )
+
+    # Inserção de arquivo
+    #....................................................................
+
+    btn_send = buttons.create_button(on_click=open_gallery,
+                                      text="Enviar arquivo",
+                                      color=ft.Colors.BLUE,
+                                      col=7,
+                                      padding=5,)
+    
     btn_exit = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)),
                                       text="Sair",
                                       color=ft.Colors.RED,
@@ -368,14 +613,13 @@ def create_page_user(page):############################################
                                       padding=5,)
 
 
-    container1 = ft.Container(content=ft.Column(controls=[perfil, ft.Text(value=dict_profile["name"], color=ft.Colors.WHITE), btn_exit],
+    container1 = ft.Container(content=ft.Column(controls=[perfil, ft.Text(value=dict_profile["name"], color=ft.Colors.WHITE), btn_send, btn_exit],
                                                  alignment=ft.MainAxisAlignment.CENTER,
                                                  horizontal_alignment=ft.CrossAxisAlignment.CENTER),
                               alignment=ft.alignment.center,
                               col=12,
                               )
     
-
 
     container_form1 = ft.Container(content=form1,
                                     alignment=ft.alignment.top_center,
@@ -393,7 +637,11 @@ def create_page_user(page):############################################
                                     height=((page.height) / 1.3),
                                     col={"xs" : 12, "lg" : 4},
                                     )
-    container_form3 = ft.Container(content=form3,
+    container_form3 = ft.Container(content=ft.Column(controls=[text_date_file[0], form3],
+                                                     alignment=ft.MainAxisAlignment.CENTER,
+                                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                    spacing=30,
+                                                    ),
                                     alignment=ft.alignment.center,
                                     bgcolor=ft.Colors.WHITE,
                                     border_radius=20,
@@ -439,7 +687,6 @@ def create_page_user(page):############################################
                               )
 
     
-
     return ft.ResponsiveRow(
         col=12,
         expand=True,
