@@ -1128,10 +1128,8 @@ class SupaBase:
     def get_url(self):
         return self.supabase_url
     
-
     def get_key(self):
         return self.supabase_key
-
 
     def get_storage(self):
 
@@ -1147,6 +1145,141 @@ class SupaBase:
             url = "Nulo"
             return url
 
+    def get_all_user_data(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "select": "*"
+        }
+
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def get_all_project_data(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "select": "*"
+        }
+
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/projects',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+    def get_all_files_data(self):
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        params = {
+                   "select": "*"
+        }
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/files',
+            headers=headers,
+            params=params,
+        )
+        return response
+    
+    def get_all_subprojects(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        
+        params = { 
+                   "select": "*"        
+                   }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/subprojects',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+    def get_all_deliverys(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+    def get_all_files(self):#
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {                    
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/files',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def get_projects_data(self):
+
+        # É esse aqui
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        params = {
+                   "select": "*"
+        }
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/projects',
+            headers=headers,
+            params=params,
+        )   
+        return response
 
     def get_form_user(self, user):
 
@@ -1171,8 +1304,29 @@ class SupaBase:
         )
 
         return response
-    
-  
+
+    def get_user_data(self, users):
+
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "username": f"eq.{users}",
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )   
+
+        return response     
+
     def get_forms(self, name, object):
 
         headers = {
@@ -1195,7 +1349,6 @@ class SupaBase:
 
         return response
     
- 
     def post_to_deliverys_data(self, id, username, date, name_subproject, project, polygons, errors, discount, warning, delay, file, photos):
             
         headers= {
@@ -1223,30 +1376,7 @@ class SupaBase:
             json=get_data,
         )
         return response
-    
-
-    def get_all_user_data(self):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-                   "select": "*"
-        }
-
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/users',
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
-
+     
     def get_new_project_data(self, name_project, current_subprojects, final_delivery, predicted_lots, lots_done, percent):
             
             headers = {
@@ -1270,162 +1400,6 @@ class SupaBase:
             ) 
             print(response.json())
 
- 
-    def get_all_project_data(self):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-                   "select": "*"
-        }
-
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/projects',
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
-  
-
-
-
-    def get_subproject_data(self, subproject):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = { "name_subproject": f"eq.{subproject}",
-                   "select": "*"
-        }
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/subprojects',
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
-  
-    def get_all_subproject_data(self, project):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-        
-        params = { 
-                   "project": f"eq.{project}",
-                   "select": "*"        
-                   }
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/subprojects',
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
-    def get_all_subprojects(self):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-        
-        params = { 
-                   "select": "*"        
-                   }
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/subprojects',
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
- 
-
-
-
-
-    def get_all_deliverys(self):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = { 
-                   "select": "*"
-        }
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/deliverys',
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
-    def get_deliverys_data(self, subproject):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = { "name_subproject": f"eq.{subproject}",
-                   "select": "*"
-        }
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/deliverys',
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
-    def get_user_deliverys_data(self, subproject, username):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = { 
-                "name_subproject": f"eq.{subproject}",
-                "username": f"eq.{username}",
-                "select": "*"
-        }
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/deliverys',
-            headers=headers,
-            params=params,
-        )
-
-        return response
-    
-  
     def get_deliverys_data_total(self, username):
 
         headers = {
@@ -1445,51 +1419,9 @@ class SupaBase:
         )
 
         return response
-    
 
 
 
-  
-    def get_free_label(self, subproject):
-            headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-            }
-            params = { "subproject": f"eq.{subproject}",
-                    "select": "*"
-            }
-            response = requests.get(
-                f'{self.supabase_url}/rest/v1/subproject',
-                headers=headers,
-                params=params,
-            )   
-            return response
-
-  
-    def get_user_data(self, users):
-
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = { 
-                   "username": f"eq.{users}",
-                   "select": "*"
-        }
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/users',
-            headers=headers,
-            params=params,
-        )   
-
-        return response     
-
-  
     def create_user_data(self, name, username, pix, email):
 
         headers = {
@@ -1514,6 +1446,7 @@ class SupaBase:
         return response    
 
   
+
     def edit_user_data(self, supa_list):
 
         headers = {
@@ -1545,49 +1478,64 @@ class SupaBase:
 
         return response    
 
-   
-    def get_projects_data(self):
-
-        # É esse aqui
+    def edit_delivery_data(self, supa_list):
 
         headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
             "Content-Type": "application/json",
         }
-        params = {
-                   "select": "*"
+        print(supa_list)
+        data = { 
+            
+            "username": supa_list[0],
+            "date": supa_list[1],
+            "name_subproject": supa_list[2],
+            "project": supa_list[3],
+            "polygons": supa_list[4],
+            "errors": supa_list[5],     
+            "discount": supa_list[6],
+            "warning": supa_list[7],
+            "delay": supa_list[8],
+            "file": supa_list[9],
+            "photos": supa_list[10],
+                                   
         }
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/projects',
+
+        response = requests.patch(
+            f'{self.supabase_url}/rest/v1/deliverys?username=eq.{supa_list[1]}',
             headers=headers,
-            params=params,
-        )   
-        return response
-
-   
-    def get_user_data_SubPro(self, subproject):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = { 
-                   "current_project": f"eq.{subproject}",
-                   "select": "*"
-        }
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/users',
-            headers=headers,
-            params=params,
+            json=data,
         )
 
-        return response
+        return response    
 
-  
+    def edit_files(self,supa_list):
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        
+        data = {   
+            "date": supa_list[0],
+            "username": supa_list[1],
+            "subproject": supa_list[2],
+            "polygons": supa_list[3],
+            "type": supa_list[4],     
+            "amount": supa_list[5],
+            "url": supa_list[6],                       
+        }
+
+        response = requests.patch(
+            f'{self.supabase_url}/rest/v1/files?username=eq.{supa_list[1]}',
+            headers=headers,
+            json=data,
+        )
+
+        return response    
+
+
 
     def check_login(self, username, password):
 
@@ -1615,8 +1563,9 @@ class SupaBase:
         return response
     
 
+    
    
-   
+
 class CurrentMapPoints:
     current_points = []
 

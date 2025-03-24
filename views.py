@@ -5,7 +5,13 @@ from datetime import datetime
 from datetime import datetime
 
 
-def create_page_login(page):
+def create_page_login(page):#############################################
+
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
 
     container = []
 
@@ -90,7 +96,13 @@ def create_page_login(page):
     )
 
 
-def create_page_user(page):
+def create_page_user(page):############################################
+
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
 
     loading = LoadingPages(page)
     web_images = Web_Image(page)
@@ -437,7 +449,13 @@ def create_page_user(page):
     )
 
 
-def create_page_initial_adm(page):
+def create_page_initial_adm(page):#############################################
+
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
 
     page.bgcolor = ft.Colors.GREY_200
 
@@ -471,8 +489,13 @@ def create_page_initial_adm(page):
                                         color=ft.Colors.GREY,
                                         col=12,
                                         padding=5,)
-    btn_new_pro= buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_new_project(page)),
+    btn_new_pro = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_new_project(page)),
                                             text= "Cadastrar Projeto",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=5,)
+    btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
+                                            text= "Arquivos",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=5,)
@@ -485,6 +508,9 @@ def create_page_initial_adm(page):
 
 
         controls=[
+            ft.Divider(thickness=1),
+            btn_see_file,
+
             ft.Divider(thickness=1),
             btn_see_deliverys,
             
@@ -817,7 +843,13 @@ def create_page_initial_adm(page):
     return layout
 
 
-def verificar(username, password, page):
+def verificar(username, password, page):##########################################
+
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
 
     loading = LoadingPages(page)
     sp = SupaBase(page)
@@ -862,9 +894,15 @@ def verificar(username, password, page):
         page.update()
 
 
-def create_page_project(page):
+def create_page_project(page):######################################
 
     loading = LoadingPages(page=page)
+    
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
 
     base = SupaBase(page=None)
     get_base = base.get_projects_data()
@@ -954,7 +992,14 @@ def create_page_project(page):
     return layout
 
 
-def creat_page_subproject(page, project):
+def creat_page_subproject(page, project):####################################
+    
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
+    
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
     get_base = base.get_all_subproject_data(project)
@@ -1042,10 +1087,20 @@ def creat_page_subproject(page, project):
     return layout
 #Pronto
 
-def create_ficha_supro(page, subproject, project):
+def create_ficha_supro(page, subproject, project):##################################
+
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
 
     loading = LoadingPages(page=page)
-
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
     base = SupaBase(page=page)
 
     get_base_Project = base.get_subproject_data(subproject)
@@ -1238,10 +1293,16 @@ def create_ficha_supro(page, subproject, project):
     return layout
 #pronto
 
-def create_page_new_freelancer(page):
+def create_page_new_freelancer(page):#####################################
 
     loading = LoadingPages(page=page)
     
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
+
     def go_home():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
@@ -1326,9 +1387,15 @@ def create_page_new_freelancer(page):
     return layout_principal
 #pronto
 
-def create_page_new_delivery(page):
+def create_page_new_delivery(page):########################################
 
     base = SupaBase(page=page)
+
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
 
     loading = LoadingPages(page=page)
 
@@ -1398,7 +1465,7 @@ def create_page_new_delivery(page):
     return layout
 #pronto
 
-def create_page_payment(page, month):
+def create_page_payment(page, month):##########################################
 
     textthemes = TextTheme()
     buttons = Buttons(page)
@@ -1406,6 +1473,11 @@ def create_page_payment(page, month):
     texttheme1 = textthemes.create_text_theme1()
     loading = LoadingPages(page)
 
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
 
     def go_home():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
@@ -1641,8 +1713,14 @@ def create_page_payment(page, month):
     )
 #pronto
 
-def create_page_new_project(page):
+def create_page_new_project(page):############################################
     base = SupaBase(page=page)
+
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
 
     loading = LoadingPages(page=page)
 
@@ -1715,6 +1793,12 @@ def create_page_see_deliverys(page):
     get_base = base.get_all_deliverys()
     get_json = get_base.json()
 
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
+
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
@@ -1745,7 +1829,7 @@ def create_page_see_deliverys(page):
             "photos": delev["photos"],
         }
 
-        # Adiciona um ListTile para cada entrega (sem título e com fonte maior)
+        # Adiciona um ListTile para cada entrega
         history_list.controls.append(
             ft.ListTile(
                 subtitle=ft.Text(
@@ -1753,8 +1837,12 @@ def create_page_see_deliverys(page):
                     f"{delivery['date']} | "
                     f"{delivery['polygons']} | "
                     f"{delivery['photos']}",
-                    color=ft.colors.BLACK,  # Cor preta para o texto
-                    size=16,  # Tamanho da fonte aumentado
+                    color=ft.colors.BLACK,
+                    size=16,
+                ),
+                on_click=lambda e, delivery=delivery: loading.new_loading_page(
+                    page=page,
+                    call_layout=lambda: create_page_delivery_details(page=page, delivery=delivery)
                 ),
             )
         )
@@ -1775,14 +1863,14 @@ def create_page_see_deliverys(page):
     main_container = ft.Container(
         content=ft.Column(
             [
-                ft.Text("Entregas", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),  # Título em preto
+                ft.Text("Entregas", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
                 history_list,  # Adiciona a lista de entregas
             ],
             expand=True,
-            spacing=0,  # Removendo espaçamento entre os elementos da coluna
+            spacing=0,
         ),
         bgcolor=ft.colors.WHITE,
-        padding=10,  # Padding mínimo para o container
+        padding=10,
         border_radius=10,
         expand=True,
     )
@@ -1794,50 +1882,342 @@ def create_page_see_deliverys(page):
             ft.Column(
                 col={"sm": 12, "md": 8, "lg": 6},
                 controls=[main_container],
-                alignment=ft.MainAxisAlignment.CENTER,  # Centraliza verticalmente
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza horizontalmente
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             )
         ],
         expand=True,
-        alignment=ft.MainAxisAlignment.CENTER,  # Centraliza o ResponsiveRow na página
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza verticalmente o ResponsiveRow
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
     return layout
 
 
+def create_page_delivery_details(page, delivery):
+    loading = LoadingPages(page=page)
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
+    # Definir o tema global para garantir que o texto seja preto por padrão
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
+
+    def go_back():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+
+    def go_home():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Detalhes da Entrega", color=ft.colors.BLACK),  # Texto preto
+        bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+        actions=[
+            ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),
+            ft.IconButton(ft.icons.KEYBOARD_RETURN, on_click=lambda e: go_back()),
+        ],
+    )
+
+    def editar_dados(data_list):
+        
+        
+        username = data_list[0].value
+
+        date = data_list[1].value
+        name_subproject = data_list[2].value
+
+        project = data_list[3].value
+        polygons = data_list[4].value
+
+        errors = data_list[5].value
+        warnings = data_list[6].value
+        
+        discount = data_list[7].value
+        delays = data_list[8].value
+        file = data_list[9].value
+
+        photo = data_list[10].value
+    
+        supa_list = [
+        username, date, name_subproject, project, polygons, errors, discount,
+          warnings, delays, file, photo
+        ]
+
+        if any(field == "" or field is None for field in supa_list):
+            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+        else:
+            sp = SupaBase(page)
+            sp.edit_delivery_data(supa_list)
+            snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
 
 
+    # Campos para exibir os detalhes da entrega
+    details_layout = ft.Column(
+    controls=[
+        ft.Text("Detalhes da Entrega", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),  # Título        
+        ft.TextField(label="Usuário", value=f"{delivery['username']}", width=300, color=ft.colors.BLACK),  # usuario_field
+        ft.TextField(label="Data", value=f"{delivery['date']}", width=300, color=ft.colors.BLACK),  # data_field
+        ft.TextField(label="Subprojeto", value=f"{delivery['name_subproject']}", width=300, color=ft.colors.BLACK),  # subprojeto_field
+        ft.TextField(label="Projeto", value=f"{delivery['project']}", width=300, color=ft.colors.BLACK),  # projeto_field
+        ft.TextField(label="Polígonos", value=f"{delivery['polygons']}", width=300, color=ft.colors.BLACK),  # poligonos_field
+        ft.TextField(label="Erros", value=f"{delivery['errors']}", width=300, color=ft.colors.BLACK),  # erros_field
+        ft.TextField(label="Desconto", value=f"{delivery['discount']}", width=300, color=ft.colors.BLACK),  # desconto_field
+        ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, color=ft.colors.BLACK),  # advertencias_field
+        ft.TextField(label="Atrasos", value=f"{delivery['delay']}", width=300, color=ft.colors.BLACK),  # atrasos_field
+        ft.TextField(label="Arquivo", value=f"{delivery['file']}", width=300, color=ft.colors.BLACK),  # arquivo_field
+        ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, color=ft.colors.BLACK),  # fotos_field
+    ],
+    spacing=10,
+    scroll=ft.ScrollMode.AUTO,  # Habilita o scroll
+)
+
+# Lista com os TextFields
+    data_list = [   
+    ft.TextField(label="Usuário", value=f"{delivery['username']}", width=300, color=ft.colors.BLACK),  # usuario_field
+    ft.TextField(label="Data", value=f"{delivery['date']}", width=300, color=ft.colors.BLACK),  # data_field
+    ft.TextField(label="Subprojeto", value=f"{delivery['name_subproject']}", width=300, color=ft.colors.BLACK),  # subprojeto_field
+    ft.TextField(label="Projeto", value=f"{delivery['project']}", width=300, color=ft.colors.BLACK),  # projeto_field
+    ft.TextField(label="Polígonos", value=f"{delivery['polygons']}", width=300, color=ft.colors.BLACK),  # poligonos_field
+    ft.TextField(label="Erros", value=f"{delivery['errors']}", width=300, color=ft.colors.BLACK),  # erros_field
+    ft.TextField(label="Desconto", value=f"{delivery['discount']}", width=300, color=ft.colors.BLACK),  # desconto_field
+    ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, color=ft.colors.BLACK),  # advertencias_field
+    ft.TextField(label="Atrasos", value=f"{delivery['delay']}", width=300, color=ft.colors.BLACK),  # atrasos_field
+    ft.TextField(label="Arquivo", value=f"{delivery['file']}", width=300, color=ft.colors.BLACK),  # arquivo_field
+    ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, color=ft.colors.BLACK),  # fotos_field
+]
+    botao_edit = ft.ElevatedButton("Editar", on_click=lambda e: editar_dados(data_list))
+    # Container principal
+    main_container = ft.Container(
+        content=details_layout,
+        padding=20,
+        border=ft.border.all(2, ft.colors.BLUE),
+        border_radius=10,
+        bgcolor=ft.colors.WHITE,
+        width=800 if page.width > 800 else page.width * 0.9,  # Largura responsiva
+    )
+
+    # Layout da página
+    layout = ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            ft.Column(
+                col={"sm": 12, "md": 8, "lg": 6},
+                controls=[main_container, botao_edit],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        ],
+        expand=True,
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+
+    return layout
 
 
+def create_page_files(page):
+    loading = LoadingPages(page=page)
+    base = SupaBase(page=None)
+    get_base = base.get_all_files()
+    get_json = get_base.json()
+
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
+
+    def go_back():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+
+    def go_home():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+
+    # Lista para exibir as entregas
+    history_list = ft.ListView(
+        controls=[],
+        expand=True,
+        spacing=0,  # Removendo espaçamento entre os itens da lista
+    )
+
+    # Preenche a lista com os dados das entregas
+    for delev in get_json:
+        files = {
+            "id": delev["id"],
+            "date": delev["date"],
+            "username": delev["username"],
+            "subproject": delev["subproject"],
+            "type": delev["type"],
+            "amount": delev["amount"],
+            "url": delev["url"],
+        }
+
+        # Adiciona um ListTile para cada entrega
+        history_list.controls.append(
+            ft.ListTile(
+                subtitle=ft.Text(
+                    f"{files['username']} | "
+                    f"{files['date']} | "
+                    f"{files['subproject']} | "
+                    f"{files['amount']}",
+                    color=ft.colors.BLACK,
+                    size=16,
+                ),
+                on_click=lambda e, files=files: loading.new_loading_page(
+                    page=page,
+                    call_layout=lambda: create_page_files_details(page=page, files=files)
+                ),
+            )
+        )
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Soluções e Engenharia"),
+        bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+        actions=[
+            ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),
+            ft.IconButton(ft.icons.KEYBOARD_RETURN, on_click=lambda e: go_back()),
+        ],
+    )
+
+    # Container principal
+    main_container = ft.Container(
+        content=ft.Column(
+            [
+                ft.Text("Arquivos", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),
+                history_list,  # Adiciona a lista de entregas
+            ],
+            expand=True,
+            spacing=0,
+        ),
+        bgcolor=ft.colors.WHITE,
+        padding=10,
+        border_radius=10,
+        expand=True,
+    )
+
+    # Layout da página
+    layout = ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            ft.Column(
+                col={"sm": 12, "md": 8, "lg": 6},
+                controls=[main_container],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        ],
+        expand=True,
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+
+    return layout
 
 
+def create_page_files_details(page, files):
+    loading = LoadingPages(page=page)
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
+    # Definir o tema global para garantir que o texto seja preto por padrão
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
+
+    def go_back():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_files(page=page))
+
+    def go_home():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Detalhes da Entrega", color=ft.colors.BLACK),  # Texto preto
+        bgcolor=ft.colors.SURFACE_CONTAINER_HIGHEST,
+        actions=[
+            ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()),
+            ft.IconButton(ft.icons.KEYBOARD_RETURN, on_click=lambda e: go_back()),
+        ],
+    )
+
+  
 
 
+    # Campos para exibir os detalhes da entrega
+    details_layout = ft.Column(
+    controls=[
+        ft.Text("Detalhes da Entrega", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.BLACK),  # Título        
+        ft.TextField(label="Usuário", value=f"{files['username']}", width=300, color=ft.colors.BLACK),  # usuario_field
+        ft.TextField(label="Data", value=f"{files['date']}", width=300, color=ft.colors.BLACK),  # data_field
+        ft.TextField(label="Subprojeto", value=f"{files['subproject']}", width=300, color=ft.colors.BLACK),  # subprojeto_field
+        ft.TextField(label="type", value=f"{files['type']}", width=300, color=ft.colors.BLACK),  # erros_field
+        ft.TextField(label="amount", value=f"{files['amount']}", width=300, color=ft.colors.BLACK),  # desconto_field
+        ft.TextField(label="url", value=f"{files['url']}", width=300, color=ft.colors.BLACK),  # advertencias_field
+    ],
+    spacing=10,
+    scroll=ft.ScrollMode.AUTO,  # Habilita o scroll
+)
 
+# Lista com os TextFields
+    data_list = [   
+    ft.TextField(label="Usuário", value=f"{files['username']}", width=300, color=ft.colors.BLACK),  # usuario_field
+    ft.TextField(label="Data", value=f"{files['date']}", width=300, color=ft.colors.BLACK),  # data_field
+    ft.TextField(label="Subprojeto", value=f"{files['subproject']}", width=300, color=ft.colors.BLACK),  # subprojeto_field
+    ft.TextField(label="type", value=f"{files['type']}", width=300, color=ft.colors.BLACK),
+    ft.TextField(label="amount", value=f"{files['amount']}", width=300, color=ft.colors.BLACK),
+    ft.TextField(label="url", value=f"{files['url']}", width=300, color=ft.colors.BLACK),  # advertencias_field
+]
+    
+    # Container principal
+    main_container = ft.Container(
+        content=details_layout,
+        padding=20,
+        border=ft.border.all(2, ft.colors.BLUE),
+        border_radius=10,
+        bgcolor=ft.colors.WHITE,
+        width=800 if page.width > 800 else page.width * 0.9,  # Largura responsiva
+    )
 
+    # Layout da página
+    layout = ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            ft.Column(
+                col={"sm": 12, "md": 8, "lg": 6},
+                controls=[main_container],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        ],
+        expand=True,
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return layout
 
 
 
