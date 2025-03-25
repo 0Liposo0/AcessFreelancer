@@ -1939,6 +1939,7 @@ def create_page_new_delivery(page):
         label="User",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
         bgcolor=ft.Colors.WHITE,
+        filled=True,
         width=300,
         )
     
@@ -1952,6 +1953,7 @@ def create_page_new_delivery(page):
         label="SubProjeto Atual",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
         bgcolor=ft.Colors.WHITE,
+        filled=True,
         width=300,
         )
     
@@ -1965,6 +1967,7 @@ def create_page_new_delivery(page):
         label="Projeto",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
         bgcolor=ft.Colors.WHITE,
+        filled=True,
         width=300,
         )
 
