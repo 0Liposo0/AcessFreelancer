@@ -5,7 +5,7 @@ from datetime import datetime
 from datetime import datetime
 
 
-def create_page_login(page):#############################################
+def create_page_login(page):
 
     page.theme = ft.Theme(
         color_scheme=ft.ColorScheme(
@@ -94,6 +94,7 @@ def create_page_login(page):#############################################
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
+#Página de Login    
 
 
 def create_page_user(page):
@@ -694,9 +695,10 @@ def create_page_user(page):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
+# Pagina de Usuario
 
 
-def create_page_initial_adm(page):#############################################
+def create_page_initial_adm(page):
 
     page.theme = ft.Theme(
         color_scheme=ft.ColorScheme(
@@ -1088,9 +1090,10 @@ def create_page_initial_adm(page):#############################################
     )
 
     return layout
+# Página de Administrador
 
 
-def verificar(username, password, page):##########################################
+def verificar(username, password, page):
 
     page.theme = ft.Theme(
         color_scheme=ft.ColorScheme(
@@ -1139,12 +1142,15 @@ def verificar(username, password, page):########################################
         page.overlay.append(snack_bar)
         snack_bar.open = True
         page.update()
+# Model de verificação de entrada - IF ADM DO/ IF USER DO;
 
 
-def create_page_project(page):######################################
+def create_page_project(page):
 
     loading = LoadingPages(page=page)
-    
+    textthemes = TextTheme()
+    texttheme1 = textthemes.create_text_theme1()
+
     page.theme = ft.Theme(
         color_scheme=ft.ColorScheme(
             on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
@@ -1160,13 +1166,35 @@ def create_page_project(page):######################################
     def go_home():
         loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page=page))
 
-    history_list = ft.ListView(
-            controls=[
 
-            ],
-            expand=True,
-            spacing=0,  # Removendo espaçamento entre os itens da lista
-        )
+
+    history_list = ft.Column(
+        controls=[
+            ft.Container(
+                padding=0,  
+                expand=True,  
+                theme=texttheme1,
+                content=ft.DataTable(
+                    data_row_max_height=50,
+                    column_spacing=40,  
+                    expand=True,  
+                    columns=[
+                        ft.DataColumn(ft.Text(value="Projeto", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Visualizar", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Editar", text_align=ft.TextAlign.CENTER)),
+
+                    ],
+                    rows=[],  
+                ),
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,  
+        alignment=ft.MainAxisAlignment.CENTER,  
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        expand=True,  
+    )
+
+
 
     for city in get_json: 
         name_project = city["name_project"]
@@ -1175,9 +1203,22 @@ def create_page_project(page):######################################
             return lambda e: loading.new_loading_page(page=page,
                                                     call_layout= lambda:creat_page_subproject(page=page, project=name),
                                                     )
+        
+        def call_edit(name):
+            return lambda e: loading.new_loading_page(page=page,
+                                                    call_layout= lambda:create_page_project_token(page=page, project=name),
+                                                    )
 
-        history_list.controls.append(ft.ListTile(title=ft.Text(f"{name_project}"),
-                                                 on_click=create_on_click(name_project)))
+
+        history_list.controls[0].content.rows.append(
+            ft.DataRow(cells=[
+                            ft.DataCell(ft.Text(value=f"{name_project}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.IconButton(icon=ft.Icons.SEARCH, on_click=create_on_click(name_project))),
+                            ft.DataCell(ft.IconButton(icon=ft.Icons.EDIT, on_click=call_edit(name_project))),
+                        ]
+                )
+        )
+        
         
 
 
@@ -1212,12 +1253,15 @@ def create_page_project(page):######################################
                 # Lista colada ao campo de pesquisa
             ],
             expand=True,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=0,  # Removendo espaçamento entre os elementos da coluna
         ),
         bgcolor=ft.colors.WHITE,
         padding=10,  # Padding mínimo para o container
         border_radius=10,
         expand=True,
+        alignment=ft.alignment.center,
     )
 
     # Layout da página
@@ -1237,9 +1281,131 @@ def create_page_project(page):######################################
     )
 
     return layout
+# Pagina Lateral de Projetos
 
 
-def creat_page_subproject(page, project):####################################
+def create_page_project_token(page, project):
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
+
+    loading = LoadingPages(page=page)
+    page.theme = ft.Theme(
+        color_scheme=ft.ColorScheme(
+            on_surface=ft.colors.BLACK,  # Define a cor do texto como preto
+        ),
+    )
+    base = SupaBase(page=page)
+    print (project)
+    get_base_Project = base.get_one_project_data(project)
+    get_info1 = get_base_Project.json()
+    get_info2 = get_info1[0]
+
+    print(get_info2)
+    
+
+    def go_back():
+        loading.new_loading_page(page=page, call_layout=lambda: creat_page_subproject(page=page, project=project))
+
+    def go_home():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+    
+    def editar_dados(data_list):
+        
+
+        supa_list = [
+        data_list[0].value, data_list[1].value, data_list[2].value, data_list[3].value, data_list[4].value, data_list[5].value
+        ]
+
+
+        if any(field == "" or field is None for field in supa_list):
+            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+        else:
+            sp = SupaBase(page)
+            sp.edit_projects_data(supa_list)
+            snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Soluções e Engenharia"),
+        bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+        actions=[ft.IconButton(ft.icons.HOME, on_click=lambda e: go_home()), ft.IconButton(ft.icons.KEYBOARD_RETURN, on_click=lambda e: go_back())],
+    )
+
+    data_list =[
+    ft.TextField(label="Nome do projeto", value=get_info2["name_project"], width=300),
+    ft.TextField(label="Nome", value=get_info2["current_subprojects"], width=300),
+    ft.TextField(label="Lotes Previstos", value=get_info2["final_delivery"], width=300),
+    ft.TextField(label="Lotes Feitos", value=get_info2["predicted_lots"], width=300),
+    ft.TextField(label="Entregas", value=get_info2["lots_done"], width=300),
+    ft.TextField(label="Média Recomendada", value=get_info2["percent"], width=300),
+    ]
+
+
+   
+    botao_edit = ft.ElevatedButton("Editar", on_click=lambda e: editar_dados(data_list))
+
+    
+
+    projects_token = ft.Container(
+    content=ft.Column(
+        controls=data_list,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza os itens na horizontal
+        scroll=ft.ScrollMode.AUTO,  # Adiciona scroll se necessário
+    ),
+    padding=20,
+    border=ft.border.all(2, ft.colors.BLUE),
+    border_radius=10,
+    bgcolor=ft.colors.WHITE,
+    width=min(800, page.width * 0.9),  # Largura máxima de 800px ou 90% da tela
+    height=min(900, page.height * 0.8),  # Altura máxima de 900px ou 80% da tela
+    alignment=ft.alignment.center,  # Centraliza o conteúdo dentro do container
+    margin=10,  # Margem externa
+)
+
+    
+
+    # Layout responsivo com as duas fichas lado a lado
+    layout = ft.ResponsiveRow(
+    [
+        ft.Column(
+            [
+                ft.Container(
+                    projects_token,
+                    alignment=ft.alignment.center
+                ),
+                ft.Container(
+                    botao_edit,
+                    alignment=ft.alignment.center
+                )
+            ],
+            col={"sm": 12, "md": 6},
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.CENTER
+        ),
+    ],
+    alignment=ft.MainAxisAlignment.CENTER,
+    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    spacing=20,
+    expand=True
+)
+
+
+    return layout
+# Pagina de Ficha Editavel de Projetos
+
+
+def creat_page_subproject(page, project):
     
     page.theme = ft.Theme(
         color_scheme=ft.ColorScheme(
@@ -1288,16 +1454,7 @@ def creat_page_subproject(page, project):####################################
         ],
     )
 
-    # Campo de pesquisa
-    search_field = ft.TextField(
-        label="Pesquisar",
-        hint_text="Digite para pesquisar...",
-        border_color=ft.colors.BLUE_800,
-        filled=True,
-        bgcolor=ft.colors.WHITE,
-        expand=True,  # Expande para ocupar o espaço disponível
-        width=300,  # Definindo um tamanho fixo para o campo de pesquisa
-    )
+   
 
     # Container principal
     main_container = ft.Container(
@@ -1305,7 +1462,6 @@ def creat_page_subproject(page, project):####################################
             [
                 ft.Text("Subprojetos de Cidades", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.BLUE_800),
                 ft.Row(
-                    controls=[search_field],
                     alignment=ft.MainAxisAlignment.CENTER,  # Centraliza o campo de pesquisa
                 ),
                 ft.Divider(height=20, color=ft.colors.TRANSPARENT),  # Espaçamento
@@ -1332,9 +1488,10 @@ def creat_page_subproject(page, project):####################################
     )
 
     return layout
-#Pronto
+# Pagina de Subprojetos - Continuação de Projetos
 
-def create_ficha_supro(page, subproject, project):##################################
+
+def create_ficha_supro(page, subproject, project):
 
     page.theme = ft.Theme(
         color_scheme=ft.ColorScheme(
@@ -1538,9 +1695,10 @@ def create_ficha_supro(page, subproject, project):##############################
 
 
     return layout
-#pronto
+# Pagina de Fichas Criacionais de Projetos
 
-def create_page_new_freelancer(page):#####################################
+
+def create_page_new_freelancer(page):
 
     loading = LoadingPages(page=page)
     
@@ -1632,11 +1790,13 @@ def create_page_new_freelancer(page):#####################################
 
     # Adiciona o layout principal à página
     return layout_principal
-#pronto
+# Pagina de Fichas Criacionais de Freelancers
 
-def create_page_new_delivery(page):########################################
+
+def create_page_new_delivery(page):
 
     base = SupaBase(page=page)
+    sp = SupaBase(page)
 
     page.theme = ft.Theme(
         color_scheme=ft.ColorScheme(
@@ -1660,12 +1820,51 @@ def create_page_new_delivery(page):########################################
     # Definindo um tamanho fixo para todos os TextFields
     field_width = 300
 
+    cadastrar = []
+    users = (sp.get_all_user_data()).json()
+    for item in users:
+        cadastrar.append(ft.dropdown.Option(item["username"]))
+    
+    dropdown1 = ft.Dropdown(
+        options=cadastrar,
+        label="User",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        )
+    
+    current_project = []
+    sub_project = (sp.get_all_subprojects()).json()
+    for item in sub_project:
+        current_project.append(ft.dropdown.Option(item["name_subproject"]))
+
+    dropdown2 = ft.Dropdown(
+        options=current_project,
+        label="SubProjeto Atual",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        )
+    
+    project = []
+    get_project = (sp.get_all_project_data()).json()
+    for item in get_project:
+        project.append(ft.dropdown.Option(item["name_project"]))
+    
+    dropdown3 = ft.Dropdown(
+        options=project,
+        label="Projeto",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        )
+
     content = {
                 "id": ft.TextField(label="ID", hint_text="Digite o ID", bgcolor=ft.Colors.WHITE, width=field_width),
-                "username": ft.TextField(label="Usuario", hint_text="Digite o Usuario", bgcolor=ft.Colors.WHITE, width=field_width),
+                "username": dropdown1,
                 "date": ft.TextField(label="Data", hint_text="Digite a Data", bgcolor=ft.Colors.WHITE, width=field_width),
-                "name_subproject": ft.TextField(label="Nome do Subprojeto", hint_text="Digite o Nome do Subprojeto", bgcolor=ft.Colors.WHITE, width=field_width),
-                "project": ft.TextField(label="Projeto", hint_text="Digite o Projeto", bgcolor=ft.Colors.WHITE, width=field_width),
+                "name_subproject": dropdown2,
+                "project": dropdown3,
                 "polygons": ft.TextField(label="Poligonos", hint_text="Digite o Poligonos", bgcolor=ft.Colors.WHITE, width=field_width),
                 "errors": ft.TextField(label="Erros", hint_text="Digite o Erros", bgcolor=ft.Colors.WHITE, width=field_width),
                 "discount": ft.TextField(label="Desconto", hint_text="Digite o Desconto", bgcolor=ft.Colors.WHITE, width=field_width),
@@ -1674,6 +1873,8 @@ def create_page_new_delivery(page):########################################
                 "file": ft.TextField(label="Arquivos", hint_text="Digite o Arquivos", bgcolor=ft.Colors.WHITE, width=field_width),
                 "photos": ft.TextField(label="Fotos", hint_text="Digite o Fotos", bgcolor=ft.Colors.WHITE, width=field_width),
     }
+
+    
 
     list_content = [content["id"], content["username"], content["date"], content["name_subproject"], 
                     content["project"], content["polygons"], content["errors"], content["discount"], 
@@ -1710,9 +1911,10 @@ def create_page_new_delivery(page):########################################
     )
 
     return layout
-#pronto
+# Pagina de Fichas Criacionais de Entregas
 
-def create_page_payment(page, month):##########################################
+
+def create_page_payment(page, month):
 
     textthemes = TextTheme()
     buttons = Buttons(page)
@@ -1958,9 +2160,10 @@ def create_page_payment(page, month):##########################################
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
-#pronto
+# Pagina de Status Financeiros
 
-def create_page_new_project(page):############################################
+
+def create_page_new_project(page):
     base = SupaBase(page=page)
 
     page.theme = ft.Theme(
@@ -1992,7 +2195,8 @@ def create_page_new_project(page):############################################
                 "Porcentagem": ft.TextField(label="Porcentagem", hint_text="Digite a Porcentagem", bgcolor=ft.Colors.WHITE, expand= False, width=300),
     }
 
-    
+
+
 
     list_content = [content["Projeto"], content["Projeto Atual"], content["Entrega Final"], content["Lotes Previstos"],
                     content["Lotes Feitos"], content["Porcentagem"]]
@@ -2032,7 +2236,8 @@ def create_page_new_project(page):############################################
     )
 
     return layout
-#Pronto
+# Pagina de Fichas Criacionais de Projetos
+
 
 def create_page_see_deliverys(page):
     loading = LoadingPages(page=page)
@@ -2139,6 +2344,7 @@ def create_page_see_deliverys(page):
     )
 
     return layout
+# Pagina De Visualização de Entregas
 
 
 def create_page_delivery_details(page, delivery):
@@ -2274,6 +2480,7 @@ def create_page_delivery_details(page, delivery):
     )
 
     return layout
+# Pagina De Visualização de Todas as Informações de Entregas
 
 
 def create_page_files(page):
@@ -2376,6 +2583,7 @@ def create_page_files(page):
     )
 
     return layout
+# Pagina de Visualização de Arquivos
 
 
 def create_page_files_details(page, files):
@@ -2465,6 +2673,7 @@ def create_page_files_details(page, files):
     )
 
     return layout
+# Pagina De Visualização de Todas as Informações de Arquivos
 
 
 

@@ -1365,6 +1365,27 @@ class SupaBase:
             params=params,
         )   
         return response
+    
+    # 25/03/2025
+    def get_one_project_data(self, project):
+
+        # É esse aqui
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        params = {
+                   "name_project":  f"eq.{project}", 
+                   "select": "*"
+        }
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/projects',
+            headers=headers,
+            params=params,
+        )   
+        return response
 
     def get_form_user(self, user):
 
@@ -1553,6 +1574,29 @@ class SupaBase:
 
         return response
 
+    def get_all_username(self, username):
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                "username": f"eq.{username}",
+                
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+        
+    
+
+    
 
     def add_file_storage(self, file, name_file):
 
@@ -1575,6 +1619,8 @@ class SupaBase:
             )
 
         return response
+
+
 
 
     def create_user_data(self, name, username, pix, email):
@@ -1601,6 +1647,30 @@ class SupaBase:
         return response    
 
   
+    def edit_projects_data(self, supa_list):
+
+        # É esse aqui
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        data = { 
+            "name_project": supa_list[0],
+            "current_subprojects": supa_list[1],
+            "final_delivery": supa_list[2],
+            "predicted_lots": supa_list[3],
+            "lots_done": supa_list[4],
+            "percent": supa_list[5],     
+        }
+        
+        response = requests.patch(
+            f'{self.supabase_url}/rest/v1/projects?name_project=eq.{supa_list[0]}',
+            headers=headers,
+            json=data,
+        )   
+        return response
 
     def edit_user_data(self, supa_list):
 
