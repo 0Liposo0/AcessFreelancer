@@ -1598,11 +1598,16 @@ class SupaBase:
 
     
 
-    def add_file_storage(self, file, name_file):
+    def add_file_storage(self, file, name_file, type):
+
+        if type == "poligonos":
+            content_type = "image/vnd.dwg"
+        elif type == "fotos":
+            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
         headers = {
             'Authorization': f'Bearer {self.supabase_key}',
-            'Content-Type': 'image/vnd.dwg'
+            'Content-Type': content_type,
         }
 
         bytes = []

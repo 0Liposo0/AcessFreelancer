@@ -5,9 +5,9 @@ from models import *
 def main(page: ft.Page):
     page.title = 'Acesso Freelancer(admin)'
     page.expand = True  
-    page.bgcolor = ft.Colors.INDIGO_600
     page.scroll = "auto"
     page.padding=20 
+    page.bgcolor = ft.Colors.INDIGO_600
     
  
     loading = LoadingPages(page)
