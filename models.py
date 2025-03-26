@@ -1387,6 +1387,23 @@ class SupaBase:
         )   
         return response
 
+    def get_one_subproject_data(self, subprojects):
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        params = {
+                   "name_project":  f"eq.{subprojects}", 
+                   "select": "*"
+        }
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/subprojects',
+            headers=headers,
+            params=params,
+        )   
+        return response
+
     def get_form_user(self, user):
 
         headers = {
@@ -1651,17 +1668,47 @@ class SupaBase:
 
         return response    
 
-  
-    def edit_projects_data(self, supa_list):
-
-        # É esse aqui
-
+    
+    def edit_subproject_data(self, supa_list):
         headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
             "Content-Type": "application/json",
         }
         data = { 
+            "name_subproject": supa_list[0],
+            "predicted_lots": supa_list[1],
+            "lots_done": supa_list[2],
+            "deliverys": supa_list[3],
+            "recommended_medium": supa_list[4],
+            "percent": supa_list[5],     
+            "ortofoto": supa_list[6],     
+            "project": supa_list[7],     
+            "final_delivery": supa_list[8],     
+            "current_average": supa_list[9],     
+            "type": supa_list[10],       
+        }
+        
+        response = requests.patch(
+            f'{self.supabase_url}/rest/v1/subprojects?name_subproject=eq.{supa_list[0]}',
+            headers=headers,
+            json=data,
+        )   
+        return response
+
+    def edit_projects_data(self, supa_list):
+
+
+        # É esse aqui
+
+        headers = {
+
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        data = { 
+
             "name_project": supa_list[0],
             "current_subprojects": supa_list[1],
             "final_delivery": supa_list[2],
@@ -1671,11 +1718,13 @@ class SupaBase:
         }
         
         response = requests.patch(
+
             f'{self.supabase_url}/rest/v1/projects?name_project=eq.{supa_list[0]}',
             headers=headers,
             json=data,
         )   
         return response
+
 
     def edit_user_data(self, supa_list):
 
