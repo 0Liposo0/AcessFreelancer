@@ -1132,7 +1132,6 @@ class SupaBase:
         return self.supabase_key
 
     def get_file_id(self):
-
         headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
@@ -1140,7 +1139,7 @@ class SupaBase:
         }
 
         params = {
-        "select": "id", "order": "id.desc", "limit": 1,
+            "select": "id"  # Seleciona todos os IDs
         }
 
         response = requests.get(
@@ -1149,10 +1148,12 @@ class SupaBase:
             params=params,
         )
 
-        next_id = response.json()[0]["id"] if response.json() else 0
-        new_id = int(next_id) + 1
-
-        return new_id
+        if response.status_code == 200 and response.json():
+            ids = [int(item["id"]) for item in response.json()]  # Obtém todos os IDs e converte para int
+            maior_id = max(ids)  # Encontra o maior ID
+            return maior_id + 1  # Retorna o próximo ID disponível
+        else:
+            return 1  # Se não houver registros, começa do 1
 
     def get_storage(self):
 

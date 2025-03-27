@@ -477,6 +477,19 @@ def create_page_user(page):
             snack_bar.open = True
             page.update()
         else:
+
+            snack_bar = ft.SnackBar(
+                    content=ft.Text(
+                        value=f"Enviando arquivo", color=ft.Colors.BLACK
+                        ),
+                    duration=10000,
+                    bgcolor=ft.Colors.AMBER,
+                    data="bar",
+                )
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
             date = container.controls[0].content.controls[3].value
 
             check = (sp.check_file(
@@ -485,6 +498,11 @@ def create_page_user(page):
             )).json()
 
             if len(check) > 0:
+                for item in overlay_copy:
+                    if item.data != "bar":
+                        pass
+                    else:
+                        page.overlay.remove(item)
                 snack_bar = ft.SnackBar(
                     content=ft.Text(
                         value=f"Entrega de {date} já realizada, arquivo não enviado", color=ft.Colors.BLACK
@@ -507,6 +525,7 @@ def create_page_user(page):
             response = sp.add_file_storage(file_path, name_file, row3["type"])
 
             if response.status_code == 200 or response.status_code == 201:
+
                 id = str(sp.get_file_id())
 
                 response2 = sp.post_to_files(
@@ -520,9 +539,16 @@ def create_page_user(page):
                                             )
 
                 if response2.status_code == 200 or response2.status_code == 201:
+
+                    for item in overlay_copy:
+                        if item.data != "bar":
+                            pass
+                        else:
+                            page.overlay.remove(item)
+
                     snack_bar = ft.SnackBar(
                     content=ft.Text(value="Arquivo enviado", color=ft.Colors.BLACK),
-                    duration=2000,
+                    duration=4000,
                     bgcolor=ft.Colors.GREEN,
                     data="bar",
                     )
@@ -537,6 +563,14 @@ def create_page_user(page):
                             page.overlay.remove(item)
                     page.update()
                 else:
+
+                    for item in overlay_copy:
+                        if item.data != "bar":
+                            pass
+                        else:
+                            page.overlay.remove(item)
+
+                    print(f" \n Erro ao enviar arquivo: {response2.status_code} - {response2.text} \n")
                     snack_bar = ft.SnackBar(
                     content=ft.Text(value="Falha ao enviar arquivo", color=ft.Colors.BLACK),
                     duration=2000,
@@ -553,25 +587,121 @@ def create_page_user(page):
                             page.overlay.remove(item)
                     page.update()
 
+    file_selected = []
+    file_name = []
 
+    def on_file_selected():
+
+        data = (datetime.now().strftime("%d/%m/%Y")).replace("/", "")
+        extension = "dwg"
+        if row3["type"] == "fotos":
+            extension = "xlsx"
+        name_file = f'{dict_profile["username"]}_{data}.{extension}'
+        
+        btn_send = buttons.create_button(on_click=lambda e: send_file(file_selected[0], name_file),
+                                    text="Enviar",
+                                    color=ft.Colors.BLUE,
+                                    col=7,
+                                    padding=5
+                    )
+        
+        def close():
+            overlay_copy = list(page.overlay)
+            for item in overlay_copy:
+                if item.data == "fp":
+                        pass
+                else:
+                    page.overlay.remove(item)
+            page.update()
+
+        btn_exit = buttons.create_button(on_click=lambda e: close(),
+                                    text="Sair",
+                                    color=ft.Colors.RED,
+                                    col=7,
+                                    padding=5
+                    )
+        
+        next_month = datetime.now().month + 1
+        year = datetime.now().year
+        if next_month == 13:
+            next_month = 1
+            year += 1
+
+
+        container = ft.Row(
+            controls=[ ft.Container(
+                            content=ft.Column(
+                                controls=[
+                                    ft.Text(value=f"{file_name[0]}", color=ft.Colors.BLACK),
+                                    ft.Text(value="", color=ft.Colors.BLACK),
+                                    ft.Text(value="Data da entrega:", color=ft.Colors.BLACK),
+                                    ft.Dropdown(
+                                        options=[
+                                            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}"),
+                                            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}"),
+                                            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}"),
+                                            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}"),
+                                            ft.dropdown.Option(f"07/{next_month:02d}/{year:02d}"),
+                                        ],
+                                        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                        bgcolor=ft.Colors.WHITE,
+                                    ),
+                                    ft.Text(value="Tipo de entrega:", color=ft.Colors.BLACK),
+                                    ft.Dropdown(
+                                        value=row3["type"],
+                                        label=row3["type"],
+                                        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                        bgcolor=ft.Colors.WHITE,
+                                    ),
+                                    ft.Text(value="Quantidade:", color=ft.Colors.BLACK),
+                                    ft.TextField(
+                                        bgcolor=ft.Colors.WHITE,
+                                        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                        border_radius=0,
+                                    ),
+                                    btn_send,
+                                    btn_exit, 
+                                ],
+                            ),
+                            bgcolor=ft.Colors.GREY,
+                            border_radius=20,
+                            alignment=ft.alignment.center,
+                            width=300,
+                            height=500,
+                            padding=10,
+                            col=6,   
+                        )
+                    ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+        
+
+        page.overlay.append(container)
+        page.update()
+
+    def get_uploaded_file_bytes(e: ft.FilePickerUploadEvent):
+
+        file_path = f"uploads/{file_name[0]}"    
+
+        with open(file_path, "rb") as file:
+            file_content = file.read()
+
+        file_selected.clear()
+        file_selected.append(file_content)
+
+        on_file_selected()
+ 
     def on_image_selected(e: ft.FilePickerResultEvent):
 
             if not e.files or len(e.files) == 0:
                 return
             
-            file_selected = []
+            file_selected.clear()
             file_selected.append(e.files[0])
-            name = e.files[0].name
-
-            def get_uploaded_file_bytes():
-
-                file_path = f"uploads/{name}"    
-
-                with open(file_path, "rb") as file:
-                    file_content = file.read()
-
-                file_selected.clear()
-                file_selected.append(file_content)
+            file_name.clear()
+            file_name.append(e.files[0].name)
 
 
             if e.page.web:
@@ -584,101 +714,10 @@ def create_page_user(page):
                 #  Realiza o upload
                 fp.upload([file_upload])
 
-                #  Chama a função para baixar os bytes do arquivo após o upload
-                get_uploaded_file_bytes()
-            
-            
-            data = (datetime.now().strftime("%d/%m/%Y")).replace("/", "")
-            extension = "dwg"
-            if row3["type"] == "fotos":
-                extension = "xlsx"
-            name_file = f'{dict_profile["username"]}_{data}.{extension}'
-            
-            btn_send = buttons.create_button(on_click=lambda e: send_file(file_selected[0], name_file),
-                                      text="Enviar",
-                                      color=ft.Colors.BLUE,
-                                      col=7,
-                                      padding=5
-                        )
-            
-            def close():
-                overlay_copy = list(page.overlay)
-                for item in overlay_copy:
-                    if item.data == "fp":
-                            pass
-                    else:
-                        page.overlay.remove(item)
-                page.update()
-
-            btn_exit = buttons.create_button(on_click=lambda e: close(),
-                                      text="Sair",
-                                      color=ft.Colors.RED,
-                                      col=7,
-                                      padding=5
-                        )
-            
-            next_month = datetime.now().month + 1
-            year = datetime.now().year
-            if next_month == 13:
-                next_month = 1
-                year += 1
-
-
-            container = ft.Row(
-                controls=[ ft.Container(
-                                content=ft.Column(
-                                    controls=[
-                                        ft.Text(value=f"{name}", color=ft.Colors.BLACK),
-                                        ft.Text(value="", color=ft.Colors.BLACK),
-                                        ft.Text(value="Data da entrega:", color=ft.Colors.BLACK),
-                                        ft.Dropdown(
-                                            options=[
-                                                ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}"),
-                                                ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}"),
-                                                ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}"),
-                                                ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}"),
-                                                ft.dropdown.Option(f"07/{next_month:02d}/{year:02d}"),
-                                            ],
-                                            text_style=ft.TextStyle(color=ft.Colors.BLACK),
-                                            bgcolor=ft.Colors.WHITE,
-                                        ),
-                                        ft.Text(value="Tipo de entrega:", color=ft.Colors.BLACK),
-                                        ft.Dropdown(
-                                            value=row3["type"],
-                                            label=row3["type"],
-                                            label_style=ft.TextStyle(color=ft.Colors.BLACK),
-                                            text_style=ft.TextStyle(color=ft.Colors.BLACK),
-                                            bgcolor=ft.Colors.WHITE,
-                                        ),
-                                        ft.Text(value="Quantidade:", color=ft.Colors.BLACK),
-                                        ft.TextField(
-                                            bgcolor=ft.Colors.WHITE,
-                                            text_style=ft.TextStyle(color=ft.Colors.BLACK),
-                                            border_radius=0,
-                                        ),
-                                        btn_send,
-                                        btn_exit, 
-                                    ],
-                                ),
-                                bgcolor=ft.Colors.GREY,
-                                border_radius=20,
-                                alignment=ft.alignment.center,
-                                width=300,
-                                height=500,
-                                padding=10,
-                                col=6,   
-                            )
-                        ],
-                alignment=ft.MainAxisAlignment.CENTER,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-            )
-            
-
-            page.overlay.append(container)
-            page.update()
-
-
-    fp = ft.FilePicker(on_result=on_image_selected, data="fp")
+            else:
+                on_file_selected()
+ 
+    fp = ft.FilePicker(on_result=on_image_selected, on_upload=get_uploaded_file_bytes, data="fp")
     page.overlay.append(fp)
 
     def open_gallery(e): 
