@@ -496,8 +496,8 @@ class Forms:
                             data_row_max_height=55,
                             column_spacing=30,
                             columns=[
-                                ft.DataColumn(ft.Text(value=string1, theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
-                                ft.DataColumn(ft.Text(value=string2, theme_style=ft.TextThemeStyle.TITLE_LARGE)),  
+                                ft.DataColumn(ft.Text(value=string1, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                                ft.DataColumn(ft.Text(value=string2, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
                             ],
                             rows= itens_forms,
                         ),

@@ -11,7 +11,7 @@ def main(page: ft.Page):
     
  
     loading = LoadingPages(page)
-    loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page))
+    loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page))
 
 
 if __name__ == "__main__":
