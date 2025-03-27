@@ -103,7 +103,7 @@ def create_page_user(page):
     profile = CurrentProfile() 
     dict_profile = profile.return_current_profile()
 
-
+    
     perfil = ft.Column(
     alignment=ft.MainAxisAlignment.CENTER,
     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -730,10 +730,16 @@ def create_page_user(page):
                                       padding=5,
                                       )
 
-    if row3["type"] == "poligonos":
+    if dict_profile["current_project"] != ".":
+        if row3["type"] == "poligonos":
+            btn_planner1.visible = False
+            btn_planner2.visible = False
+        else:
+            btn_dwg.visible = False
+            btn_ecw.visible = False
+    else:
         btn_planner1.visible = False
         btn_planner2.visible = False
-    else:
         btn_dwg.visible = False
         btn_ecw.visible = False
 
