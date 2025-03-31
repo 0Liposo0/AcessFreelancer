@@ -888,12 +888,7 @@ def create_page_initial_adm(page):
                                       text= "Projetos",
                                       color=ft.Colors.GREY,
                                       col=12,
-                                      padding=5,)       
-    btn_new_free = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_new_freelancer(page)),
-                                        text= "Cadastrar Freelancer",
-                                        color=ft.Colors.GREY,
-                                        col=12,
-                                        padding=5,)    
+                                      padding=5,)         
     btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
                                             text= "Arquivos",
                                             color=ft.Colors.GREY,
@@ -914,7 +909,12 @@ def create_page_initial_adm(page):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=5,)
-    
+    btn_payment = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
+                                            text= "Financeiro",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=5,)
+
     drawer = ft.NavigationDrawer(
 
 
@@ -928,6 +928,9 @@ def create_page_initial_adm(page):
 
             ft.Divider(thickness=1),
             btn_see_freelancers,
+
+            ft.Divider(thickness=1),
+            btn_payment,
 
             ft.Divider(thickness=1),
             btn_see_file,
@@ -2747,7 +2750,7 @@ def create_page_new_delivery(page):
 
     return layout
 # Pagina de Fichas Criacionais de Entregas
-def create_page_payment(page, month):
+def create_page_payment(page, month=None):
 
     textthemes = TextTheme()
     buttons = Buttons(page)
@@ -2769,6 +2772,17 @@ def create_page_payment(page, month):
         ],
     )
 
+    meses_pt_1 = {
+    1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio", 6: "Junho",
+    7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
+    }
+
+    mes_atual = str(meses_pt_1[datetime.now().month])
+    ano_atual = str(datetime.now().year)
+
+    if month == None:
+        month = mes_atual
+        
     request_all_deliverys = sp.get_all_deliverys()
     request_all_deliverys_json = request_all_deliverys.json()
     dicio_all_deliverys = {}
@@ -2827,18 +2841,19 @@ def create_page_payment(page, month):
 
     dropdown2 = ft.Dropdown(options=[
         ft.dropdown.Option("2025"),
+        ft.dropdown.Option("2026"),
     ],
     value="2025",
     text_style=ft.TextStyle(color=ft.Colors.BLACK),
     bgcolor=ft.Colors.WHITE,
     col=6)
 
-    meses_pt = {
+    meses_pt_2 = {
     "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5, "Junho": 6,
     "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10, "Novembro": 11, "Dezembro": 12
     }
 
-    mes = meses_pt[dropdown1.value]
+    mes = meses_pt_2[dropdown1.value]
 
     selected_data = datetime(int(dropdown2.value), mes, 1)
 
