@@ -1527,28 +1527,47 @@ class SupaBase:
 
         return response
 
-    def get_new_project_data(self, name_project, current_subprojects, final_delivery, predicted_lots, lots_done, percent):
+    def post_project_data(self, name_project, current_subprojects, final_delivery, predicted_lots):
             
             headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
             "Content-Type": "application/json",
             }
+
             get_pjc = { 
                 "name_project": name_project,
                 "current_subprojects": current_subprojects,
                 "final_delivery": final_delivery,
                 "predicted_lots": predicted_lots,
-                "lots_done": lots_done,
-                "percent": percent,          
+                "lots_done": "0",
+                "percent": "0",         
             }
 
             response = requests.post(
                 f'{self.supabase_url}/rest/v1/projects',
                 headers=headers,
                 json=get_pjc,
-            ) 
-            print(response.json())
+            )
+
+            return response 
+    
+    def post_subproject_data(self, data):
+            
+            headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+            }
+
+            response = requests.post(
+                f'{self.supabase_url}/rest/v1/subprojects',
+                headers=headers,
+                json=data,
+            )
+
+            return response
+     
 
     def get_deliverys_data_total(self, username):
 
@@ -1642,6 +1661,33 @@ class SupaBase:
             )
 
         return response
+    
+    def add_subproject_storage(self, file, name_file, type, local):
+
+        if type == "dwg":
+            content_type = "image/vnd.dwg"
+        elif type == "xlsx":
+            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+        headers = {
+            'Authorization': f'Bearer {self.supabase_key}',
+            'Content-Type': content_type,
+        }
+
+        bytes = []
+        bytes.append(file)
+
+        if not self.page.web:
+            with open(file.path, 'rb') as file_data:
+                bytes[0] = file_data.read()
+
+        response = requests.post(
+                f'{self.supabase_url}/storage/v1/object/{local}/{name_file}',  
+                headers=headers,
+                data=bytes[0]
+            )
+
+        return response
 
 
 
@@ -1670,37 +1716,22 @@ class SupaBase:
         return response    
 
     
-    def edit_subproject_data(self, supa_list):
+    def edit_subproject_data(self, subproject_data):
+
         headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
             "Content-Type": "application/json",
         }
-        data = { 
-            "name_subproject": supa_list[0],
-            "predicted_lots": supa_list[1],
-            "lots_done": supa_list[2],
-            "deliverys": supa_list[3],
-            "recommended_medium": supa_list[4],
-            "percent": supa_list[5],     
-            "ortofoto": supa_list[6],     
-            "project": supa_list[7],     
-            "final_delivery": supa_list[8],     
-            "current_average": supa_list[9],     
-            "type": supa_list[10],       
-        }
-        
+
         response = requests.patch(
-            f'{self.supabase_url}/rest/v1/subprojects?name_subproject=eq.{supa_list[0]}',
+            f'{self.supabase_url}/rest/v1/subprojects?name_subproject=eq.{subproject_data["name_subproject"]}',
             headers=headers,
-            json=data,
+            json=subproject_data,
         )   
         return response
 
-    def edit_projects_data(self, supa_list):
-
-
-        # É esse aqui
+    def edit_projects_data(self, data_project):
 
         headers = {
 
@@ -1708,26 +1739,17 @@ class SupaBase:
             "Authorization": f"Bearer {self.supabase_key}",
             "Content-Type": "application/json",
         }
-        data = { 
 
-            "name_project": supa_list[0],
-            "current_subprojects": supa_list[1],
-            "final_delivery": supa_list[2],
-            "predicted_lots": supa_list[3],
-            "lots_done": supa_list[4],
-            "percent": supa_list[5],     
-        }
-        
         response = requests.patch(
 
-            f'{self.supabase_url}/rest/v1/projects?name_project=eq.{supa_list[0]}',
+            f'{self.supabase_url}/rest/v1/projects?name_project=eq.{data_project["name_project"]}',
             headers=headers,
-            json=data,
+            json=data_project,
         )   
         return response
 
 
-    def edit_user_data(self, supa_list):
+    def edit_user_data(self, data):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1735,23 +1757,8 @@ class SupaBase:
             "Content-Type": "application/json",
         }
 
-        data = { 
-            "name": supa_list[0],
-            "username": supa_list[1],
-            "current_project": supa_list[2],
-            "total_deliverys": supa_list[3],
-            "weekly_deliveries": supa_list[4],
-            "polygons_made": supa_list[5],
-            "polygons_wrong": supa_list[6],     
-            "warnings": supa_list[7],
-            "delays": supa_list[8],
-            "password": supa_list[9],
-            "permission": supa_list[10],
-                                   
-        }
-
         response = requests.patch(
-            f'{self.supabase_url}/rest/v1/users?username=eq.{supa_list[1]}',
+            f'{self.supabase_url}/rest/v1/users?username=eq.{data["username"]}',
             headers=headers,
             json=data,
         )
@@ -1865,7 +1872,52 @@ class SupaBase:
         return response
 
     
-   
+    def delete_subproject(self, subproject):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        response = requests.delete(
+            f'{self.supabase_url}/rest/v1/subprojects?name_subproject=eq.{subproject}',
+            headers=headers,
+        )
+
+        return response
+    
+    def delete_project(self, project):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        response = requests.delete(
+            f'{self.supabase_url}/rest/v1/projects?name_project=eq.{project}',
+            headers=headers,
+        )
+
+        return response
+    
+    def delete_storage(self, local, object, type):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": type,
+        }
+
+        response = requests.delete(
+            f'{self.supabase_url}/storage/v1/object/{local}/{object}',  
+            headers=headers,
+        )
+
+        return response
+    
+
 
 class CurrentMapPoints:
     current_points = []
