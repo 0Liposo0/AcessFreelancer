@@ -1154,6 +1154,30 @@ class SupaBase:
             return maior_id + 1  # Retorna o próximo ID disponível
         else:
             return 1  # Se não houver registros, começa do 1
+        
+    def get_delivery_id(self):
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+            "select": "id"  # Seleciona todos os IDs
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )
+
+        if response.status_code == 200 and response.json():
+            ids = [int(item["id"]) for item in response.json()]  # Obtém todos os IDs e converte para int
+            maior_id = max(ids)  # Encontra o maior ID
+            return maior_id + 1  # Retorna o próximo ID disponível
+        else:
+            return 1  # Se não houver registros, começa do 1
 
     def get_storage(self):
 
@@ -1473,32 +1497,20 @@ class SupaBase:
 
         return response
     
-    def post_to_deliverys_data(self, id, username, date, name_subproject, project, polygons, errors, discount, warning, delay, file, photos):
+    def post_to_deliverys_data(self, data):
             
         headers= {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
             "Content-Type": "application/json",
                 }
-        get_data= { 
-                "id": id,
-                "username": username,
-                "date": date,
-                "name_subproject": name_subproject,
-                "project": project,
-                "polygons": polygons,
-                "errors": errors,
-                "discount": discount,
-                "warning": warning,
-                "delay": delay,
-                "file": file,
-                "photos": photos,
-                }
+
         response = requests.post(
             f'{self.supabase_url}/rest/v1/deliverys',
             headers=headers,
-            json=get_data,
+            json=data,
         )
+
         return response
      
     def post_to_files(self, id, date, username, subproject, type, amount, url):
@@ -1765,34 +1777,25 @@ class SupaBase:
 
         return response    
 
-    def edit_delivery_data(self, supa_list):
+    def edit_delivery_data(self, data):
 
         headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
             "Content-Type": "application/json",
         }
-        print(supa_list)
-        data = { 
-            
-            "username": supa_list[0],
-            "date": supa_list[1],
-            "name_subproject": supa_list[2],
-            "project": supa_list[3],
-            "polygons": supa_list[4],
-            "errors": supa_list[5],     
-            "discount": supa_list[6],
-            "warning": supa_list[7],
-            "delay": supa_list[8],
-            "file": supa_list[9],
-            "photos": supa_list[10],
-                                   
+
+        params = {
+                   "username":  f"eq.{data["username"]}", 
+                   "date":  f"eq.{data["date"]}", 
+                   "select": "*"
         }
 
         response = requests.patch(
-            f'{self.supabase_url}/rest/v1/deliverys?username=eq.{supa_list[1]}',
+            f'{self.supabase_url}/rest/v1/deliverys',
             headers=headers,
             json=data,
+            params=params,
         )
 
         return response    
@@ -1821,8 +1824,6 @@ class SupaBase:
         )
 
         return response    
-
-
 
     def check_login(self, username, password):
 
@@ -1887,6 +1888,28 @@ class SupaBase:
 
         return response
     
+    def delete_delivery(self, data):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "username":  f"eq.{data["username"]}", 
+                   "date":  f"eq.{data["date"]}", 
+                   "select": "*"
+        }
+
+        response = requests.delete(
+            f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
     def delete_project(self, project):
 
         headers = {
@@ -1917,7 +1940,6 @@ class SupaBase:
 
         return response
     
-
 
 class CurrentMapPoints:
     current_points = []

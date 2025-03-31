@@ -1000,28 +1000,24 @@ def create_page_initial_adm(page):
         username = row["username"]
         date = row["date"]
         name_subproject = row["name_subproject"]
-        project = row["project"]
         polygons = row["polygons"]
         photos = row["photos"]
         errors = row["errors"]
         discount = row["discount"]
         delay = row["delay"]
         warning = row["warning"]
-        file = row["file"]
 
         dicio_all_deliverys[id] = {
                                     "id": id,
                                     "username": username,
                                     "date": date,
                                     "name_subproject": name_subproject,
-                                    "project": project,
                                     "polygons": polygons,
                                     "photos": photos,
                                     "errors": errors,
                                     "discount": discount,
                                     "delay": delay,
                                     "warning": warning,
-                                    "file": file
                                     }
 
 
@@ -2205,16 +2201,7 @@ def create_page_subproject_token(page, subproject, back_project=None):
 
     def editar_dados(view_subproject):
         
-        data_subproject = view_subproject
-        print("")
-        print(view_subproject["name_subproject"].value)
-        print(view_subproject["predicted_lots"].value)
-        print(view_subproject["lots_done"].value)
-        print(view_subproject["deliverys"].value)
-        print(view_subproject["recommended_medium"].value)
-        print(view_subproject["percent"].value)
-        print(view_subproject["ortofoto"].value)
-        print("")
+        data_subproject = view_subproject.copy()
 
         data_subproject["name_subproject"] = view_subproject["name_subproject"].value
         data_subproject["predicted_lots"] = view_subproject["predicted_lots"].value
@@ -2633,17 +2620,19 @@ def create_page_new_freelancer(page):
 # Pagina de Fichas Criacionais de Freelancers
 def create_page_new_delivery(page):
 
-    base = SupaBase(page=page)
+    loading = LoadingPages(page=page)
+    buttons = Buttons(page)
     sp = SupaBase(page)
 
-    loading = LoadingPages(page=page)
-
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+    # Definir o tema global para garantir que o texto seja preto por padrão
 
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
 
+    def go_home():
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+
+    # AppBar
     page.appbar = ft.AppBar(
         leading_width=40,
         center_title=True,
@@ -2655,97 +2644,236 @@ def create_page_new_delivery(page):
         ],
     )
 
-    # Definindo um tamanho fixo para todos os TextFields
-    field_width = 300
+    file_selected = []
+    file_name = []
+    file_type =[]
+    file_old_name = []
+    add_file = [False]
 
-    cadastrar = []
-    users = (sp.get_all_user_data()).json()
-    for item in users:
-        cadastrar.append(ft.dropdown.Option(item["username"]))
-    
-    dropdown1 = ft.Dropdown(
-        options=cadastrar,
-        label="User",
-        text_style=ft.TextStyle(color=ft.Colors.BLACK),
-        bgcolor=ft.Colors.WHITE,
-        width=300,
-        )
-    
-    current_project = []
-    sub_project = (sp.get_all_subprojects()).json()
-    for item in sub_project:
-        current_project.append(ft.dropdown.Option(item["name_subproject"]))
 
-    dropdown2 = ft.Dropdown(
-        options=current_project,
-        label="SubProjeto Atual",
-        text_style=ft.TextStyle(color=ft.Colors.BLACK),
-        bgcolor=ft.Colors.WHITE,
-        width=300,
-        )
-    
-    project = []
-    get_project = (sp.get_all_project_data()).json()
-    for item in get_project:
-        project.append(ft.dropdown.Option(item["name_project"]))
-    
-    dropdown3 = ft.Dropdown(
-        options=project,
-        label="Projeto",
-        text_style=ft.TextStyle(color=ft.Colors.BLACK),
-        bgcolor=ft.Colors.WHITE,
-        width=300,
-        )
+    def editar_dados(view_deliveries):
+        
+        data_subproject = view_deliveries
 
-    content = {
-                "id": ft.TextField(label="ID", hint_text="Digite o ID", bgcolor=ft.Colors.WHITE, width=field_width, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-                "username": dropdown1,
-                "date": ft.TextField(label="Data", hint_text="Digite a Data", bgcolor=ft.Colors.WHITE, width=field_width, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-                "name_subproject": dropdown2,
-                "project": dropdown3,
-                "polygons": ft.TextField(label="Poligonos", hint_text="Digite o Poligonos", bgcolor=ft.Colors.WHITE, width=field_width, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-                "errors": ft.TextField(label="Erros", hint_text="Digite o Erros", bgcolor=ft.Colors.WHITE, width=field_width, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-                "discount": ft.TextField(label="Desconto", hint_text="Digite o Desconto", bgcolor=ft.Colors.WHITE, width=field_width, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-                "warnings": ft.TextField(label="Advertencias", hint_text="Digite o Advertencias", bgcolor=ft.Colors.WHITE, width=field_width, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-                "delay": ft.TextField(label="Atraso", hint_text="Digite o Atraso", bgcolor=ft.Colors.WHITE, width=field_width, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-                "file": ft.TextField(label="Arquivos", hint_text="Digite o Arquivos", bgcolor=ft.Colors.WHITE, width=field_width, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-                "photos": ft.TextField(label="Fotos", hint_text="Digite o Fotos", bgcolor=ft.Colors.WHITE, width=field_width, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-    }
+        print("")
+        print(view_deliveries["username"])
+        print(view_deliveries["date"])
+        print(view_deliveries["name_subproject"])
+        print(view_deliveries["polygons"])
+        print(view_deliveries["errors"])
+        print(view_deliveries["discount"])
+        print("")
 
-    
+        data_subproject["id"] = str(sp.get_delivery_id())
+        data_subproject["username"] = view_deliveries["username"].value
+        data_subproject["date"] = view_deliveries["date"].value
+        data_subproject["name_subproject"] = view_deliveries["name_subproject"].value
+        data_subproject["polygons"] = view_deliveries["polygons"].value
+        data_subproject["errors"] = view_deliveries["errors"].value
+        data_subproject["discount"] = view_deliveries["discount"].value
+        data_subproject["warning"] = view_deliveries["warning"].value
+        data_subproject["delay"] = view_deliveries["delay"].value
+        data_subproject["photos"] = view_deliveries["photos"].value
+        data_subproject["dwg"] = view_deliveries["dwg"].value
+        
 
-    list_content = [content["id"], content["username"], content["date"], content["name_subproject"], 
-                    content["project"], content["polygons"], content["errors"], content["discount"], 
-                    content["warnings"], content["delay"], content["file"], content["photos"]]
-
-    def send_to_data(e):
-        if any(field.value == "" or field.value is None for field in list_content):
+        if any(field == "" or field is None for field in data_subproject.values()):
             snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
         else:
-            sp = SupaBase(page)
-            sp.post_to_deliverys_data(content["id"].value, content["username"].value, content["date"].value, content["name_subproject"].value,
-                                      content["project"].value, content["polygons"].value, content["errors"].value, content["discount"].value,
-                                        content["warnings"].value, content["delay"].value, content["file"].value, content["photos"].value),
-            snack_bar = ft.SnackBar(content=ft.Text("Dados enviados com sucesso"), bgcolor=ft.Colors.GREEN)
-            page.overlay.append(snack_bar)
-            snack_bar.open = True
-            page.update()
 
-    btn_send = ft.ElevatedButton("Enviar", on_click=send_to_data)        
+            if add_file[0] == True:
+
+                response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "deliveries")
+
+                if response1.status_code == 200 or response1.status_code == 201:
+
+                    data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
+                    response2 = sp.post_to_deliverys_data(data_subproject)
+
+                    if response2.status_code in [200, 201]:
+
+                        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+                        snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+            else:
+                response2 = sp.post_to_deliverys_data(data_subproject)
+
+                if response2.status_code in [200, 204]:
+                    loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+                    snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
+
+
+    # Campos para exibir os detalhes da entrega
+    
+    users = []
+    get_users = (sp.get_all_user_data()).json()
+    for item in get_users:
+        users.append(ft.dropdown.Option(item["username"]))
+
+    dropdow1 = ft.Dropdown(
+        options=users,
+        label="Usuário",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        enable_filter=True,
+        editable=True,
+        )
+    
+    subprojects = []
+    get_subprojects = (sp.get_all_subprojects()).json()
+    for item in get_subprojects:
+        subprojects.append(ft.dropdown.Option(item["name_subproject"]))
+
+    dropdow2 = ft.Dropdown(
+        options=subprojects,
+        label="SubProjeto",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        enable_filter=True,
+        editable=True,
+        )
+    
+    dropdow3 = ft.Dropdown(
+        options=[
+            ft.dropdown.Option("Sim"),
+            ft.dropdown.Option("Não"),
+        ],
+        label="Atraso",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        )
+
+    view_deliveries = {
+        "username": dropdow1, 
+        "date":ft.TextField(label="Data", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "name_subproject":dropdow2,   
+        "polygons":ft.TextField(label="Polígonos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "errors":ft.TextField(label="Erros", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "discount":ft.TextField(label="Desconto", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "warning":ft.TextField(label="Advertências", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "delay":dropdow3, 
+        "photos":ft.TextField(label="Fotos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "dwg":ft.TextField(label="DWG", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+    }
+
+    def on_file_selected():
+
+        date = (view_deliveries["date"].value).split("/")
+
+        name_file = f'{view_deliveries["username"].value}_{view_deliveries["name_subproject"].value}_{date[0]}{date[1]}{date[2]}.{file_type[0]}'
+        file_name.clear()
+        file_name.append(name_file)
+
+        view_deliveries["dwg"].value = file_old_name[0]
+
+        add_file[0] = True
+
+        page.update()
+
+    def get_uploaded_file_bytes(e: ft.FilePickerUploadEvent):
+
+        file_path = f"uploads/{file_old_name[0]}"    
+
+        with open(file_path, "rb") as file:
+            file_content = file.read()
+
+        file_selected.clear()
+        file_selected.append(file_content)
+
+        on_file_selected()
+
+    def on_image_selected(e: ft.FilePickerResultEvent):
+
+            if not e.files or len(e.files) == 0:
+                return
+            
+            file_selected.clear()
+            file_selected.append(e.files[0])
+            file_old_name.clear()
+            file_old_name.append(e.files[0].name)
+
+            if e.page.web:
+                #  Gerar a URL temporária
+                temp_url = e.page.get_upload_url(file_selected[0].name, 3600)
+
+                #  Criar objeto para upload
+                file_upload = ft.FilePickerUploadFile(file_selected[0].name, temp_url)
+
+                #  Realiza o upload
+                fp.upload([file_upload])
+
+            else:
+                on_file_selected()
+
+    fp = ft.FilePicker(on_result=on_image_selected, on_upload=get_uploaded_file_bytes, data="fp")
+    page.overlay.append(fp)
+
+    def open_gallery(e, type): 
+        fp.pick_files(              
+            allow_multiple=False,
+        )
+
+        file_type.clear()
+        file_type.append(type)
+
+
+    botao_edit = buttons.create_button(on_click=lambda e: editar_dados(view_deliveries),
+                                      text="Enviar",
+                                      color=ft.Colors.BLUE,
+                                      col=7,
+                                      padding=5,)
+     
+    btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type="dwg"),
+                                      text="Upload DWG",
+                                      color=ft.Colors.AMBER,
+                                      col=7,
+                                      padding=5,) 
+    
+    main_container = ft.Container(
+        content=ft.Column(
+            controls=[
+                *(view_deliveries.values()),
+                btn_dwg,
+            ],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.AUTO,
+            expand=True,  # Permite que a Column expanda com o conteúdo
+        ),
+        padding=20,
+        border=ft.border.all(2, ft.Colors.BLUE),
+        border_radius=10,
+        bgcolor=ft.Colors.WHITE,
+        width=min(1000, page.width * 0.9),  # Largura responsiva
+        alignment=ft.alignment.top_center,  # Alinhamento no topo para melhor distribuição
+        margin=10,
+        expand=True  # Permite que o Container expanda verticalmente
+    )
+
+    # Layout da página
     layout = ft.ResponsiveRow(
-        [
+        columns=12,
+        controls=[
             ft.Column(
-                [*list_content, btn_send],
                 col={"sm": 12, "md": 8, "lg": 6},
+                controls=[main_container, botao_edit],
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            ),
+            )
         ],
-        alignment=ft.MainAxisAlignment.CENTER,  
-        vertical_alignment=ft.CrossAxisAlignment.CENTER, 
+        expand=True,
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
     return layout
@@ -3188,7 +3316,7 @@ def create_page_freelancer_token(page, username):
     
     def editar_dados(view_project):
         
-        data_project = view_project
+        data_project = view_project.copy()
 
         data_project["name"] = view_project["name"].value
         data_project["current_project"] = view_project["current_project"].value
@@ -3584,6 +3712,8 @@ def create_page_see_deliverys(page):
 def create_page_delivery_details(page, delivery):
 
     loading = LoadingPages(page=page)
+    buttons = Buttons(page)
+    sp = SupaBase(page)
 
     # Definir o tema global para garantir que o texto seja preto por padrão
 
@@ -3605,87 +3735,250 @@ def create_page_delivery_details(page, delivery):
         ],
     )
 
-    def editar_dados(data_list):
+    file_selected = []
+    file_name = []
+    file_type =[]
+    file_old_name = []
+    add_file = [False]
+
+
+    def editar_dados(view_deliveries):
         
+        data_subproject = view_deliveries.copy()
+
+        data_subproject["username"] = view_deliveries["username"].value
+        data_subproject["date"] = view_deliveries["date"].value
+        data_subproject["name_subproject"] = view_deliveries["name_subproject"].value
+        data_subproject["polygons"] = view_deliveries["polygons"].value
+        data_subproject["errors"] = view_deliveries["errors"].value
+        data_subproject["discount"] = view_deliveries["discount"].value
+        data_subproject["warning"] = view_deliveries["warning"].value
+        data_subproject["delay"] = view_deliveries["delay"].value
+        data_subproject["photos"] = view_deliveries["photos"].value
+        data_subproject["dwg"] = view_deliveries["dwg"].value
         
-        username = data_list[0].value
 
-        date = data_list[1].value
-        name_subproject = data_list[2].value
-
-        project = data_list[3].value
-        polygons = data_list[4].value
-
-        errors = data_list[5].value
-        warnings = data_list[6].value
-        
-        discount = data_list[7].value
-        delays = data_list[8].value
-        file = data_list[9].value
-
-        photo = data_list[10].value
-    
-        supa_list = [
-        username, date, name_subproject, project, polygons, errors, discount,
-          warnings, delays, file, photo
-        ]
-
-        if any(field == "" or field is None for field in supa_list):
+        if any(field == "" or field is None for field in data_subproject.values()):
             snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
         else:
-            sp = SupaBase(page)
-            sp.edit_delivery_data(supa_list)
-            snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
-            page.overlay.append(snack_bar)
-            snack_bar.open = True
-            page.update()
+
+            if add_file[0] == True:
+
+                response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "deliveries")
+
+                if response1.status_code == 200 or response1.status_code == 201:
+
+                    data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
+                    response2 = sp.edit_delivery_data(data_subproject)
+
+                    if response2.status_code in [200, 204]:
+
+                        loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=data_subproject))
+                        snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+            else:
+                response2 = sp.edit_delivery_data(data_subproject)
+
+                if response2.status_code in [200, 204]:
+                    loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=data_subproject))
+                    snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
 
 
     # Campos para exibir os detalhes da entrega
-    details_layout = ft.Column(
-    controls=[
-        ft.TextField(label="Usuário", value=f"{delivery['username']}", width=300, color=ft.Colors.BLACK), 
-        ft.TextField(label="Data", value=f"{delivery['date']}", width=300, color=ft.Colors.BLACK), 
-        ft.TextField(label="Subprojeto", value=f"{delivery['name_subproject']}", width=300, color=ft.Colors.BLACK), 
-        ft.TextField(label="Projeto", value=f"{delivery['project']}", width=300, color=ft.Colors.BLACK),  
-        ft.TextField(label="Polígonos", value=f"{delivery['polygons']}", width=300, color=ft.Colors.BLACK), 
-        ft.TextField(label="Erros", value=f"{delivery['errors']}", width=300, color=ft.Colors.BLACK),  
-        ft.TextField(label="Desconto", value=f"{delivery['discount']}", width=300, color=ft.Colors.BLACK),  
-        ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, color=ft.Colors.BLACK),  
-        ft.TextField(label="Atrasos", value=f"{delivery['delay']}", width=300, color=ft.Colors.BLACK), 
-        ft.TextField(label="Arquivo", value=f"{delivery['file']}", width=300, color=ft.Colors.BLACK),  
-        ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, color=ft.Colors.BLACK),  
-    ],
-    spacing=10,
-    scroll=ft.ScrollMode.AUTO,  # Habilita o scroll
-)
+    
+    users = []
+    get_users = (sp.get_all_user_data()).json()
+    for item in get_users:
+        users.append(ft.dropdown.Option(item["username"]))
 
-# Lista com os TextFields
-    data_list = [   
-    ft.TextField(label="Usuário", value=f"{delivery['username']}", width=300, color=ft.Colors.BLACK),  # usuario_field
-    ft.TextField(label="Data", value=f"{delivery['date']}", width=300, color=ft.Colors.BLACK),  # data_field
-    ft.TextField(label="Subprojeto", value=f"{delivery['name_subproject']}", width=300, color=ft.Colors.BLACK),  # subprojeto_field
-    ft.TextField(label="Projeto", value=f"{delivery['project']}", width=300, color=ft.Colors.BLACK),  # projeto_field
-    ft.TextField(label="Polígonos", value=f"{delivery['polygons']}", width=300, color=ft.Colors.BLACK),  # poligonos_field
-    ft.TextField(label="Erros", value=f"{delivery['errors']}", width=300, color=ft.Colors.BLACK),  # erros_field
-    ft.TextField(label="Desconto", value=f"{delivery['discount']}", width=300, color=ft.Colors.BLACK),  # desconto_field
-    ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, color=ft.Colors.BLACK),  # advertencias_field
-    ft.TextField(label="Atrasos", value=f"{delivery['delay']}", width=300, color=ft.Colors.BLACK),  # atrasos_field
-    ft.TextField(label="Arquivo", value=f"{delivery['file']}", width=300, color=ft.Colors.BLACK),  # arquivo_field
-    ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, color=ft.Colors.BLACK),  # fotos_field
-]
-    botao_edit = ft.ElevatedButton("Editar", on_click=lambda e: editar_dados(data_list))
-    # Container principal
+    dropdow1 = ft.Dropdown(
+        options=users,
+        value=delivery['username'],
+        label="Usuário",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        enable_filter=True,
+        editable=True,
+        )
+    
+    subprojects = []
+    get_subprojects = (sp.get_all_subprojects()).json()
+    for item in get_subprojects:
+        subprojects.append(ft.dropdown.Option(item["name_subproject"]))
+
+    dropdow2 = ft.Dropdown(
+        options=subprojects,
+        value=delivery['name_subproject'],
+        label="Subprojeto",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        enable_filter=True,
+        editable=True,
+        )
+    
+    dropdow3 = ft.Dropdown(
+        options=[
+            ft.dropdown.Option("Sim"),
+            ft.dropdown.Option("Não"),
+        ],
+        value=delivery['delay'],
+        label="Atraso",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        )
+
+    view_deliveries = {
+        "username": dropdow1, 
+        "date":ft.TextField(label="Data", value=f"{delivery['date']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "name_subproject":dropdow2, 
+        "polygons":ft.TextField(label="Polígonos", value=f"{delivery['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "errors":ft.TextField(label="Erros", value=f"{delivery['errors']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "discount":ft.TextField(label="Desconto", value=f"{delivery['discount']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "warning":ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "delay":dropdow3,
+        "photos":ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "dwg":ft.TextField(label="DWG", value=f"{delivery['dwg']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+    }
+
+    def on_file_selected():
+
+        date = (view_deliveries["date"].value).split("/")
+
+        name_file = f'{view_deliveries["username"].value}_{view_deliveries["name_subproject"].value}_{date[0]}{date[1]}{date[2]}.{file_type[0]}'
+        file_name.clear()
+        file_name.append(name_file)
+
+        view_deliveries["dwg"].value = file_old_name[0]
+
+        add_file[0] = True
+
+        page.update()
+
+    def get_uploaded_file_bytes(e: ft.FilePickerUploadEvent):
+
+        file_path = f"uploads/{file_old_name[0]}"    
+
+        with open(file_path, "rb") as file:
+            file_content = file.read()
+
+        file_selected.clear()
+        file_selected.append(file_content)
+
+        on_file_selected()
+
+    def on_image_selected(e: ft.FilePickerResultEvent):
+
+            if not e.files or len(e.files) == 0:
+                return
+            
+            file_selected.clear()
+            file_selected.append(e.files[0])
+            file_old_name.clear()
+            file_old_name.append(e.files[0].name)
+
+            if e.page.web:
+                #  Gerar a URL temporária
+                temp_url = e.page.get_upload_url(file_selected[0].name, 3600)
+
+                #  Criar objeto para upload
+                file_upload = ft.FilePickerUploadFile(file_selected[0].name, temp_url)
+
+                #  Realiza o upload
+                fp.upload([file_upload])
+
+            else:
+                on_file_selected()
+
+    fp = ft.FilePicker(on_result=on_image_selected, on_upload=get_uploaded_file_bytes, data="fp")
+    page.overlay.append(fp)
+
+    def open_gallery(e, type): 
+        fp.pick_files(              
+            allow_multiple=False,
+        )
+
+        file_type.clear()
+        file_type.append(type)
+
+
+    def delete_delivery(view_deliveries):
+
+            base = SupaBase(page=page)
+
+            data_subproject = view_deliveries.copy()
+
+            data_subproject["username"] = view_deliveries["username"].value
+            data_subproject["date"] = view_deliveries["date"].value
+
+
+            date = (data_subproject["date"]).split("/")
+            name_file = f'{view_deliveries["username"].value}_{view_deliveries["name_subproject"].value}_{date[0]}{date[1]}{date[2]}.dwg'
+            response1 = base.delete_storage(local="deliveries", object=f"{name_file}", type="image/vnd.dwg")   
+            response2 = base.delete_delivery(data_subproject)
+
+            if response2.status_code in [200, 204]:
+            
+                    loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+                    snack_bar = ft.SnackBar(content=ft.Text("Entrega excluida"), bgcolor=ft.Colors.RED)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
+            else:
+                loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+                snack_bar = ft.SnackBar(content=ft.Text("Falha ao excluir tabela"), bgcolor=ft.Colors.RED)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+
+
+
+    btn_edit = buttons.create_button(on_click=lambda e: editar_dados(view_deliveries),
+                                      text="Editar",
+                                      color=ft.Colors.BLUE,
+                                      col=7,
+                                      padding=5,) 
+    
+    btn_delete = buttons.create_button(on_click=lambda e: delete_delivery(view_deliveries),
+                                      text="Excluir",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5,) 
+    
+    btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type="dwg"),
+                                      text="Upload DWG",
+                                      color=ft.Colors.AMBER,
+                                      col=7,
+                                      padding=5,) 
+    
     main_container = ft.Container(
-        content=details_layout,
+        content=ft.Column(
+            controls=[
+                *(view_deliveries.values()),
+                btn_dwg,
+            ],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.AUTO,
+            expand=True,  # Permite que a Column expanda com o conteúdo
+        ),
         padding=20,
         border=ft.border.all(2, ft.Colors.BLUE),
         border_radius=10,
         bgcolor=ft.Colors.WHITE,
-        width=800 if page.width > 800 else page.width * 0.9,  # Largura responsiva
+        width=min(1000, page.width * 0.9),  # Largura responsiva
+        alignment=ft.alignment.top_center,  # Alinhamento no topo para melhor distribuição
+        margin=10,
+        expand=True  # Permite que o Container expanda verticalmente
     )
 
     # Layout da página
@@ -3694,7 +3987,7 @@ def create_page_delivery_details(page, delivery):
         controls=[
             ft.Column(
                 col={"sm": 12, "md": 8, "lg": 6},
-                controls=[main_container, botao_edit],
+                controls=[main_container, btn_edit, btn_delete],
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             )
