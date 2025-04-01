@@ -370,7 +370,8 @@ def create_page_user(page):
                 month = 1
                 year += 1
 
-        day_date_file = f"{dias[date_file]}/{month:02d}/{year:02d}"
+
+        day_date_file = f"{(dias[date_file]):02d}/{month:02d}/{year:02d}"
 
         request_date_file = sp.check_file(date=day_date_file, username=dict_profile["username"])
 
@@ -451,7 +452,9 @@ def create_page_user(page):
     #....................................................................
     # Inserção de arquivo
 
-    def send_file(file_path, name_file):
+    def send_file(file_path):
+
+
 
         container = None
         overlay_copy = list(page.overlay)
@@ -460,6 +463,13 @@ def create_page_user(page):
                     pass
                 else:
                     container = item
+
+        data = (container.controls[0].content.controls[3].value).split("/")
+
+        extension = "dwg"
+        if row3["type"] == "fotos":
+            extension = "xlsx"
+        name_file = f'{dict_profile["username"]}_{data[0]}{data[1]}{data[2]}.{extension}'
 
         field_container = [
             container.controls[0].content.controls[3].value,
@@ -593,12 +603,8 @@ def create_page_user(page):
     def on_file_selected():
 
         data = (datetime.now().strftime("%d/%m/%Y")).replace("/", "")
-        extension = "dwg"
-        if row3["type"] == "fotos":
-            extension = "xlsx"
-        name_file = f'{dict_profile["username"]}_{data}.{extension}'
         
-        btn_send = buttons.create_button(on_click=lambda e: send_file(file_selected[0], name_file),
+        btn_send = buttons.create_button(on_click=lambda e: send_file(file_selected[0]),
                                     text="Enviar",
                                     color=ft.Colors.BLUE,
                                     col=7,
@@ -2921,28 +2927,25 @@ def create_page_payment(page, month=None):
         username = row["username"]
         date = row["date"]
         name_subproject = row["name_subproject"]
-        project = row["project"]
         polygons = row["polygons"]
         photos = row["photos"]
         errors = row["errors"]
         discount = row["discount"]
         delay = row["delay"]
         warning = row["warning"]
-        file = row["file"]
+
 
         dicio_all_deliverys[id] = {
                                     "id": id,
                                     "username": username,
                                     "date": date,
                                     "name_subproject": name_subproject,
-                                    "project": project,
                                     "polygons": polygons,
                                     "photos": photos,
                                     "errors": errors,
                                     "discount": discount,
                                     "delay": delay,
                                     "warning": warning,
-                                    "file": file
                                     }
 
 
@@ -3941,6 +3944,40 @@ def create_page_delivery_details(page, delivery):
                 snack_bar.open = True
                 page.update()
 
+    def delete_file(view_deliveries):
+
+            base = SupaBase(page=page)
+
+            data_subproject = view_deliveries.copy()
+
+            data_subproject["username"] = view_deliveries["username"].value
+            data_subproject["date"] = view_deliveries["date"].value
+
+
+            date = (data_subproject["date"]).split("/")
+            name_file = f'{view_deliveries["username"].value}_{view_deliveries["name_subproject"].value}_{date[0]}{date[1]}{date[2]}.dwg'
+            response1 = base.delete_storage(local="deliveries", object=f"{name_file}", type="image/vnd.dwg")
+            if response1.status_code in [200, 204]:   
+                data_dwg = {"dwg":".", "username": data_subproject["username"], "date": data_subproject["date"] }
+                response2 = sp.edit_delivery_data(data_dwg)
+                if response2.status_code in [200, 204]:
+                        delivery["dwg"] = "."
+                        loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=delivery))
+                        snack_bar = ft.SnackBar(content=ft.Text("Arquivo excluido"), bgcolor=ft.Colors.GREEN)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+                else:
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
+            else:
+                snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir arquivo: {response1.text}"), bgcolor=ft.Colors.RED)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+
 
 
     btn_edit = buttons.create_button(on_click=lambda e: editar_dados(view_deliveries),
@@ -3955,6 +3992,12 @@ def create_page_delivery_details(page, delivery):
                                       col=7,
                                       padding=5,) 
     
+    btn_delete_file = buttons.create_button(on_click=lambda e: delete_file(view_deliveries),
+                                      text="Delete DWG",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5,) 
+    
     btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type="dwg"),
                                       text="Upload DWG",
                                       color=ft.Colors.AMBER,
@@ -3965,7 +4008,11 @@ def create_page_delivery_details(page, delivery):
         content=ft.Column(
             controls=[
                 *(view_deliveries.values()),
-                btn_dwg,
+                ft.Row(
+                    [btn_dwg,btn_delete_file],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             scroll=ft.ScrollMode.AUTO,
@@ -4272,6 +4319,7 @@ def create_page_files(page):
 def create_page_files_details(page, files):
 
     loading = LoadingPages(page=page)
+    buttons = Buttons(page)
 
     # Definir o tema global para garantir que o texto seja preto por padrão
 
@@ -4294,36 +4342,71 @@ def create_page_files_details(page, files):
     )
 
   
+    view_files = {
+      
+        "username": ft.TextField(label="Usuário", value=f"{files['username']}", width=300, color=ft.Colors.BLACK),  # usuario_field
+        "date": ft.TextField(label="Data", value=f"{files['date']}", width=300, color=ft.Colors.BLACK),  # data_field
+        "subproject": ft.TextField(label="Subprojeto", value=f"{files['subproject']}", width=300, color=ft.Colors.BLACK),  # subprojeto_field
+        "type": ft.TextField(label="type", value=f"{files['type']}", width=300, color=ft.Colors.BLACK),  # erros_field
+        "amount": ft.TextField(label="amount", value=f"{files['amount']}", width=300, color=ft.Colors.BLACK),  # desconto_field
+        "url": ft.TextField(label="url", value=f"{files['url']}", width=300, color=ft.Colors.BLACK),  # advertencias_field
+
+    }
+
+    def delete_file(view_files):
+
+        base = SupaBase(page=page)
+
+        data_subproject = view_files.copy()
+
+        data_subproject["username"] = view_files["username"].value
+        data_subproject["date"] = view_files["date"].value
+
+        ext = {"poligonos": "dwg", "fotos": "xlsx"}
+        type = {"poligonos": "image/vnd.dwg", "fotos": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
+        
+        date = (data_subproject["date"]).split("/")
+        name_file = f'{view_files["username"].value}_{date[0]}{date[1]}{date[2]}.{ext[view_files["type"].value]}'
+        response1 = base.delete_storage(local="files", object=f"{name_file}", type=type[view_files["type"].value])   
+        response2 = base.delete_file_data(data_subproject)
+
+        if response2.status_code in [200, 204]:
+            loading.new_loading_page(page=page, call_layout=lambda: create_page_files(page=page))
+            snack_bar = ft.SnackBar(content=ft.Text("Entrega excluida"), bgcolor=ft.Colors.GREEN)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+        else:
+            loading.new_loading_page(page=page, call_layout=lambda: create_page_files(page=page))
+            snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
 
 
-    # Campos para exibir os detalhes da entrega
-    details_layout = ft.Column(
-    controls=[
-        ft.Text("Detalhes da Entrega", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),  # Título        
-        ft.TextField(label="Usuário", value=f"{files['username']}", width=300, color=ft.Colors.BLACK),  # usuario_field
-        ft.TextField(label="Data", value=f"{files['date']}", width=300, color=ft.Colors.BLACK),  # data_field
-        ft.TextField(label="Subprojeto", value=f"{files['subproject']}", width=300, color=ft.Colors.BLACK),  # subprojeto_field
-        ft.TextField(label="type", value=f"{files['type']}", width=300, color=ft.Colors.BLACK),  # erros_field
-        ft.TextField(label="amount", value=f"{files['amount']}", width=300, color=ft.Colors.BLACK),  # desconto_field
-        ft.TextField(label="url", value=f"{files['url']}", width=300, color=ft.Colors.BLACK),  # advertencias_field
-    ],
-    spacing=10,
-    scroll=ft.ScrollMode.AUTO,  # Habilita o scroll
-)
-
-# Lista com os TextFields
-    data_list = [   
-    ft.TextField(label="Usuário", value=f"{files['username']}", width=300, color=ft.Colors.BLACK),  # usuario_field
-    ft.TextField(label="Data", value=f"{files['date']}", width=300, color=ft.Colors.BLACK),  # data_field
-    ft.TextField(label="Subprojeto", value=f"{files['subproject']}", width=300, color=ft.Colors.BLACK),  # subprojeto_field
-    ft.TextField(label="type", value=f"{files['type']}", width=300, color=ft.Colors.BLACK),
-    ft.TextField(label="amount", value=f"{files['amount']}", width=300, color=ft.Colors.BLACK),
-    ft.TextField(label="url", value=f"{files['url']}", width=300, color=ft.Colors.BLACK),  # advertencias_field
-]
+    btn_download = buttons.create_button(on_click=lambda e: page.launch_url(view_files["url"].value),
+                                      text="Download",
+                                      color=ft.Colors.BLUE,
+                                      col=7,
+                                      padding=5,) 
+    
+    btn_delete = buttons.create_button(on_click=lambda e: delete_file(view_files),
+                                      text="Excluir",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5,) 
     
     # Container principal
     main_container = ft.Container(
-        content=details_layout,
+        content=ft.Column(
+            controls=[
+                *(view_files.values()),
+                btn_download
+            ],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.AUTO,
+            expand=True,  # Permite que a Column expanda com o conteúdo
+        ),
         padding=20,
         border=ft.border.all(2, ft.Colors.BLUE),
         border_radius=10,
@@ -4337,7 +4420,7 @@ def create_page_files_details(page, files):
         controls=[
             ft.Column(
                 col={"sm": 12, "md": 8, "lg": 6},
-                controls=[main_container],
+                controls=[main_container, btn_delete],
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             )

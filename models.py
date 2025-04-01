@@ -1861,7 +1861,7 @@ class SupaBase:
         params = {
         "username": f"eq.{username}",   
         "date": f"eq.{date}",
-        "select": "date",
+        "select": "*",
         }
 
         response = requests.get(
@@ -1904,6 +1904,28 @@ class SupaBase:
 
         response = requests.delete(
             f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def delete_file_data(self, data):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "username":  f"eq.{data["username"]}", 
+                   "date":  f"eq.{data["date"]}", 
+                   "select": "*"
+        }
+
+        response = requests.delete(
+            f'{self.supabase_url}/rest/v1/files',
             headers=headers,
             params=params,
         )
