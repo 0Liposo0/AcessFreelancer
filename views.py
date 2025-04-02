@@ -2552,6 +2552,7 @@ def create_page_new_subproject(page, project):
 def create_page_new_freelancer(page):
 
     loading = LoadingPages(page=page)
+    buttons = Buttons(page)
     
     def go_home():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
@@ -2569,60 +2570,107 @@ def create_page_new_freelancer(page):
         ],
     )
 
+    dropdow3 = ft.Dropdown(
+        options=[
+            ft.dropdown.Option("adm"),
+            ft.dropdown.Option("user"),
+        ],
+        label="Permissão",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        )
+
     # Campos do formulário
-    campos = {
-        "nome": ft.TextField(label="Nome", hint_text="Digite o nome", bgcolor=ft.Colors.WHITE, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "Usuario": ft.TextField(label="Usuario", hint_text="Digite o Usuario",bgcolor=ft.Colors.WHITE, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "pix": ft.TextField(label="PIX", hint_text="Digite o chave PIX",bgcolor=ft.Colors.WHITE, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+    view_user = {
+        "name": ft.TextField(label="Nome", hint_text="Digite o nome", bgcolor=ft.Colors.WHITE, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "username": ft.TextField(label="Usuario", hint_text="Digite o Usuario",bgcolor=ft.Colors.WHITE, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "password": ft.TextField(label="Senha", hint_text="Digite a Senha",bgcolor=ft.Colors.WHITE, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "payment": ft.TextField(label="Pagamento", hint_text="Digite o Pagamento",bgcolor=ft.Colors.WHITE, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "email": ft.TextField(label="Email", hint_text="Digite o email",bgcolor=ft.Colors.WHITE, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "permission": dropdow3
     }
 
     # Função para enviar os dados (simulação)
-    def enviar_dados(e):
+    def enviar_dados(view_user):
         
-        name_data = campos["nome"].value
-        user_data = campos["Usuario"].value
-        pix_data = campos["pix"].value
-        email_data = campos["email"].value
+        data_subproject = view_user.copy()
 
-        list_field = [name_data, user_data, pix_data, email_data]  
+        data_subproject["name"] = view_user["name"].value
+        data_subproject["username"] = view_user["username"].value
+        data_subproject["password"] = view_user["password"].value
+        data_subproject["payment"] = view_user["payment"].value
+        data_subproject["email"] = view_user["email"].value
+        data_subproject["permission"] = view_user["permission"].value
+        data_subproject["weekly_deliveries"] = "0"
+        data_subproject["total_deliverys"] = "0"
+        data_subproject["polygons_made"] = "0"
+        data_subproject["delays"] = "0"
+        data_subproject["warnings"] = "0"
+        data_subproject["current_project"] = "."
+        data_subproject["polygons_wrong"] = "0"
 
-        if any(field == "" or field is None for field in list_field):
+
+        if any(field == "" or field is None for field in data_subproject.values()):
             snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
         else:
             sp = SupaBase(page)
-            sp.create_user_data(name=name_data, username=user_data, pix=pix_data, email=email_data)
-            snack_bar = ft.SnackBar(content=ft.Text("Dados enviados com sucesso"), bgcolor=ft.Colors.GREEN)
-            page.overlay.append(snack_bar)
-            snack_bar.open = True
-            page.update()
+            response = sp.create_user_data(data_subproject)
+            if response.status_code in [200, 201]:
+                loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
+                snack_bar = ft.SnackBar(content=ft.Text("Usuário criado"), bgcolor=ft.Colors.GREEN)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+            else:
+                snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao criar usuário: {response.text}"), bgcolor=ft.Colors.RED)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
 
+    botao_enviar = buttons.create_button(on_click=lambda e: enviar_dados(view_user),
+                                      text="Enviar",
+                                      color=ft.Colors.BLUE,
+                                      col=7,
+                                      padding=5,)
 
-    # Botão para enviar os dados
-    botao_enviar = ft.ElevatedButton("Enviar", on_click=enviar_dados)
-    
-    # Layout principal da página
-    layout_principal = ft.ResponsiveRow(
-        [
-            ft.Column(
-                col={"sm": 12, "md": 8, "lg": 6},  # Define o tamanho do container em diferentes breakpoints
-                controls=list(campos.values()) + [botao_enviar],
-                alignment=ft.MainAxisAlignment.CENTER,  # Centraliza verticalmente
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza horizontalmente
-                spacing=20,
-                scroll=ft.ScrollMode.AUTO,  # Habilita o scroll dentro da coluna
-            )
-        ],
-        alignment=ft.MainAxisAlignment.CENTER,  # Centraliza o ResponsiveRow na página
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza verticalmente o ResponsiveRow
-        
+    main_container = ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.Text("Adicionar Freelancer", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                *[item for item in view_user.values()],
+                botao_enviar
+            ],
+            expand=True,
+            spacing=20,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+        bgcolor=ft.Colors.WHITE,
+        padding=10,
+        border_radius=10,
+        expand=True,
+        alignment=ft.alignment.center,
     )
 
-    # Adiciona o layout principal à página
-    return layout_principal
+    layout = ft.ResponsiveRow(
+        [
+            ft.Column(
+                [main_container],
+                col={"sm": 12, "md": 8, "lg": 6},
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,  
+        vertical_alignment=ft.CrossAxisAlignment.CENTER, 
+    )
+
+    return layout
+
 # Pagina de Fichas Criacionais de Freelancers
 def create_page_new_delivery(page):
 
@@ -2659,16 +2707,7 @@ def create_page_new_delivery(page):
 
     def editar_dados(view_deliveries):
         
-        data_subproject = view_deliveries
-
-        print("")
-        print(view_deliveries["username"])
-        print(view_deliveries["date"])
-        print(view_deliveries["name_subproject"])
-        print(view_deliveries["polygons"])
-        print(view_deliveries["errors"])
-        print(view_deliveries["discount"])
-        print("")
+        data_subproject = view_deliveries.copy()
 
         data_subproject["id"] = str(sp.get_delivery_id())
         data_subproject["username"] = view_deliveries["username"].value
@@ -2695,23 +2734,36 @@ def create_page_new_delivery(page):
                 response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "deliveries")
 
                 if response1.status_code == 200 or response1.status_code == 201:
-
                     data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
                     response2 = sp.post_to_deliverys_data(data_subproject)
 
                     if response2.status_code in [200, 201]:
-
                         loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
                         snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
                         page.update()
+                    else:
+                        snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir tabela: {response2.text}"), bgcolor=ft.Colors.AMBER)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+                else:
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir arquivo: {response1.text}"), bgcolor=ft.Colors.RED)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
             else:
                 response2 = sp.post_to_deliverys_data(data_subproject)
 
                 if response2.status_code in [200, 204]:
                     loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
+                else:
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir tabela: {response2.text}"), bgcolor=ft.Colors.AMBER)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
@@ -3165,6 +3217,7 @@ def create_page_see_freelancers(page):
                     column_spacing=40,  
                     expand=True,  
                     columns=[
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
                         ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
                         ft.DataColumn(ft.Text(value="Permissão", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                         ft.DataColumn(ft.Text(value="Projeto Atual", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
@@ -3180,11 +3233,39 @@ def create_page_see_freelancers(page):
         expand=True,  
     )
 
+
     # Preenche a lista com os dados das entregas
     for delev in get_json:
+
+        perfil = ft.Column(
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Container(
+                    width=40,
+                    height=40,
+                    alignment=ft.alignment.center,
+                    content=ft.Image(  # Mova a imagem para o content
+                        src=f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/freelancers//{delev['username']}.jpg",  
+                        fit=ft.ImageFit.COVER,
+                        expand=True,
+                    ),
+                    border=ft.Border(
+                        left=ft.BorderSide(2, ft.Colors.BLACK),  
+                        top=ft.BorderSide(2, ft.Colors.BLACK),    
+                        right=ft.BorderSide(2, ft.Colors.BLACK), 
+                        bottom=ft.BorderSide(2, ft.Colors.BLACK) 
+                    ),
+                    bgcolor=ft.Colors.BLACK,
+                    border_radius=ft.border_radius.all(20),
+                    clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                )
+            ]
+        )
         
         history_list.controls[0].content.rows.append(
             ft.DataRow(cells=[
+                            ft.DataCell(perfil),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['username']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
@@ -3233,7 +3314,7 @@ def create_page_see_freelancers(page):
         texto = e.control.value.lower().strip()
         
         for item in history_list.controls[0].content.rows:
-            item.visible = texto in item.cells[0].content.value.lower() if texto else True
+            item.visible = texto in item.cells[1].content.value.lower() if texto else True
 
         history_list.update()
 
@@ -3307,6 +3388,7 @@ def create_page_freelancer_token(page, username):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=page)
+    buttons = Buttons(page)
     get_base_Project = base.get_user_data(username)
     get_info1 = get_base_Project.json()
     get_info2 = get_info1[0]
@@ -3363,32 +3445,109 @@ def create_page_freelancer_token(page, username):
         ],
     )
 
-    view_project ={
+    subprojects = []
+    subprojects.append(ft.dropdown.Option("."))
+    get_subprojects = (base.get_all_subprojects()).json()
+    for item in get_subprojects:
+        subprojects.append(ft.dropdown.Option(item["name_subproject"]))
+
+    dropdow2 = ft.Dropdown(
+        options=subprojects,
+        label="SubProjeto",
+        value=get_info2["current_project"],
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        bgcolor=ft.Colors.WHITE,
+        width=300,
+        enable_filter=True,
+        editable=True,
+        )
+
+    view_user ={
         "name": ft.TextField(label="Nome do Freelancer", value=get_info2["name"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "current_project": ft.TextField(label="Projeto Atual", value=get_info2["current_project"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "current_project": dropdow2,
         "username": ft.TextField(label="Nome de Usuario", value=get_info2["username"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "password": ft.TextField(label="Senha", value=get_info2["password"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "email": ft.TextField(label="Email", value=get_info2["email"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "permission": ft.TextField(label="Senha", value=get_info2["permission"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "payment": ft.TextField(label="Pix", value=get_info2["payment"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "permission": ft.TextField(label="Permissão", value=get_info2["permission"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "payment": ft.TextField(label="Pagamento", value=get_info2["payment"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
     }
 
-    botao_edit = ft.ElevatedButton("Editar", on_click=lambda e: editar_dados(view_project))
+    perfil = ft.Column(
+        alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            ft.Container(
+                width=150,
+                height=150,
+                alignment=ft.alignment.center,
+                content=ft.Image(  # Mova a imagem para o content
+                    src=f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/freelancers//{get_info2["username"]}.jpg",  
+                    fit=ft.ImageFit.COVER,
+                    expand=True,
+                ),
+                border=ft.Border(
+                    left=ft.BorderSide(2, ft.Colors.BLACK),  
+                    top=ft.BorderSide(2, ft.Colors.BLACK),    
+                    right=ft.BorderSide(2, ft.Colors.BLACK), 
+                    bottom=ft.BorderSide(2, ft.Colors.BLACK) 
+                ),
+                bgcolor=ft.Colors.BLACK,
+                border_radius=ft.border_radius.all(75),
+                clip_behavior=ft.ClipBehavior.HARD_EDGE,
+            )
+        ]
+    )
+
+    def delete_user(view_files):
+
+        base = SupaBase(page=page)
+
+        data_subproject = view_files.copy()
+
+        data_subproject["username"] = view_files["username"].value
+
+        name_file = f'{view_files["username"].value}.jpg'
+        response1 = base.delete_storage(local="freelancers", object=f"{name_file}", type="image/jpeg")   
+        response2 = base.delete_user_data(data_subproject)
+
+        if response2.status_code in [200, 204]:
+            loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
+            snack_bar = ft.SnackBar(content=ft.Text("Usuário Excluido"), bgcolor=ft.Colors.GREEN)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+        else:
+            loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
+            snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+
+    botao_edit = buttons.create_button(on_click=lambda e: editar_dados(view_user),
+                                      text="Editar",
+                                      color=ft.Colors.BLUE,
+                                      col=7,
+                                      padding=5,)
+     
+    botao_delete_user = buttons.create_button(on_click=lambda e: delete_user(view_user),
+                                      text="Excluir",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5,) 
 
     projects_token = ft.Container(
     content=ft.Column(
-        controls=view_project.values(),
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # Centraliza os itens na horizontal
-        scroll=ft.ScrollMode.AUTO,  # Adiciona scroll se necessário
+        controls=[perfil, *(view_user.values())],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER, 
+        scroll=ft.ScrollMode.AUTO,
+        spacing=20,
     ),
     padding=20,
-    border=ft.border.all(2, ft.Colors.BLUE),
     border_radius=10,
     bgcolor=ft.Colors.WHITE,
-    width=min(800, page.width * 0.9),  # Largura máxima de 800px ou 90% da tela
-    height=min(900, page.height * 0.8),  # Altura máxima de 900px ou 80% da tela
-    alignment=ft.alignment.center,  # Centraliza o conteúdo dentro do container
-    margin=10,  # Margem externa
+    alignment=ft.alignment.center,  
+    margin=10,  
 )
 
     # Layout responsivo com as duas fichas lado a lado
@@ -3403,7 +3562,11 @@ def create_page_freelancer_token(page, username):
                 ft.Container(
                     botao_edit,
                     alignment=ft.alignment.center
-                )
+                ),
+                ft.Container(
+                    botao_delete_user,
+                    alignment=ft.alignment.center
+                ),
             ],
             col={"sm": 12, "md": 6},
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,

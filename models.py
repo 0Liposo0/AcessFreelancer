@@ -1178,6 +1178,7 @@ class SupaBase:
             return maior_id + 1  # Retorna o próximo ID disponível
         else:
             return 1  # Se não houver registros, começa do 1
+        
 
     def get_storage(self):
 
@@ -1704,19 +1705,12 @@ class SupaBase:
 
 
 
-    def create_user_data(self, name, username, pix, email):
+    def create_user_data(self, data):
 
         headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
             "Content-Type": "application/json",
-        }
-
-        data = { 
-                "name": name,
-                "username": username,
-                "payment": pix,
-                "email": email,                    
         }
 
         response = requests.post(
@@ -1932,6 +1926,29 @@ class SupaBase:
 
         return response
     
+    def delete_user_data(self, data):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "username":  f"eq.{data["username"]}", 
+                   "select": "*"
+        }
+
+        response = requests.delete(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )
+
+        print(response.text)
+
+        return response
+    
     def delete_project(self, project):
 
         headers = {
@@ -1959,6 +1976,8 @@ class SupaBase:
             f'{self.supabase_url}/storage/v1/object/{local}/{object}',  
             headers=headers,
         )
+
+        print(response.text)
 
         return response
     
