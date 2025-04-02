@@ -334,7 +334,7 @@ def create_page_user(page):
     #....................................................................
     # Atualizando dados financeiros
 
-    total_cash_polygons = float((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]) * 0.50)
+    total_cash_polygons = float((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]) * 0.60)
     total_cash_photos = float((delivery_07[1]+delivery_14[1]+delivery_21[1]+delivery_28[1]) * 0.20)
     total_cash = f"{(total_cash_polygons + total_cash_photos):.2f}"
     total_cash_polygons_made = int((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]))
@@ -442,8 +442,7 @@ def create_page_user(page):
     )
 
     # Tabela da ortofoto
-    url_imagem1 = sp.get_storage()
-    ortofoto = web_images.create_web_image(src=url_imagem1)
+    ortofoto = web_images.create_web_image(src=row3["preview"])
     container_ortofoto = ft.Container(content=(ortofoto), border_radius=20, height=((page.height) / 2),)
 
     # Criação de tabelas
@@ -754,7 +753,9 @@ def create_page_user(page):
                                       padding=5,
                                       )
     
-    btn_ecw = buttons.create_button(on_click=lambda e: page.launch_url(row3["ecw"]),
+    url = (((sp.get_one_project_data(row3["project"])).json())[0])["ecw"]
+
+    btn_ecw = buttons.create_button(on_click=lambda e: page.launch_url(url),
                                       text="Baixar Ortofoto",
                                       color=ft.Colors.AMBER,
                                       col=7,
@@ -1488,12 +1489,13 @@ def create_page_project_token(page, project):
     
     def editar_dados(view_project):
         
-        data_project = view_project
+        data_project = view_project.copy()
 
         data_project["name_project"] = view_project["name_project"].value
         data_project["current_subprojects"] = view_project["current_subprojects"].value
         data_project["final_delivery"] = view_project["final_delivery"].value
         data_project["predicted_lots"] = view_project["predicted_lots"].value
+        data_project["ecw"] = view_project["ecw"].value
 
         
         if any(field == "" or field is None for field in data_project.values()):
@@ -1526,6 +1528,7 @@ def create_page_project_token(page, project):
         "current_subprojects": ft.TextField(label="Nome", value=get_info2["current_subprojects"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "final_delivery": ft.TextField(label="Lotes Previstos", value=get_info2["final_delivery"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "predicted_lots": ft.TextField(label="Lotes Feitos", value=get_info2["predicted_lots"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "ecw": ft.TextField(label="Ortofotos", value=get_info2["ecw"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
     }
 
 
@@ -1715,6 +1718,7 @@ def create_page_new_project(page):
                 new_dicio["percent"] = "0"
                 new_dicio["project"] = content["Projeto"].value
                 new_dicio["current_average"] = "0"
+                new_dicio["preview"] = "."
                 new_dicio["dwg"] = "."
                 new_dicio["planner1"] = "."
                 new_dicio["planner2"] = "."
@@ -2020,7 +2024,6 @@ def create_page_subproject(page, project):
 
     return layout
 # Pagina de Subprojetos - Continuação de Projetos
-
 def create_page_list_subproject(page):#ESTOU MEXENDO NESSE AQUI
 
     loading = LoadingPages(page=page)
@@ -2203,6 +2206,7 @@ def create_page_subproject_token(page, subproject, back_project=None):
             "dwg": ["dwg", "dwg"],
             "planner1": ["xlsx", "planner1"],
             "planner2": ["xlsx", "planner2"],
+            "preview": ["jpg", "preview"],
         }
 
     def editar_dados(view_subproject):
@@ -2215,11 +2219,11 @@ def create_page_subproject_token(page, subproject, back_project=None):
         data_subproject["deliverys"] = view_subproject["deliverys"].value
         data_subproject["recommended_medium"] = view_subproject["recommended_medium"].value
         data_subproject["percent"] = view_subproject["percent"].value
-        data_subproject["ortofoto"] = view_subproject["ortofoto"].value
         data_subproject["project"] = view_subproject["project"].value
         data_subproject["final_delivery"] = view_subproject["final_delivery"].value
         data_subproject["current_average"] = view_subproject["current_average"].value
         data_subproject["type"] = view_subproject["type"].value
+        data_subproject["preview"] = view_subproject["preview"].value
         data_subproject["dwg"] = view_subproject["dwg"].value
         data_subproject["planner1"] = view_subproject["planner1"].value
         data_subproject["planner2"] = view_subproject["planner2"].value
@@ -2276,16 +2280,29 @@ def create_page_subproject_token(page, subproject, back_project=None):
         "deliverys":ft.TextField(label="Entregas", value=get_info2["deliverys"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "recommended_medium":ft.TextField(label="Média Recomendada", value=get_info2["recommended_medium"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "percent":ft.TextField(label="Porcentagem", value=get_info2["percent"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "ortofoto":ft.TextField(label="Ortofoto", value=get_info2["ortofoto"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "project":ft.TextField(label="Projeto", value=get_info2["project"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "final_delivery":ft.TextField(label="Entrega Final", value=get_info2["final_delivery"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "current_average":ft.TextField(label="Média Atual", value=get_info2["current_average"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "type":ft.TextField(label="Tipo", value=get_info2["type"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "preview":ft.TextField(label="Preview", value=get_info2["preview"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "dwg":ft.TextField(label="DWG", value=get_info2["dwg"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "planner1":ft.TextField(label="Planilha 1", value=get_info2["planner1"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "planner2":ft.TextField(label="Planilha 2", value=get_info2["planner2"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
     }
 
+    name = "."
+    try:
+        name = (((sp.get_user_by_subproject(get_info2["name_subproject"])).json())[0])["username"]
+    except:
+        name = "."
+
+    freelancer = ft.TextField(
+        label="Freelancer atual",
+        value=name,
+        width=300,
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        read_only=True,
+        )
 
     def on_file_selected():
 
@@ -2349,12 +2366,45 @@ def create_page_subproject_token(page, subproject, back_project=None):
         file_type.clear()
         file_type.append(type)
 
+
+    def delete_dwg(local, type, ext):
+
+        base = SupaBase(page=page)
+
+        name_file = f'{get_info2["name_subproject"]}.{ext}'
+        response1 = base.delete_storage(local=local, object=f"{name_file}", type=type)
+        if response1.status_code in [200, 204]:
+            data = {}
+            data["name_subproject"] = get_info2["name_subproject"]
+            data["dwg"] = "."
+            response2 = sp.edit_subproject_data(data)
+
+            if response2.status_code in [200, 204]:
+                get_info2[local] = "."  
+                loading.new_loading_page(page=page, call_layout=lambda: create_page_subproject_token(page=page, subproject=get_info2))
+                snack_bar = ft.SnackBar(content=ft.Text(f"{local} excluido"), bgcolor=ft.Colors.GREEN)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+            else:
+                snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+        else:
+            snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir {local}: {response1.text}"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
     btn_edit = buttons.create_button(on_click=lambda e: editar_dados(view_subproject),
                                       text="Editar Dados",
                                       color=ft.Colors.BLUE,
                                       col=7,
                                       padding=5,)
     
+
+
     btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type="dwg"),
                                       text="Upload DWG",
                                       color=ft.Colors.AMBER,
@@ -2372,20 +2422,61 @@ def create_page_subproject_token(page, subproject, back_project=None):
                                       color=ft.Colors.AMBER,
                                       col=7,
                                       padding=5,)
-
     
+    btn_preview = buttons.create_button(on_click=lambda e: open_gallery(e, type="preview"),
+                                      text="Upload Preview",
+                                      color=ft.Colors.AMBER,
+                                      col=7,
+                                      padding=5,)
+    
+    btn_delete_dwg = buttons.create_button(on_click=lambda e: delete_dwg("dwg", "image/vnd.dwg", "dwg"),
+                                      text="Delete DWG",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5,)
+    
+    btn_delete_pln1 = buttons.create_button(on_click=lambda e: delete_dwg("planner1", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"),
+                                      text="Delete Planilha 1",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5,)
+    
+    btn_delete_pln2 = buttons.create_button(on_click=lambda e: delete_dwg("planner2", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"),
+                                      text="Delete Planilha 2",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5,)
+    
+    btn_delete_preview = buttons.create_button(on_click=lambda e: delete_dwg("preview", "image/jpeg", "jpg"),
+                                      text="Delete Preview",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5,)
+    
+
+
 
     projects_token = ft.Container(
         content=ft.Column(
             controls=[
                 *(view_subproject.values()),
-                btn_dwg,
-                btn_planner1,
-                btn_planner2
+                ft.Row(
+                    [btn_dwg,btn_planner1,btn_planner2, btn_preview],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                ft.Row(
+                [btn_delete_dwg,btn_delete_pln1,btn_delete_pln2, btn_delete_preview],
+                alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                ),
+                ft.Text(""),
+                freelancer,
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             scroll=ft.ScrollMode.AUTO,
-            expand=True,  # Permite que a Column expanda com o conteúdo
+            expand=True,
+            spacing=10,
         ),
         padding=20,
         border=ft.border.all(2, ft.Colors.BLUE),
@@ -2455,7 +2546,7 @@ def create_page_new_subproject(page, project):
         data_subproject["type"] = view_subproject["type"].value
         data_subproject["project"] = project
         data_subproject["lots_done"] = "0"
-        data_subproject["ortofoto"] = "."
+        data_subproject["preview"] = "."
         data_subproject["deliverys"] = "1"
         data_subproject["percent"] = "0"
         data_subproject["project"] = project
@@ -2670,7 +2761,6 @@ def create_page_new_freelancer(page):
     )
 
     return layout
-
 # Pagina de Fichas Criacionais de Freelancers
 def create_page_new_delivery(page):
 
@@ -3109,7 +3199,7 @@ def create_page_payment(page, month=None):
                 call_function2 = dicio2.get(data_obj.day, lambda: None)()
 
  
-        total = float((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]) * 0.50) + (float((delivery_07[1]+delivery_14[1]+delivery_21[1]+delivery_28[1]) * 0.20))
+        total = float((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]) * 0.60) + (float((delivery_07[1]+delivery_14[1]+delivery_21[1]+delivery_28[1]) * 0.20))
         total_format = format(total, ".2f")
         
 
@@ -3399,6 +3489,12 @@ def create_page_freelancer_token(page, username):
     def go_home():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
     
+    file_selected = []
+    file_name = []
+    file_type =[]
+    file_old_name = []
+    add_file = [False]
+
     def editar_dados(view_project):
         
         data_project = view_project.copy()
@@ -3417,21 +3513,49 @@ def create_page_freelancer_token(page, username):
         data_project["warnings"] = "0"
         data_project["polygons_wrong"] = "0"
 
-        
+        del data_project["image"]
+
         if any(field == "" or field is None for field in data_project.values()):
             snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
         else:
-            sp = SupaBase(page)
-            response = sp.edit_user_data(data_project)
-            if response.status_code in [200, 204]:
-                loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
-                snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
-                page.overlay.append(snack_bar)
-                snack_bar.open = True
-                page.update()
+            if add_file[0] == True:
+                response1 = base.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "freelancers")
+                if response1.status_code == 200 or response1.status_code == 201:
+                    response2 = base.edit_user_data(data_project)
+                    if response2.status_code in [200, 204]:
+                        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
+                        snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+                    else:
+                        snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar dados: {response2.text}"), bgcolor=ft.Colors.RED)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+
+                else:
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao enviar imagem: {response1.text}"), bgcolor=ft.Colors.RED)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
+
+            else:
+                response = base.edit_user_data(data_project)
+                if response.status_code in [200, 204]:
+                    loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
+                    snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
+                else:
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar dados: {response.text}"), bgcolor=ft.Colors.RED)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -3470,6 +3594,7 @@ def create_page_freelancer_token(page, username):
         "email": ft.TextField(label="Email", value=get_info2["email"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "permission": ft.TextField(label="Permissão", value=get_info2["permission"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "payment": ft.TextField(label="Pagamento", value=get_info2["payment"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "image": ft.TextField(label="Imagem", value=".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
     }
 
     perfil = ft.Column(
@@ -3498,6 +3623,64 @@ def create_page_freelancer_token(page, username):
         ]
     )
 
+    def on_file_selected():
+
+        name_file = f'{view_user["username"].value}.jpg'
+        file_name.clear()
+        file_name.append(name_file)
+
+        view_user["image"].value = file_old_name[0]
+
+        add_file[0] = True
+
+        page.update()
+
+    def get_uploaded_file_bytes(e: ft.FilePickerUploadEvent):
+
+        file_path = f"uploads/{file_old_name[0]}"    
+
+        with open(file_path, "rb") as file:
+            file_content = file.read()
+
+        file_selected.clear()
+        file_selected.append(file_content)
+
+        on_file_selected()
+
+    def on_image_selected(e: ft.FilePickerResultEvent):
+
+            if not e.files or len(e.files) == 0:
+                return
+            
+            file_selected.clear()
+            file_selected.append(e.files[0])
+            file_old_name.clear()
+            file_old_name.append(e.files[0].name)
+
+            if e.page.web:
+                #  Gerar a URL temporária
+                temp_url = e.page.get_upload_url(file_selected[0].name, 3600)
+
+                #  Criar objeto para upload
+                file_upload = ft.FilePickerUploadFile(file_selected[0].name, temp_url)
+
+                #  Realiza o upload
+                fp.upload([file_upload])
+
+            else:
+                on_file_selected()
+
+    fp = ft.FilePicker(on_result=on_image_selected, on_upload=get_uploaded_file_bytes, data="fp")
+    page.overlay.append(fp)
+
+    def open_gallery(e, type): 
+        fp.pick_files(              
+            allow_multiple=False,
+        )
+
+        file_type.clear()
+        file_type.append(type)
+
     def delete_user(view_files):
 
         base = SupaBase(page=page)
@@ -3523,6 +3706,42 @@ def create_page_freelancer_token(page, username):
             snack_bar.open = True
             page.update()
 
+    def delete_image(view_files):
+
+            base = SupaBase(page=page)
+
+            data_subproject = view_files.copy()
+
+            data_subproject["username"] = view_files["username"].value
+
+            name_file = f'{view_files["username"].value}.jpg'
+            response1 = base.delete_storage(local="freelancers", object=f"{name_file}", type="image/jpeg")   
+
+            if response1.status_code in [200, 204]:   
+                loading.new_loading_page(page=page, call_layout=lambda: create_page_freelancer_token(page=page, username=view_files["username"].value))
+                snack_bar = ft.SnackBar(content=ft.Text("Imagem excluida"), bgcolor=ft.Colors.GREEN)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+            else:
+                snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir imagem: {response1.text}"), bgcolor=ft.Colors.RED)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+
+
+    btn_image = buttons.create_button(on_click=lambda e: open_gallery(e, type="jpg"),
+                                      text="Upload JPG",
+                                      color=ft.Colors.AMBER,
+                                      col=7,
+                                      padding=5,)
+    
+    btn_delete_image = buttons.create_button(on_click=lambda e: delete_image(view_user),
+                                      text="Delete JPG",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5,)
+
 
     botao_edit = buttons.create_button(on_click=lambda e: editar_dados(view_user),
                                       text="Editar",
@@ -3537,18 +3756,26 @@ def create_page_freelancer_token(page, username):
                                       padding=5,) 
 
     projects_token = ft.Container(
-    content=ft.Column(
-        controls=[perfil, *(view_user.values())],
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER, 
-        scroll=ft.ScrollMode.AUTO,
-        spacing=20,
-    ),
-    padding=20,
-    border_radius=10,
-    bgcolor=ft.Colors.WHITE,
-    alignment=ft.alignment.center,  
-    margin=10,  
-)
+        content=ft.Column(
+            controls=[
+                perfil,
+                *(view_user.values()),
+                ft.Row(
+                    [btn_image,btn_delete_image],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                ],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER, 
+            scroll=ft.ScrollMode.AUTO,
+            spacing=20,
+        ),
+        padding=20,
+        border_radius=10,
+        bgcolor=ft.Colors.WHITE,
+        alignment=ft.alignment.center,  
+        margin=10,  
+    )
 
     # Layout responsivo com as duas fichas lado a lado
     layout = ft.ResponsiveRow(
@@ -3936,23 +4163,36 @@ def create_page_delivery_details(page, delivery):
                 response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "deliveries")
 
                 if response1.status_code == 200 or response1.status_code == 201:
-
                     data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
                     response2 = sp.edit_delivery_data(data_subproject)
 
                     if response2.status_code in [200, 204]:
-
                         loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=data_subproject))
                         snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
                         page.update()
+                    else:
+                        snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar dados: {response2.text}"), bgcolor=ft.Colors.RED)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+                else:
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao enviar imagem: {response1.text}"), bgcolor=ft.Colors.RED)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
             else:
                 response2 = sp.edit_delivery_data(data_subproject)
 
                 if response2.status_code in [200, 204]:
                     loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=data_subproject))
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
+                else:
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar dados: {response2.text}"), bgcolor=ft.Colors.RED)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()

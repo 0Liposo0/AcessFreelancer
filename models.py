@@ -839,7 +839,7 @@ class LoadingPages:
 
         if loading_text in page.controls:
             page.remove(loading_text)
-        
+
         page.update()
         page.go(route)
 
@@ -1412,6 +1412,7 @@ class SupaBase:
             params=params,
         )   
         return response
+    
 
     def get_one_subproject_data(self, subprojects):
         headers = {
@@ -1474,6 +1475,27 @@ class SupaBase:
             params=params,
         )   
 
+        return response  
+       
+    def get_user_by_subproject(self, subproject):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "current_project": f"eq.{subproject}",
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )   
+
         return response     
 
     def get_forms(self, name, object):
@@ -1498,6 +1520,8 @@ class SupaBase:
 
         return response
     
+
+
     def post_to_deliverys_data(self, data):
             
         headers= {
@@ -1681,7 +1705,9 @@ class SupaBase:
             content_type = "image/vnd.dwg"
         elif type == "xlsx":
             content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
+        elif type == "jpg":
+            content_type = "image/jpeg"
+    
         headers = {
             'Authorization': f'Bearer {self.supabase_key}',
             'Content-Type': content_type,
@@ -1699,7 +1725,7 @@ class SupaBase:
                 headers=headers,
                 data=bytes[0]
             )
-
+        print(f"\n {response.text} \n")
         return response
 
 
@@ -1945,8 +1971,6 @@ class SupaBase:
             params=params,
         )
 
-        print(response.text)
-
         return response
     
     def delete_project(self, project):
@@ -1977,7 +2001,6 @@ class SupaBase:
             headers=headers,
         )
 
-        print(response.text)
 
         return response
     
