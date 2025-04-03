@@ -2272,6 +2272,10 @@ def create_page_subproject_token(page, subproject, back_project=None):
         ],
     )
 
+    def go_download(view_deliveries, object):
+        if view_deliveries[object].value != "." and view_deliveries[object].value != "":
+            page.launch_url(view_deliveries[object].value)
+
     view_subproject = {
 
         "name_subproject":ft.TextField(label="Nome do Subprojeto", value=get_info2["name_subproject"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
@@ -2284,25 +2288,39 @@ def create_page_subproject_token(page, subproject, back_project=None):
         "final_delivery":ft.TextField(label="Entrega Final", value=get_info2["final_delivery"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "current_average":ft.TextField(label="Média Atual", value=get_info2["current_average"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "type":ft.TextField(label="Tipo", value=get_info2["type"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "preview":ft.TextField(label="Preview", value=get_info2["preview"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "dwg":ft.TextField(label="DWG", value=get_info2["dwg"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "planner1":ft.TextField(label="Planilha 1", value=get_info2["planner1"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "planner2":ft.TextField(label="Planilha 2", value=get_info2["planner2"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "preview":ft.TextField(label="Preview", value=get_info2["preview"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), on_click=lambda e: go_download(view_subproject, "preview")), 
+        "dwg":ft.TextField(label="DWG", value=get_info2["dwg"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), on_click=lambda e: go_download(view_subproject, "dwg")), 
+        "planner1":ft.TextField(label="Planilha 1", value=get_info2["planner1"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), on_click=lambda e: go_download(view_subproject, "planner1")), 
+        "planner2":ft.TextField(label="Planilha 2", value=get_info2["planner2"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), on_click=lambda e: go_download(view_subproject, "planner2")), 
     }
-
+    
+    
     name = "."
     try:
         name = (((sp.get_user_by_subproject(get_info2["name_subproject"])).json())[0])["username"]
     except:
         name = "."
 
-    freelancer = ft.TextField(
-        label="Freelancer atual",
-        value=name,
-        width=300,
-        text_style=ft.TextStyle(color=ft.Colors.BLACK),
-        read_only=True,
-        )
+    freelancer = ft.Row(
+                controls=[
+                    ft.TextField(
+                        label="Freelancer atual",
+                        value=name,
+                        width=300,
+                        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                        read_only=True,
+                        ),
+                    ft.IconButton(
+                        icon=ft.Icons.SEARCH,
+                        bgcolor=ft.Colors.BLUE,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda: create_page_freelancer_token(page=page, username=name))
+                        ),
+
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            )
+
 
     def on_file_selected():
 
@@ -2404,75 +2422,125 @@ def create_page_subproject_token(page, subproject, back_project=None):
                                       padding=5,)
     
 
+    view_column = ft.Column(
+        controls=[
+            
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        spacing=15
+    )
 
-    btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type="dwg"),
-                                      text="Upload DWG",
-                                      color=ft.Colors.AMBER,
-                                      col=7,
-                                      padding=5,)
-    
-    btn_planner1 = buttons.create_button(on_click=lambda e: open_gallery(e, type="planner1"),
-                                      text="Upload Planilha 1",
-                                      color=ft.Colors.AMBER,
-                                      col=7,
-                                      padding=5,)
-    
-    btn_planner2 = buttons.create_button(on_click=lambda e: open_gallery(e, type="planner2"),
-                                      text="Upload Planilha 2",
-                                      color=ft.Colors.AMBER,
-                                      col=7,
-                                      padding=5,)
-    
-    btn_preview = buttons.create_button(on_click=lambda e: open_gallery(e, type="preview"),
-                                      text="Upload Preview",
-                                      color=ft.Colors.AMBER,
-                                      col=7,
-                                      padding=5,)
-    
-    btn_delete_dwg = buttons.create_button(on_click=lambda e: delete_dwg("dwg", "image/vnd.dwg", "dwg"),
-                                      text="Delete DWG",
-                                      color=ft.Colors.RED,
-                                      col=7,
-                                      padding=5,)
-    
-    btn_delete_pln1 = buttons.create_button(on_click=lambda e: delete_dwg("planner1", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"),
-                                      text="Delete Planilha 1",
-                                      color=ft.Colors.RED,
-                                      col=7,
-                                      padding=5,)
-    
-    btn_delete_pln2 = buttons.create_button(on_click=lambda e: delete_dwg("planner2", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"),
-                                      text="Delete Planilha 2",
-                                      color=ft.Colors.RED,
-                                      col=7,
-                                      padding=5,)
-    
-    btn_delete_preview = buttons.create_button(on_click=lambda e: delete_dwg("preview", "image/jpeg", "jpg"),
-                                      text="Delete Preview",
-                                      color=ft.Colors.RED,
-                                      col=7,
-                                      padding=5,)
-    
+    for item in view_subproject.items():
+        
+        if item[0] == "preview":
+            view_column.controls.append(ft.Row(
+                controls=[
+                    ft.IconButton(
+                        icon=ft.Icons.UPLOAD,
+                        bgcolor=ft.Colors.BLUE,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: open_gallery(e, type="preview"),
+                        ),
+                    item[1],
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE,
+                        bgcolor=ft.Colors.RED,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: delete_dwg("preview", "image/jpeg", "jpg"),
+                        ),
 
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ))
+        elif item[0] == "dwg":
+            view_column.controls.append(ft.Row(
+                controls=[
+                    ft.IconButton(
+                        icon=ft.Icons.UPLOAD,
+                        bgcolor=ft.Colors.BLUE,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: open_gallery(e, type="dwg"),
+                        ),
+                    item[1],
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE,
+                        bgcolor=ft.Colors.RED,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: delete_dwg("dwg", "image/vnd.dwg", "dwg"),
+                        ),
+
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ))
+        elif item[0] == "planner1":
+            view_column.controls.append(ft.Row(
+                controls=[
+                    ft.IconButton(
+                        icon=ft.Icons.UPLOAD,
+                        bgcolor=ft.Colors.BLUE,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: open_gallery(e, type="planner1"),
+                        ),
+                    item[1],
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE,
+                        bgcolor=ft.Colors.RED,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: delete_dwg("planner1", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"),
+                        ),
+
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ))
+        elif item[0] == "planner2":
+            view_column.controls.append(ft.Row(
+                controls=[
+                    ft.IconButton(
+                        icon=ft.Icons.UPLOAD,
+                        bgcolor=ft.Colors.BLUE,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: open_gallery(e, type="planner2"),
+                        ),
+                    item[1],
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE,
+                        bgcolor=ft.Colors.RED,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: delete_dwg("planner2", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"),
+                        ),
+
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ))
+        else:
+            view_column.controls.append(ft.Row(
+                controls=[
+                    ft.IconButton(
+                        icon=ft.Icons.SEARCH,
+                        icon_color=ft.Colors.WHITE,
+                        bgcolor=ft.Colors.WHITE,
+                        ),
+                    item[1],
+                    ft.IconButton(
+                        icon=ft.Icons.SEARCH,
+                        icon_color=ft.Colors.WHITE,
+                        bgcolor=ft.Colors.WHITE,
+                        ),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ))
 
 
     projects_token = ft.Container(
         content=ft.Column(
             controls=[
-                *(view_subproject.values()),
-                ft.Row(
-                    [btn_dwg,btn_planner1,btn_planner2, btn_preview],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    ),
-                ft.Row(
-                [btn_delete_dwg,btn_delete_pln1,btn_delete_pln2, btn_delete_preview],
-                alignment=ft.MainAxisAlignment.CENTER,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                ),
+                view_column,
+                ft.Text(""),
+                ft.Text(""),
                 ft.Text(""),
                 freelancer,
             ],
+            alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             scroll=ft.ScrollMode.AUTO,
             expand=True,
@@ -3206,7 +3274,7 @@ def create_page_payment(page, month=None):
         if number_total_deliverys > 0:
 
             linha = ft.DataRow(cells=[
-                            ft.DataCell(ft.Text(value=name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=name, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=payment, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=f"{delivery_07[0]} / {delivery_07[1]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=f"{delivery_14[0]} / {delivery_14[1]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
@@ -3228,13 +3296,13 @@ def create_page_payment(page, month=None):
                     column_spacing=40,  
                     expand=True,  
                     columns=[
-                        ft.DataColumn(ft.Text(value="Nome", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Pix", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Entrega dia 07", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Entrega dia 14", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Entrega dia 21", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Entrega dia 28", text_align=ft.TextAlign.CENTER)),  
-                        ft.DataColumn(ft.Text(value="Total", text_align=ft.TextAlign.CENTER)),  
+                        ft.DataColumn(ft.Text(value="Nome", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                        ft.DataColumn(ft.Text(value="Pix", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                        ft.DataColumn(ft.Text(value="Entrega dia 07", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                        ft.DataColumn(ft.Text(value="Entrega dia 14", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                        ft.DataColumn(ft.Text(value="Entrega dia 21", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                        ft.DataColumn(ft.Text(value="Entrega dia 28", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                        ft.DataColumn(ft.Text(value="Total", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
                     ],
                     rows=data_list,  
                 ),
@@ -3730,19 +3798,6 @@ def create_page_freelancer_token(page, username):
                 page.update()
 
 
-    btn_image = buttons.create_button(on_click=lambda e: open_gallery(e, type="jpg"),
-                                      text="Upload JPG",
-                                      color=ft.Colors.AMBER,
-                                      col=7,
-                                      padding=5,)
-    
-    btn_delete_image = buttons.create_button(on_click=lambda e: delete_image(view_user),
-                                      text="Delete JPG",
-                                      color=ft.Colors.RED,
-                                      col=7,
-                                      padding=5,)
-
-
     botao_edit = buttons.create_button(on_click=lambda e: editar_dados(view_user),
                                       text="Editar",
                                       color=ft.Colors.BLUE,
@@ -3755,16 +3810,61 @@ def create_page_freelancer_token(page, username):
                                       col=7,
                                       padding=5,) 
 
+
+    view_column = ft.Column(
+        controls=[
+            
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        spacing=15
+    )
+
+    for item in view_user.items():
+        
+        if item[0] == "image":
+            view_column.controls.append(ft.Row(
+                controls=[
+                    ft.IconButton(
+                        icon=ft.Icons.UPLOAD,
+                        bgcolor=ft.Colors.BLUE,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: open_gallery(e, type="jpg"),
+                        ),
+                    item[1],
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE,
+                        bgcolor=ft.Colors.RED,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: delete_image(view_user),
+                        ),
+
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ))
+        else:
+            view_column.controls.append(ft.Row(
+                controls=[
+                    ft.IconButton(
+                        icon=ft.Icons.SEARCH,
+                        icon_color=ft.Colors.WHITE,
+                        bgcolor=ft.Colors.WHITE,
+                        ),
+                    item[1],
+                    ft.IconButton(
+                        icon=ft.Icons.SEARCH,
+                        icon_color=ft.Colors.WHITE,
+                        bgcolor=ft.Colors.WHITE,
+                        ),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ))
+
+
     projects_token = ft.Container(
         content=ft.Column(
             controls=[
                 perfil,
-                *(view_user.values()),
-                ft.Row(
-                    [btn_image,btn_delete_image],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    ),
+                view_column,
                 ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER, 
             scroll=ft.ScrollMode.AUTO,
@@ -4244,6 +4344,10 @@ def create_page_delivery_details(page, delivery):
         width=300,
         )
 
+    def go_download(view_deliveries, object):
+        if view_deliveries[object].value != "." and view_deliveries[object].value != "":
+            page.launch_url(view_deliveries[object].value)
+
     view_deliveries = {
         "username": dropdow1, 
         "date":ft.TextField(label="Data", value=f"{delivery['date']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
@@ -4254,7 +4358,7 @@ def create_page_delivery_details(page, delivery):
         "warning":ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "delay":dropdow3,
         "photos":ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "dwg":ft.TextField(label="DWG", value=f"{delivery['dwg']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "dwg":ft.TextField(label="DWG", value=f"{delivery['dwg']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), on_click=lambda e: go_download(view_deliveries, "dwg")), 
     }
 
     def on_file_selected():
@@ -4317,7 +4421,6 @@ def create_page_delivery_details(page, delivery):
         file_type.clear()
         file_type.append(type)
 
-
     def delete_delivery(view_deliveries):
 
             base = SupaBase(page=page)
@@ -4336,13 +4439,13 @@ def create_page_delivery_details(page, delivery):
             if response2.status_code in [200, 204]:
             
                     loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
-                    snack_bar = ft.SnackBar(content=ft.Text("Entrega excluida"), bgcolor=ft.Colors.RED)
+                    snack_bar = ft.SnackBar(content=ft.Text("Entrega excluida"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
             else:
                 loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
-                snack_bar = ft.SnackBar(content=ft.Text("Falha ao excluir tabela"), bgcolor=ft.Colors.RED)
+                snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
                 page.update()
@@ -4381,8 +4484,6 @@ def create_page_delivery_details(page, delivery):
                 snack_bar.open = True
                 page.update()
 
-
-
     btn_edit = buttons.create_button(on_click=lambda e: editar_dados(view_deliveries),
                                       text="Editar",
                                       color=ft.Colors.BLUE,
@@ -4395,27 +4496,59 @@ def create_page_delivery_details(page, delivery):
                                       col=7,
                                       padding=5,) 
     
-    btn_delete_file = buttons.create_button(on_click=lambda e: delete_file(view_deliveries),
-                                      text="Delete DWG",
-                                      color=ft.Colors.RED,
-                                      col=7,
-                                      padding=5,) 
-    
-    btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type="dwg"),
-                                      text="Upload DWG",
-                                      color=ft.Colors.AMBER,
-                                      col=7,
-                                      padding=5,) 
-    
+    view_column = ft.Column(
+        controls=[
+            
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        spacing=15
+    )
+
+    for item in view_deliveries.items():
+        
+        if item[0] == "dwg":
+            view_column.controls.append(ft.Row(
+                controls=[
+                    ft.IconButton(
+                        icon=ft.Icons.UPLOAD,
+                        bgcolor=ft.Colors.BLUE,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: open_gallery(e, type="dwg"),
+                        ),
+                    item[1],
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE,
+                        bgcolor=ft.Colors.RED,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: delete_file(view_deliveries),
+                        ),
+
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ))
+        else:
+            view_column.controls.append(ft.Row(
+                controls=[
+                    ft.IconButton(
+                        icon=ft.Icons.SEARCH,
+                        icon_color=ft.Colors.WHITE,
+                        bgcolor=ft.Colors.WHITE,
+                        ),
+                    item[1],
+                    ft.IconButton(
+                        icon=ft.Icons.SEARCH,
+                        icon_color=ft.Colors.WHITE,
+                        bgcolor=ft.Colors.WHITE,
+                        ),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ))
+
+
     main_container = ft.Container(
         content=ft.Column(
             controls=[
-                *(view_deliveries.values()),
-                ft.Row(
-                    [btn_dwg,btn_delete_file],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    ),
+                view_column
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             scroll=ft.ScrollMode.AUTO,
