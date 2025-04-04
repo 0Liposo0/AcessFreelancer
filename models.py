@@ -796,7 +796,6 @@ class LoadingPages:
 
         page.floating_action_button = None
         page.bottom_appbar = None
-        page.appbar = None
         page.clean()
         page.controls.clear()
         page.overlay.clear()
@@ -1179,6 +1178,30 @@ class SupaBase:
         else:
             return 1  # Se não houver registros, começa do 1
         
+    def get_model_id(self):
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+            "select": "id"  # Seleciona todos os IDs
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/models',
+            headers=headers,
+            params=params,
+        )
+
+        if response.status_code == 200 and response.json():
+            ids = [int(item["id"]) for item in response.json()]  # Obtém todos os IDs e converte para int
+            maior_id = max(ids)  # Encontra o maior ID
+            return maior_id + 1  # Retorna o próximo ID disponível
+        else:
+            return 1  # Se não houver registros, começa do 1
+        
 
     def get_storage(self):
 
@@ -1348,6 +1371,26 @@ class SupaBase:
 
         response = requests.get(
             f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+    def get_all_models(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/models',
             headers=headers,
             params=params,
         )
@@ -1532,6 +1575,22 @@ class SupaBase:
 
         response = requests.post(
             f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            json=data,
+        )
+
+        return response
+    
+    def post_to_models_data(self, data):
+            
+        headers= {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+                }
+
+        response = requests.post(
+            f'{self.supabase_url}/rest/v1/models',
             headers=headers,
             json=data,
         )
@@ -1725,7 +1784,7 @@ class SupaBase:
                 headers=headers,
                 data=bytes[0]
             )
-        print(f"\n {response.text} \n")
+
         return response
 
 
@@ -1813,6 +1872,29 @@ class SupaBase:
 
         response = requests.patch(
             f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            json=data,
+            params=params,
+        )
+
+        return response  
+      
+    def edit_model_data(self, data):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "username":  f"eq.{data["username"]}", 
+                   "date":  f"eq.{data["date"]}", 
+                   "select": "*"
+        }
+
+        response = requests.patch(
+            f'{self.supabase_url}/rest/v1/models',
             headers=headers,
             json=data,
             params=params,
@@ -1924,6 +2006,28 @@ class SupaBase:
 
         response = requests.delete(
             f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+    def delete_model(self, data):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "username":  f"eq.{data["username"]}", 
+                   "date":  f"eq.{data["date"]}", 
+                   "select": "*"
+        }
+
+        response = requests.delete(
+            f'{self.supabase_url}/rest/v1/models',
             headers=headers,
             params=params,
         )
