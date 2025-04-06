@@ -146,7 +146,6 @@ def create_page_user(page):
 
     for row in data_total_deliverys:  #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
 
-        id = row["id"]
         date = row["date"]
         name_subproject = row["name_subproject"]
         polygons = row["polygons"]
@@ -2267,6 +2266,8 @@ def create_page_subproject_token(page, subproject, back_project=None):
         if view_deliveries[object].value != "." and view_deliveries[object].value != "":
             page.launch_url(view_deliveries[object].value)
 
+
+
     view_subproject = {
 
         "name_subproject":ft.TextField(label="Nome do Subprojeto", value=get_info2["name_subproject"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
@@ -2292,6 +2293,12 @@ def create_page_subproject_token(page, subproject, back_project=None):
     except:
         name = "."
 
+    def go_freelancer(name):
+        if name not in [".", ""]:
+            loading.new_loading_page(page=page, call_layout=lambda: create_page_freelancer_token(page=page, username=name))
+        else:
+            pass
+
     freelancer = ft.Row(
                 controls=[
                     ft.TextField(
@@ -2305,7 +2312,7 @@ def create_page_subproject_token(page, subproject, back_project=None):
                         icon=ft.Icons.SEARCH,
                         bgcolor=ft.Colors.BLUE,
                         icon_color=ft.Colors.WHITE,
-                        on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda: create_page_freelancer_token(page=page, username=name))
+                        on_click=lambda e: go_freelancer(name)
                         ),
 
                 ],
@@ -2541,11 +2548,57 @@ def create_page_subproject_token(page, subproject, back_project=None):
         border=ft.border.all(2, ft.Colors.BLUE),
         border_radius=10,
         bgcolor=ft.Colors.WHITE,
-        width=min(1000, page.width * 0.9),  # Largura responsiva
-        # REMOVIDA a altura fixa - agora se ajusta ao conteúdo
-        alignment=ft.alignment.top_center,  # Alinhamento no topo para melhor distribuição
+        width=min(1000, page.width * 0.9),  
+        alignment=ft.alignment.top_center,  
         margin=10,
-        expand=True  # Permite que o Container expanda verticalmente
+        expand=True  
+    )
+
+    def get_preview_image():
+        if subproject["preview"] in [".", "", None]:
+            image = ft.Text("Sem Imagem", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK)
+        else:
+            image = ft.Image(  
+                        src=subproject["preview"],  
+                        fit=ft.ImageFit.COVER,
+                        expand=True,
+                    )
+        
+        return image
+
+    preview_image = ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.Container(
+                    width=500,
+                    height=500,
+                    alignment=ft.alignment.center,
+                    content=get_preview_image(),
+                    border=ft.Border(
+                        left=ft.BorderSide(2, ft.Colors.BLACK),  
+                        top=ft.BorderSide(2, ft.Colors.BLACK),    
+                        right=ft.BorderSide(2, ft.Colors.BLACK), 
+                        bottom=ft.BorderSide(2, ft.Colors.BLACK) 
+                    ),
+                    bgcolor=ft.Colors.WHITE,
+                    border_radius=ft.border_radius.all(20),
+                    clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                )
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.AUTO,
+            expand=True,
+            spacing=10,
+        ),
+        padding=20,
+        border=ft.border.all(2, ft.Colors.BLUE),
+        border_radius=10,
+        bgcolor=ft.Colors.WHITE,
+        width=min(1000, page.width * 0.9),
+        alignment=ft.alignment.center,  
+        margin=10,
+        expand=True  
     )
 
     # Layout responsivo
@@ -2562,10 +2615,20 @@ def create_page_subproject_token(page, subproject, back_project=None):
                 alignment=ft.MainAxisAlignment.START,  # Alinha no topo
                 spacing=20,
                 expand=True
-            )
+            ),
+            ft.Column(
+                col={"sm": 12, "md": 6},
+                controls=[
+                    preview_image
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.MainAxisAlignment.CENTER,  # Alinha no topo
+                spacing=20,
+                expand=True
+            ),
         ],
         alignment=ft.MainAxisAlignment.CENTER,
-        vertical_alignment=ft.CrossAxisAlignment.START,  # Alinha no topo
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,  # Alinha no topo
         spacing=20,
         expand=True
     )
@@ -3543,11 +3606,13 @@ def create_page_see_freelancers(page):
 
     return layout
 
-def create_page_freelancer_token(page, username):
+def create_page_freelancer_token(page, username, est=False):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=page)
     buttons = Buttons(page)
+    profile = CurrentProfile() 
+    dict_profile = profile.return_current_profile()
     get_base_Project = base.get_user_data(username)
     get_info1 = get_base_Project.json()
     get_info2 = get_info1[0]
@@ -3575,12 +3640,12 @@ def create_page_freelancer_token(page, username):
         data_project["email"] = view_project["email"].value
         data_project["permission"] = view_project["permission"].value
         data_project["payment"] = view_project["payment"].value
-        data_project["weekly_deliveries"] = "0"
-        data_project["total_deliverys"] = "0"
-        data_project["polygons_made"] = "0"
-        data_project["delays"] = "0"
-        data_project["warnings"] = "0"
-        data_project["polygons_wrong"] = "0"
+        data_project["weekly_deliveries"] = view_project["weekly_deliveries"].value
+        data_project["total_deliverys"] = view_project["total_deliverys"].value
+        data_project["polygons_made"] = view_project["polygons_made"].value
+        data_project["delays"] = view_project["delays"].value
+        data_project["warnings"] = view_project["warnings"].value
+        data_project["polygons_wrong"] = view_project["polygons_wrong"].value
 
         del data_project["image"]
 
@@ -3638,6 +3703,40 @@ def create_page_freelancer_token(page, username):
         ],
     )
 
+    if est == True:
+        page.appbar.actions.pop(1)
+        page.appbar.actions.pop(0)
+
+     #....................................................................
+    #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
+
+    total_deliverys = base.get_deliverys_data_total(username=get_info2["username"])  
+    data_total_deliverys = total_deliverys.json()
+    
+    total_polygons = 0  # Todos os poligonos que o usuario fez
+    total_errors = 0  # Todos os erros que o usuario cometeu
+    total_delays = 0  # Todos os atrasos que o usuario cometeu
+    number_total_deliverys = 0  # Todos as entregas que o usuario fez
+
+    for row in data_total_deliverys:  #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
+
+        date = row["date"]
+        name_subproject = row["name_subproject"]
+        polygons = row["polygons"]
+        errors = row["errors"]
+        discount = row["discount"]
+        delay = row["delay"]
+
+        number_total_deliverys += 1
+        total_polygons += int(polygons)
+        total_errors += int(errors)
+
+        if delay == "Sim":
+            total_delays += 1
+
+    #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
+    #....................................................................
+
     subprojects = []
     subprojects.append(ft.dropdown.Option("."))
     get_subprojects = (base.get_all_subprojects()).json()
@@ -3654,17 +3753,36 @@ def create_page_freelancer_token(page, username):
         enable_filter=True,
         editable=True,
         )
+    
+    if est == True:
+        dropdow2 = ft.TextField(label="SubProjeto Atual", value=get_info2["current_project"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK))
 
     view_user ={
         "name": ft.TextField(label="Nome do Freelancer", value=get_info2["name"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "current_project": dropdow2,
         "username": ft.TextField(label="Nome de Usuario", value=get_info2["username"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "password": ft.TextField(label="Senha", value=get_info2["password"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "email": ft.TextField(label="Email", value=get_info2["email"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "permission": ft.TextField(label="Permissão", value=get_info2["permission"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "payment": ft.TextField(label="Pagamento", value=get_info2["payment"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "total_deliverys": ft.TextField(label="Entregas Totais", value=get_info2["total_deliverys"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "weekly_deliveries": ft.TextField(label="Entregas Semanais", value=number_total_deliverys, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
+        "polygons_made": ft.TextField(label="Poligonos Feitos", value=total_polygons, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
+        "polygons_wrong": ft.TextField(label="Poligonos Errados", value=total_errors, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
+        "delays": ft.TextField(label="Atrasos", value=total_delays, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
+        "warnings": ft.TextField(label="Advertencias", value=get_info2["warnings"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "current_project": dropdow2,
         "image": ft.TextField(label="Imagem", value=".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
     }
+
+    if est == True:
+        view_user.pop("payment")
+        view_user.pop("total_deliverys")
+        view_user.pop("weekly_deliveries")
+        view_user.pop("polygons_made")
+        view_user.pop("polygons_wrong")
+        view_user.pop("delays")
+        view_user.pop("warnings")
+        view_user.pop("image")
 
     perfil = ft.Column(
         alignment=ft.MainAxisAlignment.CENTER,
@@ -3822,7 +3940,7 @@ def create_page_freelancer_token(page, username):
 
     for item in view_user.items():
         
-        if item[0] == "image":
+        if item[0] == "image" and est == False:
             view_column.controls.append(ft.Row(
                 controls=[
                     ft.IconButton(
@@ -3905,7 +4023,11 @@ def create_page_freelancer_token(page, username):
     vertical_alignment=ft.CrossAxisAlignment.CENTER,
     spacing=20,
     expand=True
-)
+    )
+
+    if est == True:
+        layout.controls[0].controls.pop(2)
+        layout.controls[0].controls.pop(1)
 
     return layout
 
@@ -4646,6 +4768,11 @@ def create_page_files(page):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=5,)
+    btn_profile = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page, dict_profile["username"], est=True)),
+                                            text= "Perfil",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=5,)
 
     drawer = ft.NavigationDrawer(
         controls=[
@@ -4664,7 +4791,9 @@ def create_page_files(page):
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_subprojects) 
         drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment) 
+        drawer.controls.remove(btn_payment)
+        drawer.controls.insert(0, btn_profile)
+
 
     page.drawer = drawer
 
