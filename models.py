@@ -1520,7 +1520,7 @@ class SupaBase:
 
         return response  
        
-    def get_user_by_subproject(self, subproject):
+    def get_user_by_subproject(self, subproject, permission):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1530,6 +1530,7 @@ class SupaBase:
 
         params = { 
                    "current_project": f"eq.{subproject}",
+                   "permission": f"eq.{permission}",
                    "select": "*"
         }
 
@@ -1597,7 +1598,7 @@ class SupaBase:
 
         return response
      
-    def post_to_files(self, id, date, username, subproject, type, amount, url):
+    def post_to_files(self, id, date, username, subproject, type, average, amount, delay, url):
             
         headers= {
             "apikey": self.supabase_key,
@@ -1611,7 +1612,9 @@ class SupaBase:
                 "date": date,
                 "subproject": subproject,
                 "type": type,
+                "average": average,
                 "amount": amount,
+                "delay": delay,
                 "url": url,
                 }
         
@@ -1685,7 +1688,7 @@ class SupaBase:
 
         return response
 
-    def get_user_deliverys_data(self, subproject, username):
+    def get_user_deliverys_data(self, subproject):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1695,7 +1698,6 @@ class SupaBase:
 
         params = { 
                 "name_subproject": f"eq.{subproject}",
-                "username": f"eq.{username}",
                 "select": "*"
         }
 
@@ -3057,7 +3059,6 @@ class Objects:
             "Entrega Final": ft.Text(value=row.get("final_delivery", default_value), theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
             "Entregas": ft.Text(value=row.get("deliverys", default_value), theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
             "Média recomendada": ft.Text(value=row.get("recommended_medium", default_value), theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
-            "Média atual": ft.Text(value=row.get("current_average", default_value), theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
             "Porcentagem": ft.Text(value=row.get("percent", default_value), theme_style=ft.TextThemeStyle.TITLE_MEDIUM)
 
         }

@@ -139,10 +139,13 @@ def create_page_user(page):
     total_deliverys = sp.get_deliverys_data_total(username=dict_profile["username"])  
     data_total_deliverys = total_deliverys.json()
     
+    dicio_total_deliverys = {}
     total_polygons = 0  # Todos os poligonos que o usuario fez
     total_errors = 0  # Todos os erros que o usuario cometeu
     total_delays = 0  # Todos os atrasos que o usuario cometeu
     number_total_deliverys = 0  # Todos as entregas que o usuario fez
+
+    temp_list1 = []
 
     for row in data_total_deliverys:  #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
 
@@ -151,55 +154,22 @@ def create_page_user(page):
         polygons = row["polygons"]
         errors = row["errors"]
         discount = row["discount"]
+        photos = row["photos"]
         delay = row["delay"]
+        dwg = row["dwg"]
 
-        number_total_deliverys += 1
-        total_polygons += int(polygons)
-        total_errors += int(errors)
+        date_delivery_dt1 = datetime.strptime(date, "%d/%m/%Y")
 
-        if delay == "Sim":
-            total_delays += 1
-
-    #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
-    #....................................................................
-
-    #....................................................................
-    #Filtrando entregas baseado no projeto atual
-
-    current_deliverys = sp.get_user_deliverys_data(subproject=dict_profile["current_project"], username=dict_profile["username"]) 
-    data_current_deliverys = current_deliverys.json()
-    
-    dicio_current_deliverys = {}
-    subproject_polygons = 0   # Todos os poligonos feitos no subprojeto   
-    number_current_deliverys = 0  # Todos as entregas feitas no subprojeto
-
-    temp_list = [] 
-
-    if dict_profile["current_project"] != ".":
-        for row in data_current_deliverys:   #Filtrando entregas baseado no projeto atual
-
-            date = row["date"]
-            name_subproject = row["name_subproject"]
-            polygons = row["polygons"]
-            photos = row["photos"]
-            errors = row["errors"]
-            discount = row["discount"]
-            delay = row["delay"]
-            dwg = row["dwg"]
-
-            date_delivery_dt = datetime.strptime(date, "%d/%m/%Y")
-
-
-            def create_on_click(dwg):
+        def create_on_click(dwg):
                 return lambda e: page.launch_url(dwg)
 
-            btn_dwg = buttons.create_button(on_click=create_on_click(dwg),
-                                      text="Baixar",
-                                      color=ft.Colors.AMBER,
-                                      col=7,
-                                      padding=5,)
+        btn_dwg = buttons.create_button(on_click=create_on_click(dwg),
+                                    text="Baixar",
+                                    color=ft.Colors.AMBER,
+                                    col=7,
+                                    padding=5,)
 
-            linha = ft.DataRow(cells=[
+        linha = ft.DataRow(cells=[
                             ft.DataCell(ft.Text(value=date, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=name_subproject, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=polygons, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
@@ -209,17 +179,46 @@ def create_page_user(page):
                             ft.DataCell(ft.Text(value=delay, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(btn_dwg),
                         ])
+        
+        temp_list1.append((date_delivery_dt1, linha))
 
-            temp_list.append((date_delivery_dt, linha))
+        number_total_deliverys += 1
+        total_polygons += int(polygons)
+        total_errors += int(errors)
+
+        if delay == "Sim":
+            total_delays += 1
+
+
+     # Ordena a lista pela data (mais recente primeiro)
+    temp_list1.sort(reverse=True, key=lambda x: x[0])
+
+    # Cria uma lista ordenada para ser usada no Flet
+    dicio_total_deliverys = [linha for _, linha in temp_list1] 
+
+
+
+    #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
+    #....................................................................
+
+    #....................................................................
+    #Filtrando entregas baseado no projeto atual
+
+    current_deliverys = sp.get_user_deliverys_data(subproject=dict_profile["current_project"]) 
+    data_current_deliverys = current_deliverys.json()
+    
+    subproject_polygons = 0   # Todos os poligonos feitos no subprojeto   
+    number_current_deliverys = 0  # Todos as entregas feitas no subprojeto
+
+    if dict_profile["current_project"] not in [".", "", None]:
+        for row in data_current_deliverys:   #Filtrando entregas baseado no projeto atual
+
+            polygons = row["polygons"]
+            photos = row["photos"]
 
             number_current_deliverys += 1
             subproject_polygons += int(polygons)
 
-    # Ordena a lista pela data (mais recente primeiro)
-    temp_list.sort(reverse=True, key=lambda x: x[0])
-
-    # Cria uma lista ordenada para ser usada no Flet
-    dicio_current_deliverys = [linha for _, linha in temp_list]
 
     #Filtrando entregas baseado no projeto atual
     #....................................................................
@@ -254,8 +253,8 @@ def create_page_user(page):
     delivery_21 = [0, 0]
     delivery_28 = [0, 0]
 
-    if dict_profile["current_project"] != ".":
-        for row in data_current_deliverys:
+    if dict_profile["current_project"] not in [".", "", None]:
+        for row in data_total_deliverys:
 
                 date = row["date"]
                 polygons = row["polygons"]
@@ -263,9 +262,9 @@ def create_page_user(page):
                 discount = row["discount"]
                 delay = row["delay"]
                 photos = row["photos"]
+                username = row["username"]
 
                 data_obj = datetime.strptime(date, "%d/%m/%Y")
-
                 if data_obj.month == cash_month and data_obj.year == cash_year:
 
                     cash_total_polygons += int(polygons)
@@ -295,6 +294,10 @@ def create_page_user(page):
 
                     call_function1 = dicio1.get(data_obj.day, lambda: None)()
                     call_function2 = dicio2.get(data_obj.day, lambda: None)()
+                else:
+                    pass
+                
+                    
 
     # Processo de calculo financeiro
     #....................................................................
@@ -317,18 +320,14 @@ def create_page_user(page):
     #....................................................................
     # Atualizando dados do subprojeto atual
 
-    if dict_profile["current_project"] != ".":
+    if dict_profile["current_project"] not in [".", "", None]:
         subproject3 = sp.get_subproject_data(subproject=dict_profile["current_project"]) 
         data3 = subproject3.json()
         row3 = data3[0]
         row3["lots_done"] = subproject_polygons
         percent = (subproject_polygons * 100) / (int(row3["predicted_lots"]))
         row3["percent"] = f"{percent:.2f} %"
-        current_average = 0
-        if number_current_deliverys != 0:
-            current_average = subproject_polygons / number_current_deliverys
 
-        row3["current_average"] = f"{current_average:.2f}"
 
     # Atualizando dados do subprojeto atual
     #....................................................................
@@ -400,10 +399,10 @@ def create_page_user(page):
 
     # Tabela do subprojeto
     table2 = ft.Container()
-    if dict_profile["current_project"] != ".":
+    if dict_profile["current_project"] not in [".", "", None]:
         table2 = geo_objects.view_user_data2(row3)
     form2 = ft.Container()
-    if dict_profile["current_project"] != ".":
+    if dict_profile["current_project"] not in [".", "", None]:
         form2 = forms.create_forms_post(table2, "Informações", "Projeto", ft.MainAxisAlignment.START)
 
     # Tabela do Financeiro
@@ -432,7 +431,7 @@ def create_page_user(page):
                         ft.DataColumn(ft.Text(value="Atraso", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
                         ft.DataColumn(ft.Text(value="DWG", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
                     ],
-                    rows=dicio_current_deliverys,  
+                    rows=dicio_total_deliverys,  
                 ),
             )
         ],
@@ -443,9 +442,19 @@ def create_page_user(page):
         expand=True,  
     )
 
+    def get_preview_image():
+        if row3["preview"] in [".", "", None]:
+            image = ft.Text("Sem Imagem", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK)
+        else:
+            image = ft.Image(  
+                        src=row3["preview"],  
+                        fit=ft.ImageFit.COVER,
+                        expand=True,
+                    )
+        return image
+
     # Tabela da ortofoto
-    ortofoto = web_images.create_web_image(src=row3["preview"])
-    container_ortofoto = ft.Container(content=(ortofoto), border_radius=20, height=((page.height) / 2),)
+    container_ortofoto = ft.Container(content=get_preview_image(), border_radius=20, height=((page.height) / 2),)
 
     # Criação de tabelas
     #....................................................................
@@ -539,13 +548,23 @@ def create_page_user(page):
 
                 id = str(sp.get_file_id())
 
+                data_convertida = datetime.strptime(date, "%d/%m/%Y")
+                data_atual = datetime.now()
+
+                if data_convertida < data_atual:
+                    delay = "Sim"
+                else:
+                    delay = "Não"
+
                 response2 = sp.post_to_files(
                                             id=id,   
                                             date=container.controls[0].content.controls[3].value,
                                             username=dict_profile["username"],
                                             subproject=dict_profile["current_project"],
                                             type=row3["type"],
+                                            average=row3["recommended_medium"],
                                             amount=container.controls[0].content.controls[7].value,
+                                            delay = delay,
                                             url=f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/files//{name_file}"
                                             )
 
@@ -893,42 +912,42 @@ def create_page_initial_adm(page):
                                       text="Logout",
                                       color=ft.Colors.RED,
                                       col=12,
-                                      padding=5,)
+                                      padding=10,)
     btn_projeto = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page)),
                                       text= "Projetos",
                                       color=ft.Colors.GREY,
                                       col=12,
-                                      padding=5,)         
+                                      padding=10,)         
     btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
                                             text= "Arquivos",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_see_deliverys = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
                                             text= "Entregas",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_see_subprojects = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_list_subproject(page)),
                                             text= "Subprojetos",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_see_freelancers = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_freelancers(page)),
                                             text= "Freelancers",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_see_models = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page)),
                                             text= "Modelos",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
 
     drawer = ft.NavigationDrawer(
         controls=[
@@ -2042,9 +2061,8 @@ def create_page_list_subproject(page):#ESTOU MEXENDO NESSE AQUI
                     columns=[
                         ft.DataColumn(ft.Text(value="Subprojetos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
                         ft.DataColumn(ft.Text(value="Lotes_Previstos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)), 
-                        ft.DataColumn(ft.Text(value="Entregas", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                         ft.DataColumn(ft.Text(value="Media_Recomendada", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="Porcentagem", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                        ft.DataColumn(ft.Text(value="Projeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                         ft.DataColumn(ft.Text(value="Entrega_Final", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                         ft.DataColumn(ft.Text(value="Editar", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
 
@@ -2072,7 +2090,6 @@ def create_page_list_subproject(page):#ESTOU MEXENDO NESSE AQUI
             ft.DataRow(cells=[
                             ft.DataCell(ft.Text(value=f"{name_subproject}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=f"{predicted_lots}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{deliverys}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=f"{recommended_medium}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=f"{project}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=f"{final_delivery}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
@@ -2211,7 +2228,6 @@ def create_page_subproject_token(page, subproject, back_project=None):
         data_subproject["percent"] = view_subproject["percent"].value
         data_subproject["project"] = view_subproject["project"].value
         data_subproject["final_delivery"] = view_subproject["final_delivery"].value
-        data_subproject["current_average"] = view_subproject["current_average"].value
         data_subproject["type"] = view_subproject["type"].value
         data_subproject["preview"] = view_subproject["preview"].value
         data_subproject["dwg"] = view_subproject["dwg"].value
@@ -2266,19 +2282,35 @@ def create_page_subproject_token(page, subproject, back_project=None):
         if view_deliveries[object].value != "." and view_deliveries[object].value != "":
             page.launch_url(view_deliveries[object].value)
 
+    current_deliverys = sp.get_user_deliverys_data(subproject=get_info2["name_subproject"]) 
+    data_current_deliverys = current_deliverys.json()
+    
+    subproject_polygons = 0   # Todos os poligonos feitos no subprojeto   
+    number_current_deliverys = 0  # Todos as entregas feitas no subprojeto
+    percent = f"0 %"
 
+    if get_info2["name_subproject"] not in [".", "", None]:
+        for row in data_current_deliverys:   #Filtrando entregas baseado no projeto atual
+
+            polygons = row["polygons"]
+            photos = row["photos"]
+
+            number_current_deliverys += 1
+            subproject_polygons += int(polygons)
+        percent = f"{(subproject_polygons * 100) / (int(get_info2["predicted_lots"])):.2f} %"
+
+    
 
     view_subproject = {
 
         "name_subproject":ft.TextField(label="Nome do Subprojeto", value=get_info2["name_subproject"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "predicted_lots":ft.TextField(label="Lotes Previstos", value=get_info2["predicted_lots"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "lots_done":ft.TextField(label="Lotes Feitos", value=get_info2["lots_done"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "deliverys":ft.TextField(label="Entregas", value=get_info2["deliverys"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "lots_done":ft.TextField(label="Lotes Feitos", value=subproject_polygons, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
+        "deliverys":ft.TextField(label="Entregas", value=number_current_deliverys, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
         "recommended_medium":ft.TextField(label="Média Recomendada", value=get_info2["recommended_medium"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "percent":ft.TextField(label="Porcentagem", value=get_info2["percent"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "percent":ft.TextField(label="Porcentagem", value=percent, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
         "project":ft.TextField(label="Projeto", value=get_info2["project"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "final_delivery":ft.TextField(label="Entrega Final", value=get_info2["final_delivery"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "current_average":ft.TextField(label="Média Atual", value=get_info2["current_average"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "type":ft.TextField(label="Tipo", value=get_info2["type"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "preview":ft.TextField(label="Preview", value=get_info2["preview"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), on_click=lambda e: go_download(view_subproject, "preview")), 
         "dwg":ft.TextField(label="DWG", value=get_info2["dwg"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), on_click=lambda e: go_download(view_subproject, "dwg")), 
@@ -2287,15 +2319,15 @@ def create_page_subproject_token(page, subproject, back_project=None):
     }
     
     
-    name = "."
+    name_freela = "."
     try:
-        name = (((sp.get_user_by_subproject(get_info2["name_subproject"])).json())[0])["username"]
+        name_freela = (((sp.get_user_by_subproject(subproject=get_info2["name_subproject"], permission="user")).json())[0])["username"]
     except:
-        name = "."
+        name_freela = "."
 
-    def go_freelancer(name):
-        if name not in [".", ""]:
-            loading.new_loading_page(page=page, call_layout=lambda: create_page_freelancer_token(page=page, username=name))
+    def go_freelancer(name_freela):
+        if name_freela not in [".", ""]:
+            loading.new_loading_page(page=page, call_layout=lambda: create_page_freelancer_token(page=page, username=name_freela))
         else:
             pass
 
@@ -2303,7 +2335,7 @@ def create_page_subproject_token(page, subproject, back_project=None):
                 controls=[
                     ft.TextField(
                         label="Freelancer atual",
-                        value=name,
+                        value=name_freela,
                         width=300,
                         text_style=ft.TextStyle(color=ft.Colors.BLACK),
                         read_only=True,
@@ -2312,7 +2344,39 @@ def create_page_subproject_token(page, subproject, back_project=None):
                         icon=ft.Icons.SEARCH,
                         bgcolor=ft.Colors.BLUE,
                         icon_color=ft.Colors.WHITE,
-                        on_click=lambda e: go_freelancer(name)
+                        on_click=lambda e: go_freelancer(name_freela)
+                        ),
+
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            )
+    
+    name_est = "."
+    try:
+        name_est = (((sp.get_user_by_subproject(subproject=get_info2["name_subproject"], permission="est")).json())[0])["username"]
+    except:
+        name_est = "."
+
+    def go_freelancer(name_est):
+        if name_est not in [".", ""]:
+            loading.new_loading_page(page=page, call_layout=lambda: create_page_freelancer_token(page=page, username=name_est))
+        else:
+            pass
+
+    estagiario = ft.Row(
+                controls=[
+                    ft.TextField(
+                        label="Estagiário atual",
+                        value=name_est,
+                        width=300,
+                        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                        read_only=True,
+                        ),
+                    ft.IconButton(
+                        icon=ft.Icons.SEARCH,
+                        bgcolor=ft.Colors.BLUE,
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: go_freelancer(name_est)
                         ),
 
                 ],
@@ -2537,6 +2601,7 @@ def create_page_subproject_token(page, subproject, back_project=None):
                 ft.Text(""),
                 ft.Text(""),
                 freelancer,
+                estagiario,
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -4732,47 +4797,47 @@ def create_page_files(page):
                                       text="Logout",
                                       color=ft.Colors.RED,
                                       col=12,
-                                      padding=5,)
+                                      padding=10,)
     btn_projeto = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page)),
                                       text= "Projetos",
                                       color=ft.Colors.GREY,
                                       col=12,
-                                      padding=5,)         
+                                      padding=10,)         
     btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
                                             text= "Arquivos",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_see_deliverys = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
                                             text= "Entregas",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_see_subprojects = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_list_subproject(page)),
                                             text= "Subprojetos",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_see_freelancers = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_freelancers(page)),
                                             text= "Freelancers",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_see_models = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page)),
                                             text= "Modelos",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
     btn_profile = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page, dict_profile["username"], est=True)),
                                             text= "Perfil",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=5,)
+                                            padding=10,)
 
     drawer = ft.NavigationDrawer(
         controls=[
@@ -5079,8 +5144,10 @@ def create_page_files_details(page, files):
         "username": ft.TextField(label="Usuário", value=f"{files['username']}", width=300, color=ft.Colors.BLACK),  # usuario_field
         "date": ft.TextField(label="Data", value=f"{files['date']}", width=300, color=ft.Colors.BLACK),  # data_field
         "subproject": ft.TextField(label="Subprojeto", value=f"{files['subproject']}", width=300, color=ft.Colors.BLACK),  # subprojeto_field
-        "type": ft.TextField(label="type", value=f"{files['type']}", width=300, color=ft.Colors.BLACK),  # erros_field
-        "amount": ft.TextField(label="amount", value=f"{files['amount']}", width=300, color=ft.Colors.BLACK),  # desconto_field
+        "type": ft.TextField(label="Tipo", value=f"{files['type']}", width=300, color=ft.Colors.BLACK),  # erros_field
+        "average": ft.TextField(label="Média", value=f"{files['average']}", width=300, color=ft.Colors.BLACK),  # desconto_field
+        "amount": ft.TextField(label="Montante", value=f"{files['amount']}", width=300, color=ft.Colors.BLACK),  # desconto_field
+        "delay": ft.TextField(label="Atraso", value=f"{files['delay']}", width=300, color=ft.Colors.BLACK),  # desconto_field
         "url": ft.TextField(label="url", value=f"{files['url']}", width=300, color=ft.Colors.BLACK, read_only=True),  # advertencias_field
 
     }
@@ -5122,11 +5189,26 @@ def create_page_files_details(page, files):
                                       col=7,
                                       padding=5,) 
     
-    btn_delete = buttons.create_button(on_click=lambda e: delete_file(view_files),
-                                      text="Excluir",
-                                      color=ft.Colors.RED,
-                                      col=7,
-                                      padding=5,) 
+
+    btn_delete = ft.Column(
+            horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+            col=7,
+            controls=[
+                    ft.Container(
+                            alignment=ft.alignment.center,
+                            col=7,
+                            padding=5,
+                            expand=True,
+                            content=ft.ElevatedButton(
+                                text="Excluir",
+                                bgcolor=ft.Colors.RED,
+                                color=ft.Colors.WHITE,
+                                width=150,
+                                on_long_press= lambda e: delete_file(view_files),
+                            )
+                        )
+                    ]    
+                 ) 
     
     # Container principal
     main_container = ft.Container(
