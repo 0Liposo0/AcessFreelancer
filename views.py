@@ -1,8 +1,8 @@
 import flet as ft
 from models import *
 import flet.map as map
-from datetime import datetime
-from datetime import datetime
+from datetime import datetime, timedelta
+
 
 
 def create_page_login(page):
@@ -351,9 +351,29 @@ def create_page_user(page):
     test = ft.Text(value="", size=20)
     text_date_file.append(test)
 
-    def change_text_date(text_date_file):
+    text_date_file_before = []
+    test2 = ft.Text(value="", size=20)
+    text_date_file_before.append(test2)
 
-        date_file = datetime.now().day
+    def change_text_date(text_date_file, week):
+
+        date = {
+            "now": {
+                "now":datetime.now(),
+                "day":datetime.now().day,
+                "month":datetime.now().month,
+                "year":datetime.now().year
+            },
+            "before": {
+                "now":datetime.now() - timedelta(days=7),
+                "day":(datetime.now() - timedelta(days=7)).day,
+                "month":(datetime.now() - timedelta(days=7)).month,
+                "year":(datetime.now() - timedelta(days=7)).year
+            },
+        }
+
+
+        date_file = date[week]["day"]
 
         dias = {
         i: 7 if i > 28 or i <= 7 else 
@@ -363,8 +383,8 @@ def create_page_user(page):
         for i in range(1, 32)
         }
 
-        month = datetime.now().month
-        year = datetime.now().year
+        month = date[week]["month"]
+        year = date[week]["year"]
         if date_file > 28:
             month += 1
             if month == 13:
@@ -385,7 +405,8 @@ def create_page_user(page):
             
         page.update()
 
-    change_text_date(text_date_file)    
+    change_text_date(text_date_file, "now")    
+    change_text_date(text_date_file_before, "before")    
 
     # Texto de verificação de entrega
     #....................................................................
@@ -584,7 +605,8 @@ def create_page_user(page):
                     )
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
-                    change_text_date(text_date_file)
+                    change_text_date(text_date_file, "now")
+                    change_text_date(text_date_file_before, "before")
                     overlay_copy = list(page.overlay)
                     for item in overlay_copy:
                         if item.data == "fp" or item.data == "bar":
@@ -835,7 +857,7 @@ def create_page_user(page):
                                     height=((page.height) / 1.3),
                                     col={"xs" : 12, "lg" : 4},
                                     )
-    container_form3 = ft.Container(content=ft.Column(controls=[text_date_file[0], form3],
+    container_form3 = ft.Container(content=ft.Column(controls=[text_date_file_before[0], text_date_file[0], form3],
                                                      alignment=ft.MainAxisAlignment.CENTER,
                                                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                                     spacing=30,
