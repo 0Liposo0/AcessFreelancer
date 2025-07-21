@@ -464,14 +464,20 @@ def create_page_user(page):
     )
 
     def get_preview_image():
-        if row3["preview"] in [".", "", None]:
-            image = ft.Text("Sem Imagem", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK)
+            
+        if dict_profile["current_project"] not in [".", "", None]:
+
+            if row3["preview"] in [".", "", None]:
+                image = ft.Text("Sem Imagem", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK)
+            else:
+                image = ft.Image(  
+                            src=row3["preview"],  
+                            fit=ft.ImageFit.COVER,
+                            expand=True,
+                        )
         else:
-            image = ft.Image(  
-                        src=row3["preview"],  
-                        fit=ft.ImageFit.COVER,
-                        expand=True,
-                    )
+            image = ft.Text("Sem Imagem", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK)
+
         return image
 
     # Tabela da ortofoto
@@ -796,7 +802,9 @@ def create_page_user(page):
                                       padding=5,
                                       )
     
-    url = (((sp.get_one_project_data(row3["project"])).json())[0])["ecw"]
+    url = None
+    if dict_profile["current_project"] not in [".", "", None]:
+        url = (((sp.get_one_project_data(row3["project"])).json())[0])["ecw"]
 
     btn_ecw = buttons.create_button(on_click=lambda e: page.launch_url(url),
                                       text="Baixar Ortofoto",
