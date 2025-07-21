@@ -569,7 +569,7 @@ def create_page_user(page):
 
                 id = str(sp.get_file_id())
 
-                data_convertida = datetime.strptime(date, "%d/%m/%Y")
+                data_convertida = datetime.strptime(date, "%d/%m/%Y").replace(hour=23, minute=59, second=59)
                 data_atual = datetime.now()
 
                 if data_convertida < data_atual:
