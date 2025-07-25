@@ -103,8 +103,7 @@ def create_page_user(page):
     buttons = Buttons(page)
     sp = SupaBase(page)
     texttheme1 = textthemes.create_text_theme1()
-    profile = CurrentProfile() 
-    dict_profile = profile.return_current_profile()
+    dict_profile = page.session.get("profile")
 
     
     perfil = ft.Column(
@@ -935,8 +934,7 @@ def create_page_initial_adm(page):
     sp = SupaBase(page)
     buttons = Buttons(page)
     loading = LoadingPages(page)
-    profile = CurrentProfile() 
-    dict_profile = profile.return_current_profile()
+    dict_profile = page.session.get("profile")
     
     btn_exit = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)),
                                       text="Logout",
@@ -1309,22 +1307,25 @@ def verificar(username, password, page):
     loading = LoadingPages(page)
     sp = SupaBase(page)
 
-    response = sp.check_login(username=username, password=password)
+    response = sp.check_login(username=username, password=password, page=page)
 
     if response.status_code == 200 and len(response.json()) > 0:
 
         data = response.json()
         row = data[0]
         name = row["name"]
-        user_name = row["username"]
+        username = row["username"]
         permission = row["permission"]
         current_project = row["current_project"]
+
+        page.session.set("profile", {
+            "username": username,
+            "name": name,
+            "permission": permission,
+            "current_project": current_project,
+        })
         
-        profile = CurrentProfile()
-        profile.add_name(name)
-        profile.add_username(user_name)
-        profile.add_permission(permission)
-        profile.add_current_project(current_project)
+
 
         if permission == "user":
 
@@ -3706,8 +3707,7 @@ def create_page_freelancer_token(page, username, est=False):
     loading = LoadingPages(page=page)
     base = SupaBase(page=page)
     buttons = Buttons(page)
-    profile = CurrentProfile() 
-    dict_profile = profile.return_current_profile()
+    dict_profile = page.session.get("profile")
     get_base_Project = base.get_user_data(username)
     get_info1 = get_base_Project.json()
     get_info2 = get_info1[0]
@@ -4134,8 +4134,7 @@ def create_page_see_deliverys(page):
     base = SupaBase(page=None)
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1()
-    profile = CurrentProfile() 
-    dict_profile = profile.return_current_profile()
+    dict_profile = page.session.get("profile")
 
     get_base = base.get_all_deliverys()
     get_json = get_base.json()
@@ -4420,8 +4419,7 @@ def create_page_delivery_details(page, delivery):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
-    profile = CurrentProfile() 
-    dict_profile = profile.return_current_profile()
+    dict_profile = page.session.get("profile")
     sp = SupaBase(page)
 
     # Definir o tema global para garantir que o texto seja preto por padrão
@@ -4815,8 +4813,7 @@ def create_page_files(page):
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
     buttons = Buttons(page)
-    profile = CurrentProfile() 
-    dict_profile = profile.return_current_profile()
+    dict_profile = page.session.get("profile")
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1()
 
@@ -5143,8 +5140,7 @@ def create_page_files_details(page, files):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
-    profile = CurrentProfile() 
-    dict_profile = profile.return_current_profile()
+    dict_profile = page.session.get("profile")
 
     # Definir o tema global para garantir que o texto seja preto por padrão
 
@@ -5286,8 +5282,7 @@ def create_page_see_models(page):
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
     textthemes = TextTheme()
-    profile = CurrentProfile() 
-    dict_profile = profile.return_current_profile()
+    dict_profile = page.session.get("profile")
     texttheme1 = textthemes.create_text_theme1()
 
     get_base = base.get_all_models()
@@ -5572,8 +5567,7 @@ def create_page_models_details(page, model):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
-    profile = CurrentProfile() 
-    dict_profile = profile.return_current_profile()
+    dict_profile = page.session.get("profile")
     sp = SupaBase(page)
 
     # Definir o tema global para garantir que o texto seja preto por padrão
@@ -5948,8 +5942,7 @@ def create_page_new_model(page):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
-    profile = CurrentProfile() 
-    dict_profile = profile.return_current_profile()
+    dict_profile = page.session.get("profile")
     sp = SupaBase(page)
 
     # Definir o tema global para garantir que o texto seja preto por padrão

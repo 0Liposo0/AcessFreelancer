@@ -1203,19 +1203,7 @@ class SupaBase:
             return 1  # Se não houver registros, começa do 1
         
 
-    def get_storage(self):
 
-        profile = CurrentProfile()
-        dict_profile = profile.return_current_profile()
-
-        storage_path = f'subprojects_ortofoto/{dict_profile["current_project"]}.jpg'
-        public_url = f"{self.supabase_url}/storage/v1/object/public/{storage_path}"
-        response = requests.get(public_url)
-        if response.status_code == 200:
-            return public_url 
-        else:
-            url = "Nulo"
-            return url
 
     def get_all_user_data(self):
 
@@ -1474,29 +1462,6 @@ class SupaBase:
         )   
         return response
 
-    def get_form_user(self, user):
-
-        headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
-            "Content-Type": "application/json",
-        }
-
-        params = {
-        "usuario": f"eq.{user}",
-        "select": "user_id, usuario, email, numero, senha, permission",
-        }
-
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        response = requests.get(
-            f'{self.supabase_url}/rest/v1/users_{current_profile["city_call_name"]}',
-            headers=headers,
-            params=params,
-        )
-
-        return response
 
     def get_user_data(self, users):
 
@@ -1542,7 +1507,7 @@ class SupaBase:
 
         return response     
 
-    def get_forms(self, name, object):
+    def get_forms(self, name, object, page):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1553,8 +1518,7 @@ class SupaBase:
         geo_objects = Objects(page=None)
         method_map = geo_objects.sp_get_forms_object(name)
 
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
+        current_profile = page.session.get("profile")
 
         response = requests.get(
             f'{self.supabase_url}/rest/v1/form_{object}_{current_profile["city_call_name"]}',
@@ -1868,7 +1832,8 @@ class SupaBase:
 
         params = {
                    "username":  f"eq.{data["username"]}", 
-                   "date":  f"eq.{data["date"]}", 
+                   "date":  f"eq.{data["date"]}",
+                   "subproject":  f"eq.{data["subproject"]}", 
                    "select": "*"
         }
 
@@ -1892,6 +1857,7 @@ class SupaBase:
         params = {
                    "username":  f"eq.{data["username"]}", 
                    "date":  f"eq.{data["date"]}", 
+                   "subproject":  f"eq.{data["subproject"]}", 
                    "select": "*"
         }
 
@@ -1929,7 +1895,7 @@ class SupaBase:
 
         return response    
 
-    def check_login(self, username, password):
+    def check_login(self, username, password, page):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1943,8 +1909,7 @@ class SupaBase:
             "select": "*"
         }
 
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
+        current_profile = page.session.get("profile")
 
         response = requests.get(
             f'{self.supabase_url}/rest/v1/users',
@@ -2144,30 +2109,6 @@ class CurrentMapPoints:
             else:
                 item.content.opacity = 1  
 
-
-class CurrentProfile:
-    current_profile = {
-        "username": None,
-        "name": None,
-        "permission": None,
-        "current_project": None,
-    }
-
-    def return_current_profile(self):
-        return self.current_profile
-
-    def add_current_project(self, current_project):
-        self.current_profile["current_project"] = current_project
-
-    def add_username(self, username):
-        self.current_profile["username"] = username
-
-    def add_name(self, name):
-        self.current_profile["name"] = name
-
-    def add_permission(self, permission):
-        self.current_profile["permission"] = permission
-
     
 class Objects:
 
@@ -2260,11 +2201,11 @@ class Objects:
         
         return dicio_add_object
 
-    def view_object(self, name, object):
+    def view_object(self, name, object, page):
 
         sp = SupaBase(self.page)
 
-        point = sp.get_forms(name, object)
+        point = sp.get_forms(name, object, page)
         data = point.json()
         row = data[0]
 
@@ -2381,7 +2322,7 @@ class Objects:
         
         return dicio_edit_object
 
-    def add_os_object(self, name, object):
+    def add_os_object(self, name, object, page):
 
         sp = SupaBase(self.page)
         textfields = TextField(self.page)
@@ -2390,8 +2331,7 @@ class Objects:
         data_formatada = data_atual.strftime("%d/%m/%Y")
         id = str(sp.get_os_id(object))
         new_order = id.zfill(4)
-        profile = CurrentProfile()
-        dict_profile = profile.return_current_profile()
+        dict_profile = page.session.get("profile")
 
         def drop_down_menu(value=None, opt1=None, opt2=None, opt3=None, opt4=None, opt5=None, opt6=None):
 
@@ -2664,19 +2604,7 @@ class Objects:
         
         return dicio_edit_os_object
     
-    def add_point_object(self, new_number):
 
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-
-        dicio_point_object = {
-                "post": f'IP {current_profile["city_acronym"]}-{new_number}',
-                "tree": f'IA {current_profile["city_acronym"]}-{new_number}',
-                "grass": f'IV {current_profile["city_acronym"]}-{new_number}',
-            }
-        
-        return dicio_point_object
-    
     def add_button_point_object(self):
 
         buttons = Buttons(self.page)
@@ -2953,49 +2881,8 @@ class Objects:
         
         return method_map
     
-    def data_objects(self):
+ 
 
-        all_list_objects = [["post","Lista de Postes", "OS de Postes", "Adicionar Poste"],
-                        ["tree","Lista de Àrvores", "OS de Àrvores", "Adicionar Árvore"],
-                        ["grass","Lista de Vegetação Densa", "OS de Vegetação Densa", "Adicionar Vegetação Densa"],
-                    ]
-        current_list_objects = []
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-        current_objects = current_profile["city_objects"]
-        for item in all_list_objects:
-            if item[0] in current_objects:
-                current_list_objects.append(item)
-            else:
-                pass
-
-        return current_list_objects
-    
-    def container_add_object(self, list_actions):
-
-        list_objects = []
-        profile = CurrentProfile()
-        current_profile = profile.return_current_profile()
-        current_objects = current_profile["city_objects"]
-        if "post" in current_objects:
-            list_objects.append("Informações de Postes")
-        if "tree" in current_objects:
-            list_objects.append("Informações de Àrvores")
-        if "grass" in current_objects:
-            list_objects.append("Informações de Vegetação Densa")
-        list_name = []
-        n = 0
-        for object in list_objects:
-            tile = ft.ListTile(
-                title=ft.Text(value=object, color=ft.Colors.BLACK),
-                on_click=list_actions[n],
-                bgcolor=ft.Colors.WHITE,
-                shape=ft.RoundedRectangleBorder(radius=10),
-            )
-            list_name.append(tile)
-            n += 1
-        return list_name
-    
     def container_add_object2(self, list_name_actions):
 
         list_name = []
