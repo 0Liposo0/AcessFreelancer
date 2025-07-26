@@ -499,7 +499,19 @@ def create_page_user(page):
                     pass
                 else:
                     container = item
-
+                    
+        if container.controls[0].content.controls[3].value == "":
+            snack_bar = ft.SnackBar(
+                content=ft.Text("Preencha todos os campos!"),
+                bgcolor=ft.Colors.RED,
+                duration=2000,
+                data="bar",
+                )
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+            return
+            
         data = (container.controls[0].content.controls[3].value).split("/")
 
         extension = "dwg"
@@ -512,6 +524,7 @@ def create_page_user(page):
             container.controls[0].content.controls[5].value,
             container.controls[0].content.controls[7].value,
         ]
+
         if any(field == "" or field is None for field in field_container):
             snack_bar = ft.SnackBar(
                 content=ft.Text("Preencha todos os campos!"),
@@ -685,27 +698,47 @@ def create_page_user(page):
             controls=[ ft.Container(
                             content=ft.Column(
                                 controls=[
-                                    ft.Text(value=f"{file_name[0]}", color=ft.Colors.BLACK),
-                                    ft.Text(value="", color=ft.Colors.BLACK),
+                                    ft.Text(value="Arquivo:", color=ft.Colors.BLACK),
+                                    ft.TextField(
+                                        value=f"{file_name[0]}",
+                                        read_only=True,
+                                        bgcolor=ft.Colors.WHITE,
+                                        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                        border_radius=0,
+                                    ),
                                     ft.Text(value="Data da entrega:", color=ft.Colors.BLACK),
                                     ft.Dropdown(
+                                        value="",
                                         options=[
-                                            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}"),
-                                            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}"),
-                                            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}"),
-                                            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}"),
-                                            ft.dropdown.Option(f"07/{next_month:02d}/{year:02d}"),
+                                            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                                content=ft.Text(value=f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                                                color=ft.Colors.BLACK)),
+                                            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                               content=ft.Text(value=f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                                                color=ft.Colors.BLACK)),
+                                            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                               content=ft.Text(value=f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                                                color=ft.Colors.BLACK)),
+                                            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                               content=ft.Text(value=f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                                                color=ft.Colors.BLACK)),
+                                            ft.dropdown.Option(f"07/{next_month:02d}/{year:02d}",
+                                                               content=ft.Text(value=f"07/{next_month:02d}/{year:02d}",
+                                                                                color=ft.Colors.BLACK)),
                                         ],
-                                        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                        color=ft.Colors.BLACK,
                                         bgcolor=ft.Colors.WHITE,
+                                        fill_color=ft.Colors.WHITE,
+                                        filled=True,
+                                        width=300,
                                     ),
                                     ft.Text(value="Tipo de entrega:", color=ft.Colors.BLACK),
-                                    ft.Dropdown(
+                                    ft.TextField(
                                         value=row3["type"],
-                                        label=row3["type"],
-                                        label_style=ft.TextStyle(color=ft.Colors.BLACK),
-                                        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                        read_only=True,
                                         bgcolor=ft.Colors.WHITE,
+                                        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                        border_radius=0,
                                     ),
                                     ft.Text(value="Quantidade:", color=ft.Colors.BLACK),
                                     ft.TextField(
