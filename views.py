@@ -1029,9 +1029,6 @@ def create_page_initial_adm(page):
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment) 
     
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page=page))
-
     page.drawer = drawer
 
     page.appbar = ft.AppBar(
@@ -1374,7 +1371,7 @@ def verificar(username, password, page):
 
         else:
             loading.new_loading_page(page=page,
-            call_layout=lambda:create_page_initial_adm(page),
+            call_layout=lambda:create_page_see_freelancers(page),
             )
         
     else:
@@ -1401,8 +1398,7 @@ def create_page_project(page):
 
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page=page))
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page=page))
+   
 
     history_list = ft.Column(
         controls=[
@@ -1473,7 +1469,6 @@ def create_page_project(page):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
         ],
         
@@ -1556,10 +1551,7 @@ def create_page_project_token(page, project):
 
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
-
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
-    
+  
     def editar_dados(view_project):
         
         data_project = view_project.copy()
@@ -1591,7 +1583,6 @@ def create_page_project_token(page, project):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
         ],
     )
@@ -1661,8 +1652,6 @@ def create_page_new_project(page):
     loading = LoadingPages(page=page)
     sp = SupaBase(page)
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
@@ -1673,7 +1662,6 @@ def create_page_new_project(page):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
         ],
     )
@@ -2032,8 +2020,6 @@ def create_page_subproject(page, project):
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
     page.appbar = ft.AppBar(
         leading_width=40,
@@ -2041,7 +2027,6 @@ def create_page_subproject(page, project):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
         ],
     )
@@ -2109,8 +2094,7 @@ def create_page_list_subproject(page):#ESTOU MEXENDO NESSE AQUI
 
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page=page))
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page=page))
+
 
     history_list = ft.Column(
         controls=[
@@ -2181,7 +2165,6 @@ def create_page_list_subproject(page):#ESTOU MEXENDO NESSE AQUI
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
         ],
             
@@ -2264,8 +2247,6 @@ def create_page_subproject_token(page, subproject, back_project=None):
         else:
             loading.new_loading_page(page=page, call_layout=lambda: create_page_list_subproject(page=page))
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
     
     file_selected = []
     file_name = []
@@ -2337,7 +2318,6 @@ def create_page_subproject_token(page, subproject, back_project=None):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
         ],
     )
@@ -2769,9 +2749,6 @@ def create_page_new_subproject(page, project):
     sp = SupaBase(page=page)
     loading = LoadingPages(page=page)
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
-
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
 
@@ -2781,7 +2758,6 @@ def create_page_new_subproject(page, project):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
         ],
     )
@@ -2896,8 +2872,7 @@ def create_page_new_freelancer(page):
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
     
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
+
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
 
@@ -2907,7 +2882,6 @@ def create_page_new_freelancer(page):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
         ],
     )
@@ -3024,8 +2998,6 @@ def create_page_new_delivery(page):
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -3034,7 +3006,6 @@ def create_page_new_delivery(page):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
         ],
     )
@@ -3111,55 +3082,128 @@ def create_page_new_delivery(page):
 
 
     # Campos para exibir os detalhes da entrega
-    
-    users = []
-    get_users = (sp.get_all_user_data()).json()
-    for item in get_users:
-        users.append(ft.dropdown.Option(item["username"]))
 
-    dropdow1 = ft.Dropdown(
-        options=users,
-        label="Usuário",
+    dropdow3 = ft.Dropdown(
+        options=[
+            ft.dropdown.Option("Sim", content=ft.Text(value="Sim", color=ft.Colors.BLACK)),
+            ft.dropdown.Option("Não", content=ft.Text(value="Não", color=ft.Colors.BLACK)),
+        ],
+        label="Atraso",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
         bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
         width=300,
-        enable_filter=True,
-        editable=True,
         )
-    
-    subprojects = []
+
+    subprojects = [ft.dropdown.Option(".", content=ft.Text(value=".", color=ft.Colors.BLACK))]
     get_subprojects = (sp.get_all_subprojects()).json()
     for item in get_subprojects:
-        subprojects.append(ft.dropdown.Option(item["name_subproject"]))
+        subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
     dropdow2 = ft.Dropdown(
         options=subprojects,
         label="SubProjeto",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
         bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
         width=300,
         enable_filter=True,
         editable=True,
         )
     
-    dropdow3 = ft.Dropdown(
-        options=[
-            ft.dropdown.Option("Sim"),
-            ft.dropdown.Option("Não"),
-        ],
-        label="Atraso",
+    users = []
+    get_users = (sp.get_all_user_data()).json()
+    for item in get_users:
+        users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
+
+    find_file = ["."]
+
+    def on_dropdow_changed(e):
+        if e.control.data == "drop_user":
+            value = (((sp.get_user_data(e.control.value)).json())[0])
+            dropdow2.value = value["current_project"]
+            find_file.clear()
+            find_file.append(value["current_project"])
+        else:
+            if find_file[0] != ".":
+                dropdow3.value = (((sp.get_one_file_data(e.control.value, find_file[0])).json())[0])["delay"]
+
+        page.update()
+
+    dropdow1 = ft.Dropdown(
+        options=users,
+        label="Usuário",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
         bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
         width=300,
+        enable_filter=True,
+        editable=True,
+        data="drop_user",
+        on_change=on_dropdow_changed
         )
+    
+    
+    next_month = datetime.now().month + 1
+    year1 = datetime.now().year
+    if next_month == 13:
+        next_month = 1
+        year1 += 1
+
+    before_month = datetime.now().month - 1
+    year2 = datetime.now().year
+    if before_month == 0:
+        before_month = 12
+        year2 -= 1
+
+    dropdow4 = ft.Dropdown(
+        label="Data",
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+        options=[
+            ft.dropdown.Option(f"28/{before_month:02d}/{year2:02d}",
+                                content=ft.Text(value=f"28/{before_month:02d}/{year2:02d}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"07/{next_month:02d}/{year1:02d}",
+                                content=ft.Text(value=f"07/{next_month:02d}/{year1:02d}",
+                                                color=ft.Colors.BLACK)),
+        ],
+        color=ft.Colors.BLACK,
+        bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        width=300,
+        data="drop_date",
+        on_change=on_dropdow_changed
+    )
 
     view_deliveries = {
         "username": dropdow1, 
-        "date":ft.TextField(label="Data", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "date":dropdow4, 
         "name_subproject":dropdow2,   
         "polygons":ft.TextField(label="Polígonos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "errors":ft.TextField(label="Erros", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "discount":ft.TextField(label="Desconto", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "discount":ft.TextField(label="Descontos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "warning":ft.TextField(label="Advertências", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "delay":dropdow3, 
         "photos":ft.TextField(label="Fotos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
@@ -3285,18 +3329,11 @@ def create_page_payment(page, month=None):
     texttheme1 = textthemes.create_text_theme1()
     loading = LoadingPages(page)
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
-
     page.appbar = ft.AppBar(
         leading_width=40,
         center_title=True,
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
-        ],
     )
 
     meses_pt_1 = {
@@ -3549,17 +3586,91 @@ def create_page_see_freelancers(page):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
+    buttons = Buttons(page)
+    dict_profile = page.session.get("profile")
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1()
 
+    btn_exit = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)),
+                                      text="Logout",
+                                      color=ft.Colors.RED,
+                                      col=12,
+                                      padding=10,)
+    btn_projeto = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page)),
+                                      text= "Projetos",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)         
+    btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
+                                            text= "Arquivos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
+                                            text= "Entregas",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_subprojects = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_list_subproject(page)),
+                                            text= "Subprojetos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_freelancers(page)),
+                                            text= "Freelancers",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_models = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page)),
+                                            text= "Modelos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_payment = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
+                                            text= "Financeiro",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_profile = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page, dict_profile["username"], est=True)),
+                                            text= "Perfil",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+
+    drawer = ft.NavigationDrawer(
+    controls=[
+        btn_projeto,
+        btn_see_subprojects,
+        btn_see_freelancers,
+        btn_payment,
+        btn_see_file,
+        btn_see_deliverys,
+        btn_see_models,
+        btn_exit,
+        ]
+    )
+    
+    if dict_profile["permission"] == "est":
+        drawer.controls.remove(btn_projeto) 
+        drawer.controls.remove(btn_see_subprojects) 
+        drawer.controls.remove(btn_see_freelancers) 
+        drawer.controls.remove(btn_payment)
+        drawer.controls.insert(0, btn_profile)
+
+
+    page.drawer = drawer
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
+        bgcolor=ft.Colors.WHITE70,
+        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
+    )
+
     get_base = base.get_all_user_data()
     get_json = get_base.json()
-
-    def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
-
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
     # Lista para exibir as entregas
     history_list = ft.Column(
@@ -3654,17 +3765,6 @@ def create_page_see_freelancers(page):
                 )
         )
 
-    # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
-        ],
-    )
 
     def filtrar_usuarios(e):
         texto = e.control.value.lower().strip()
@@ -3748,9 +3848,18 @@ def create_page_freelancer_token(page, username, est=False):
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
-    
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
+        bgcolor=ft.Colors.WHITE70,
+        actions=[
+            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
+        ],
+    )
+
+
     file_selected = []
     file_name = []
     file_type =[]
@@ -3819,21 +3928,7 @@ def create_page_freelancer_token(page, username, est=False):
                     snack_bar.open = True
                     page.update()
 
-    # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
-        ],
-    )
 
-    if est == True:
-        page.appbar.actions.pop(1)
-        page.appbar.actions.pop(0)
 
      #....................................................................
     #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
@@ -4172,10 +4267,6 @@ def create_page_see_deliverys(page):
     get_base = base.get_all_deliverys()
     get_json = get_base.json()
 
-
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
-
     # Lista para exibir as entregas
     history_list = ft.Column(
         controls=[
@@ -4269,13 +4360,7 @@ def create_page_see_deliverys(page):
         center_title=True,
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
-        ],
     )
-
-    if dict_profile["permission"] == "est":
-        page.appbar.actions.pop(0)
 
     filtros_ativos = {
     "dia": None,
@@ -4311,70 +4396,85 @@ def create_page_see_deliverys(page):
         aplicar_filtros()
 
 
-
     subprojects = (base.get_all_subprojects()).json()
-    name_subprojects = [ft.dropdown.Option("Nulo")]
+    name_subprojects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in subprojects:
-        name_subprojects.append(ft.dropdown.Option(item["name_subproject"]))
+        name_subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
     users = (base.get_all_user_data()).json()
-    name_users = [ft.dropdown.Option("Nulo")]
+    name_users = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in users:
-        name_users.append(ft.dropdown.Option(item["username"]))
+        name_users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
 
     list_dropdown = ft.Row(
         controls=[
             ft.Dropdown(
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 label="Dia",
                 expand=True,
                 options=[
-                    ft.dropdown.Option("Nulo"),
-                    ft.dropdown.Option("07"),
-                    ft.dropdown.Option("14"),
-                    ft.dropdown.Option("21"),
-                    ft.dropdown.Option("28"),
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("07", content=ft.Text(value=f"07", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("14", content=ft.Text(value=f"14", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("21", content=ft.Text(value=f"21", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("28", content=ft.Text(value=f"28", color=ft.Colors.BLACK)),
                 ],
                 on_change=lambda e: on_dropdown_change(e, "dia"),
             ),
             ft.Dropdown(
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 label="Mês",
                 expand=True,
                 options=[
-                    ft.dropdown.Option("Nulo"),
-                    ft.dropdown.Option("01"),
-                    ft.dropdown.Option("02"),
-                    ft.dropdown.Option("03"),
-                    ft.dropdown.Option("04"),
-                    ft.dropdown.Option("05"),
-                    ft.dropdown.Option("06"),
-                    ft.dropdown.Option("07"),
-                    ft.dropdown.Option("08"),
-                    ft.dropdown.Option("09"),
-                    ft.dropdown.Option("10"),
-                    ft.dropdown.Option("11"),
-                    ft.dropdown.Option("12"),  
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("01", content=ft.Text(value=f"01", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("02", content=ft.Text(value=f"02", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("03", content=ft.Text(value=f"03", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("04", content=ft.Text(value=f"04", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("05", content=ft.Text(value=f"05", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("06", content=ft.Text(value=f"06", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("07", content=ft.Text(value=f"07", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("08", content=ft.Text(value=f"08", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("09", content=ft.Text(value=f"09", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("10", content=ft.Text(value=f"10", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("11", content=ft.Text(value=f"11", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("12", content=ft.Text(value=f"12", color=ft.Colors.BLACK)),  
                 ],
                 on_change=lambda e: on_dropdown_change(e, "mes"),
             ),
             ft.Dropdown(
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 label="Ano",
                 expand=True,
                 options=[
-                    ft.dropdown.Option("Nulo"),
-                    ft.dropdown.Option("2025"),
-                    ft.dropdown.Option("2026"),
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("2025", content=ft.Text(value=f"2025", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("2026", content=ft.Text(value=f"2026", color=ft.Colors.BLACK)),
                 ],
                 on_change=lambda e: on_dropdown_change(e, "ano"),
             ),
             ft.Dropdown(
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 label="Usuário",
                 expand=True,
                 options=name_users,
@@ -4386,12 +4486,16 @@ def create_page_see_deliverys(page):
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
                 color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 label="Subprojeto",
                 expand=True,
                 options=name_subprojects,
                 on_change=lambda e: on_dropdown_change(e, "subprojeto"),
                 enable_filter=True,
                 editable=True,
+                width=250,
             ),
         ],
         expand=True,
@@ -4460,8 +4564,6 @@ def create_page_delivery_details(page, delivery):
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -4470,13 +4572,10 @@ def create_page_delivery_details(page, delivery):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
         ],
     )
 
-    if dict_profile["permission"] == "est":
-        page.appbar.actions.pop(0)
 
     file_selected = []
     file_name = []
@@ -4550,57 +4649,134 @@ def create_page_delivery_details(page, delivery):
 
     # Campos para exibir os detalhes da entrega
     
+    dropdow3 = ft.Dropdown(
+        options=[
+            ft.dropdown.Option("Sim", content=ft.Text(value="Sim", color=ft.Colors.BLACK)),
+            ft.dropdown.Option("Não", content=ft.Text(value="Não", color=ft.Colors.BLACK)),
+        ],
+        value=delivery['delay'],
+        label="Atraso",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
+        bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+        width=300,
+        )
+
+    subprojects = [ft.dropdown.Option(".", content=ft.Text(value=".", color=ft.Colors.BLACK))]
+    get_subprojects = (sp.get_all_subprojects()).json()
+    for item in get_subprojects:
+        subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
+
+    dropdow2 = ft.Dropdown(
+        options=subprojects,
+        value=delivery['name_subproject'],
+        label="SubProjeto",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
+        bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+        width=300,
+        enable_filter=True,
+        editable=True,
+        disabled=True,
+        )
+
     users = []
     get_users = (sp.get_all_user_data()).json()
     for item in get_users:
-        users.append(ft.dropdown.Option(item["username"]))
+        users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
+
+    find_file = ["."]
+
+    def on_dropdow_changed(e):
+        if e.control.data == "drop_user":
+            value = (((sp.get_user_data(e.control.value)).json())[0])
+            dropdow2.value = value["current_project"]
+            find_file.clear()
+            find_file.append(value["current_project"])
+        else:
+            if find_file[0] != ".":
+                dropdow3.value = (((sp.get_one_file_data(e.control.value, find_file[0])).json())[0])["delay"]
+
+        page.update()
 
     dropdow1 = ft.Dropdown(
         options=users,
         value=delivery['username'],
         label="Usuário",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
         bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
         width=300,
         enable_filter=True,
         editable=True,
+        data="drop_user",
+        on_change=on_dropdow_changed,
+        disabled=True,
         )
-    
-    subprojects = []
-    get_subprojects = (sp.get_all_subprojects()).json()
-    for item in get_subprojects:
-        subprojects.append(ft.dropdown.Option(item["name_subproject"]))
 
-    dropdow2 = ft.Dropdown(
-        options=subprojects,
-        value=delivery['name_subproject'],
-        label="Subprojeto",
-        text_style=ft.TextStyle(color=ft.Colors.BLACK),
-        bgcolor=ft.Colors.WHITE,
-        width=300,
-        enable_filter=True,
-        editable=True,
-        )
-    
-    dropdow3 = ft.Dropdown(
+
+    next_month = datetime.now().month + 1
+    year1 = datetime.now().year
+    if next_month == 13:
+        next_month = 1
+        year1 += 1
+
+    before_month = datetime.now().month - 1
+    year2 = datetime.now().year
+    if before_month == 0:
+        before_month = 12
+        year2 -= 1
+
+    dropdow4 = ft.Dropdown(
+        value=delivery['date'],
+        label="Data",
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
         options=[
-            ft.dropdown.Option("Sim"),
-            ft.dropdown.Option("Não"),
+            ft.dropdown.Option(f"28/{before_month:02d}/{year2:02d}",
+                                content=ft.Text(value=f"28/{before_month:02d}/{year2:02d}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"07/{next_month:02d}/{year1:02d}",
+                                content=ft.Text(value=f"07/{next_month:02d}/{year1:02d}",
+                                                color=ft.Colors.BLACK)),
         ],
-        value=delivery['delay'],
-        label="Atraso",
-        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
         bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
         width=300,
-        )
+        data="drop_date",
+        on_change=on_dropdow_changed,
+        disabled=True,
+    )
 
     view_deliveries = {
         "username": dropdow1, 
-        "date":ft.TextField(label="Data", value=f"{delivery['date']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "date": dropdow4, 
         "name_subproject":dropdow2, 
         "polygons":ft.TextField(label="Polígonos", value=f"{delivery['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "errors":ft.TextField(label="Erros", value=f"{delivery['errors']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "discount":ft.TextField(label="Desconto", value=f"{delivery['discount']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "discount":ft.TextField(label="Descontos", value=f"{delivery['discount']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "warning":ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "delay":dropdow3,
         "photos":ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
@@ -4675,6 +4851,7 @@ def create_page_delivery_details(page, delivery):
 
             data_subproject["username"] = view_deliveries["username"].value
             data_subproject["date"] = view_deliveries["date"].value
+            data_subproject["name_subproject"] = view_deliveries["name_subproject"].value
 
 
             date = (data_subproject["date"]).split("/")
@@ -4742,12 +4919,27 @@ def create_page_delivery_details(page, delivery):
                                       col=7,
                                       padding=5,) 
     
-    btn_delete = buttons.create_button(on_click=lambda e: delete_delivery(view_deliveries),
-                                      text="Excluir",
-                                      color=ft.Colors.RED,
-                                      col=7,
-                                      padding=5,) 
-    
+    btn_delete=ft.Column(
+                    horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+                    col=7,
+                    controls=[
+                            ft.Container(
+                                    alignment=ft.alignment.center,
+                                    col=7,
+                                    padding=5,
+                                    expand=True,
+                                    content=ft.ElevatedButton(
+                                        text="Excluir",
+                                        bgcolor=ft.Colors.RED,
+                                        color=ft.Colors.WHITE,
+                                        width=150,
+                                        on_long_press= lambda e: delete_delivery(view_deliveries),
+                                    )
+                                )
+                            ]    
+                        ) 
+
+ 
     view_column = ft.Column(
         controls=[
             
@@ -4847,11 +5039,7 @@ def create_page_files(page):
     base = SupaBase(page=None)
     buttons = Buttons(page)
     dict_profile = page.session.get("profile")
-    textthemes = TextTheme()
-    texttheme1 = textthemes.create_text_theme1()
 
-    get_base = base.get_all_files()
-    get_json = get_base.json()
 
     btn_exit = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)),
                                       text="Logout",
@@ -4900,17 +5088,17 @@ def create_page_files(page):
                                             padding=10,)
 
     drawer = ft.NavigationDrawer(
-        controls=[
-            btn_projeto,
-            btn_see_subprojects,
-            btn_see_freelancers,
-            btn_payment,
-            btn_see_file,
-            btn_see_deliverys,
-            btn_see_models,
-            btn_exit,
-            ]
-        )
+    controls=[
+        btn_projeto,
+        btn_see_subprojects,
+        btn_see_freelancers,
+        btn_payment,
+        btn_see_file,
+        btn_see_deliverys,
+        btn_see_models,
+        btn_exit,
+        ]
+    )
     
     if dict_profile["permission"] == "est":
         drawer.controls.remove(btn_projeto) 
@@ -4919,11 +5107,7 @@ def create_page_files(page):
         drawer.controls.remove(btn_payment)
         drawer.controls.insert(0, btn_profile)
 
-
     page.drawer = drawer
-
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -4932,13 +5116,11 @@ def create_page_files(page):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
-        actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
-        ],
     )
 
-    if dict_profile["permission"] == "est":
-        page.appbar.actions.pop(0)
+
+    get_base = base.get_all_files()
+    get_json = get_base.json()
 
     # Lista para exibir as entregas
     history_list = ft.Column(
@@ -4956,6 +5138,7 @@ def create_page_files(page):
                         ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                         ft.DataColumn(ft.Text(value="Tipo", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                         ft.DataColumn(ft.Text(value="Quantidade", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                        ft.DataColumn(ft.Text(value="Meta", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                         ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                     ],
                     rows=[],  
@@ -5000,6 +5183,12 @@ def create_page_files(page):
                                 )),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['amount']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                )),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['average']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
@@ -5055,69 +5244,81 @@ def create_page_files(page):
 
 
     subprojects = (base.get_all_subprojects()).json()
-    name_subprojects = [ft.dropdown.Option("Nulo")]
+    name_subprojects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in subprojects:
-        name_subprojects.append(ft.dropdown.Option(item["name_subproject"]))
+        name_subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
     users = (base.get_all_user_data()).json()
-    name_users = [ft.dropdown.Option("Nulo")]
+    name_users = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in users:
-        name_users.append(ft.dropdown.Option(item["username"]))
+        name_users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
 
     list_dropdown = ft.Row(
         controls=[
             ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
                 label="Dia",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 expand=True,
                 options=[
-                    ft.dropdown.Option("Nulo"),
-                    ft.dropdown.Option("07"),
-                    ft.dropdown.Option("14"),
-                    ft.dropdown.Option("21"),
-                    ft.dropdown.Option("28"),
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("07", content=ft.Text(value=f"07", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("14", content=ft.Text(value=f"14", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("21", content=ft.Text(value=f"21", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("28", content=ft.Text(value=f"28", color=ft.Colors.BLACK)),
                 ],
                 on_change=lambda e: on_dropdown_change(e, "dia"),
             ),
             ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
                 label="Mês",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 expand=True,
                 options=[
-                    ft.dropdown.Option("Nulo"),
-                    ft.dropdown.Option("01"),
-                    ft.dropdown.Option("02"),
-                    ft.dropdown.Option("03"),
-                    ft.dropdown.Option("04"),
-                    ft.dropdown.Option("05"),
-                    ft.dropdown.Option("06"),
-                    ft.dropdown.Option("07"),
-                    ft.dropdown.Option("08"),
-                    ft.dropdown.Option("09"),
-                    ft.dropdown.Option("10"),
-                    ft.dropdown.Option("11"),
-                    ft.dropdown.Option("12"),  
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("01", content=ft.Text(value=f"01", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("02", content=ft.Text(value=f"02", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("03", content=ft.Text(value=f"03", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("04", content=ft.Text(value=f"04", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("05", content=ft.Text(value=f"05", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("06", content=ft.Text(value=f"06", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("07", content=ft.Text(value=f"07", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("08", content=ft.Text(value=f"08", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("09", content=ft.Text(value=f"09", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("10", content=ft.Text(value=f"10", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("11", content=ft.Text(value=f"11", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("12", content=ft.Text(value=f"12", color=ft.Colors.BLACK)),  
                 ],
                 on_change=lambda e: on_dropdown_change(e, "mes"),
             ),
             ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
                 label="Ano",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 expand=True,
                 options=[
-                    ft.dropdown.Option("Nulo"),
-                    ft.dropdown.Option("2025"),
-                    ft.dropdown.Option("2026"),
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("2025", content=ft.Text(value=f"2025", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("2026", content=ft.Text(value=f"2026", color=ft.Colors.BLACK)),
                 ],
                 on_change=lambda e: on_dropdown_change(e, "ano"),
             ),
             ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
                 label="Usuário",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 expand=True,
                 options=name_users,
                 on_change= lambda e: on_dropdown_change(e, "usuario"),
@@ -5125,14 +5326,18 @@ def create_page_files(page):
                 editable=True,
             ),
             ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
                 label="Subprojeto",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 expand=True,
                 options=name_subprojects,
                 on_change=lambda e: on_dropdown_change(e, "subprojeto"),
                 enable_filter=True,
                 editable=True,
+                width=250,
             ),
         ],
         expand=True,
@@ -5180,9 +5385,6 @@ def create_page_files_details(page, files):
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_files(page=page))
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_files(page=page))
-
     # AppBar
     page.appbar = ft.AppBar(
         leading_width=40,
@@ -5190,13 +5392,10 @@ def create_page_files_details(page, files):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
         ],
     )
 
-    if dict_profile["permission"] == "est":
-        page.appbar.actions.pop(0)
 
     view_files = {
       
@@ -5321,9 +5520,6 @@ def create_page_see_models(page):
     get_base = base.get_all_models()
     get_json = get_base.json()
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
-
     # Lista para exibir as entregas
     history_list = ft.Column(
         controls=[
@@ -5417,15 +5613,7 @@ def create_page_see_models(page):
         center_title=True,
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
-        ],
     )
-
-    if dict_profile["permission"] == "est":
-        page.appbar.actions.pop(0)
-
-
 
 
     filtros_ativos = {
@@ -5464,68 +5652,84 @@ def create_page_see_models(page):
 
 
     subprojects = (base.get_all_subprojects()).json()
-    name_subprojects = [ft.dropdown.Option("Nulo")]
+    name_subprojects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in subprojects:
-        name_subprojects.append(ft.dropdown.Option(item["name_subproject"]))
+        name_subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
     users = (base.get_all_user_data()).json()
-    name_users = [ft.dropdown.Option("Nulo")]
+    name_users = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in users:
-        name_users.append(ft.dropdown.Option(item["username"]))
+        name_users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
 
     list_dropdown = ft.Row(
         controls=[
             ft.Dropdown(
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 label="Dia",
                 expand=True,
                 options=[
-                    ft.dropdown.Option("Nulo"),
-                    ft.dropdown.Option("07"),
-                    ft.dropdown.Option("14"),
-                    ft.dropdown.Option("21"),
-                    ft.dropdown.Option("28"),
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("07", content=ft.Text(value=f"07", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("14", content=ft.Text(value=f"14", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("21", content=ft.Text(value=f"21", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("28", content=ft.Text(value=f"28", color=ft.Colors.BLACK)),
                 ],
                 on_change=lambda e: on_dropdown_change(e, "dia"),
             ),
             ft.Dropdown(
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 label="Mês",
                 expand=True,
                 options=[
-                    ft.dropdown.Option("Nulo"),
-                    ft.dropdown.Option("01"),
-                    ft.dropdown.Option("02"),
-                    ft.dropdown.Option("03"),
-                    ft.dropdown.Option("04"),
-                    ft.dropdown.Option("05"),
-                    ft.dropdown.Option("06"),
-                    ft.dropdown.Option("07"),
-                    ft.dropdown.Option("08"),
-                    ft.dropdown.Option("09"),
-                    ft.dropdown.Option("10"),
-                    ft.dropdown.Option("11"),
-                    ft.dropdown.Option("12"),  
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("01", content=ft.Text(value=f"01", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("02", content=ft.Text(value=f"02", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("03", content=ft.Text(value=f"03", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("04", content=ft.Text(value=f"04", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("05", content=ft.Text(value=f"05", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("06", content=ft.Text(value=f"06", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("07", content=ft.Text(value=f"07", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("08", content=ft.Text(value=f"08", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("09", content=ft.Text(value=f"09", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("10", content=ft.Text(value=f"10", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("11", content=ft.Text(value=f"11", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("12", content=ft.Text(value=f"12", color=ft.Colors.BLACK)),  
                 ],
                 on_change=lambda e: on_dropdown_change(e, "mes"),
             ),
             ft.Dropdown(
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 label="Ano",
                 expand=True,
                 options=[
-                    ft.dropdown.Option("Nulo"),
-                    ft.dropdown.Option("2025"),
-                    ft.dropdown.Option("2026"),
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("2025", content=ft.Text(value=f"2025", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("2026", content=ft.Text(value=f"2026", color=ft.Colors.BLACK)),
                 ],
                 on_change=lambda e: on_dropdown_change(e, "ano"),
             ),
             ft.Dropdown(
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 label="Usuário",
                 expand=True,
                 options=name_users,
@@ -5537,12 +5741,16 @@ def create_page_see_models(page):
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
                 color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 label="Subprojeto",
                 expand=True,
                 options=name_subprojects,
                 on_change=lambda e: on_dropdown_change(e, "subprojeto"),
                 enable_filter=True,
                 editable=True,
+                width=250,
             ),
         ],
         expand=True,
@@ -5608,9 +5816,6 @@ def create_page_models_details(page, model):
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
-
     # AppBar
     page.appbar = ft.AppBar(
         leading_width=40,
@@ -5618,13 +5823,9 @@ def create_page_models_details(page, model):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
         ],
     )
-
-    if dict_profile["permission"] == "est":
-        page.appbar.actions.pop(0)
 
     file_selected = []
     file_name = []
@@ -5697,35 +5898,89 @@ def create_page_models_details(page, model):
     users = []
     get_users = (sp.get_all_user_data()).json()
     for item in get_users:
-        users.append(ft.dropdown.Option(item["username"]))
+        users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
 
     dropdow1 = ft.Dropdown(
         options=users,
         value=model['username'],
         label="Usuário",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
         bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
         width=300,
         enable_filter=True,
         editable=True,
+        disabled=True,
         )
     
     subprojects = []
     get_subprojects = (sp.get_all_subprojects()).json()
     for item in get_subprojects:
-        subprojects.append(ft.dropdown.Option(item["name_subproject"]))
+        subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
     dropdow2 = ft.Dropdown(
         options=subprojects,
         value=model['subproject'],
         label="Subprojeto",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
         bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
         width=300,
         enable_filter=True,
         editable=True,
+        disabled=True,
         )
     
+    next_month = datetime.now().month + 1
+    year1 = datetime.now().year
+    if next_month == 13:
+        next_month = 1
+        year1 += 1
+
+    before_month = datetime.now().month - 1
+    year2 = datetime.now().year
+    if before_month == 0:
+        before_month = 12
+        year2 -= 1
+
+    dropdow4 = ft.Dropdown(
+        value=model["date"],
+        label="Data",
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+        options=[
+            ft.dropdown.Option(f"28/{before_month:02d}/{year2:02d}",
+                                content=ft.Text(value=f"28/{before_month:02d}/{year2:02d}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"07/{next_month:02d}/{year1:02d}",
+                                content=ft.Text(value=f"07/{next_month:02d}/{year1:02d}",
+                                                color=ft.Colors.BLACK)),
+        ],
+        color=ft.Colors.BLACK,
+        bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        width=300,
+        disabled=True,
+        )
+
 
     def go_download(view_deliveries, object):
         if view_deliveries[object].value != "." and view_deliveries[object].value != "":
@@ -5733,7 +5988,7 @@ def create_page_models_details(page, model):
 
     view_deliveries = {
         "username": dropdow1, 
-        "date":ft.TextField(label="Data", value=f"{model['date']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "date":dropdow4, 
         "subproject":dropdow2, 
         "polygons":ft.TextField(label="Polígonos", value=f"{model['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "numbers":ft.TextField(label="Numeros", value=f"{model['numbers']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
@@ -5808,6 +6063,7 @@ def create_page_models_details(page, model):
 
             data_subproject["username"] = view_deliveries["username"].value
             data_subproject["date"] = view_deliveries["date"].value
+            data_subproject["subproject"] = view_deliveries["subproject"].value
 
 
             date = (data_subproject["date"]).split("/")
@@ -5875,11 +6131,25 @@ def create_page_models_details(page, model):
                                       col=7,
                                       padding=5,) 
     
-    btn_delete = buttons.create_button(on_click=lambda e: delete_delivery(view_deliveries),
-                                      text="Excluir",
-                                      color=ft.Colors.RED,
-                                      col=7,
-                                      padding=5,) 
+    btn_delete=ft.Column(
+                    horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+                    col=7,
+                    controls=[
+                            ft.Container(
+                                    alignment=ft.alignment.center,
+                                    col=7,
+                                    padding=5,
+                                    expand=True,
+                                    content=ft.ElevatedButton(
+                                        text="Excluir",
+                                        bgcolor=ft.Colors.RED,
+                                        color=ft.Colors.WHITE,
+                                        width=150,
+                                        on_long_press= lambda e: delete_delivery(view_deliveries),
+                                    )
+                                )
+                            ]    
+                        ) 
     
     view_column = ft.Column(
         controls=[
@@ -5983,9 +6253,6 @@ def create_page_new_model(page):
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
 
-    def go_home():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_initial_adm(page=page))
-
     # AppBar
     page.appbar = ft.AppBar(
         leading_width=40,
@@ -5993,13 +6260,10 @@ def create_page_new_model(page):
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
         actions=[
-            ft.IconButton(ft.Icons.HOME, on_click=lambda e: go_home(), icon_color=ft.Colors.BLACK),
             ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
         ],
     )
 
-    if dict_profile["permission"] == "est":
-        page.appbar.actions.pop(0)
 
     file_selected = []
     file_name = []
@@ -6073,13 +6337,18 @@ def create_page_new_model(page):
     users = []
     get_users = (sp.get_all_user_data()).json()
     for item in get_users:
-        users.append(ft.dropdown.Option(item["username"]))
+        users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
 
     dropdow1 = ft.Dropdown(
+        value=dict_profile["username"],
         options=users,
         label="Usuário",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
         bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
         width=300,
         enable_filter=True,
         editable=True,
@@ -6088,22 +6357,68 @@ def create_page_new_model(page):
     subprojects = []
     get_subprojects = (sp.get_all_subprojects()).json()
     for item in get_subprojects:
-        subprojects.append(ft.dropdown.Option(item["name_subproject"]))
+        subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
     dropdow2 = ft.Dropdown(
         options=subprojects,
         label="SubProjeto",
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
         bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
         width=300,
         enable_filter=True,
         editable=True,
         )
     
+    next_month = datetime.now().month + 1
+    year1 = datetime.now().year
+    if next_month == 13:
+        next_month = 1
+        year1 += 1
+
+    before_month = datetime.now().month - 1
+    year2 = datetime.now().year
+    if before_month == 0:
+        before_month = 12
+        year2 -= 1
+
+    dropdow4 = ft.Dropdown(
+        label="Data",
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+        options=[
+            ft.dropdown.Option(f"28/{before_month:02d}/{year2:02d}",
+                                content=ft.Text(value=f"28/{before_month:02d}/{year2:02d}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                content=ft.Text(value=f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"07/{next_month:02d}/{year1:02d}",
+                                content=ft.Text(value=f"07/{next_month:02d}/{year1:02d}",
+                                                color=ft.Colors.BLACK)),
+        ],
+        color=ft.Colors.BLACK,
+        bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        width=300,
+
+        )
 
     view_deliveries = {
-        "username": ft.TextField(label="Usuário", value=dict_profile["username"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
-        "date":ft.TextField(label="Data", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "username": dropdow1, 
+        "date":dropdow4, 
         "subproject":dropdow2,   
         "polygons":ft.TextField(label="Polígonos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "numbers":ft.TextField(label="Numeros", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 

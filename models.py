@@ -1444,7 +1444,6 @@ class SupaBase:
         )   
         return response
     
-
     def get_one_subproject_data(self, subprojects):
         headers = {
             "apikey": self.supabase_key,
@@ -1461,7 +1460,6 @@ class SupaBase:
             params=params,
         )   
         return response
-
 
     def get_user_data(self, users):
 
@@ -1484,7 +1482,32 @@ class SupaBase:
         )   
 
         return response  
-       
+    
+    def get_one_file_data(self, date, subproject):
+
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "subproject": f"eq.{subproject}",
+                   "date": f"eq.{date}",
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/files',
+            headers=headers,
+            params=params,
+        )   
+
+        return response  
+
+    
+
     def get_user_by_subproject(self, subproject, permission):
 
         headers = {
@@ -1833,7 +1856,7 @@ class SupaBase:
         params = {
                    "username":  f"eq.{data["username"]}", 
                    "date":  f"eq.{data["date"]}",
-                   "subproject":  f"eq.{data["subproject"]}", 
+                   "name_subproject":  f"eq.{data["name_subproject"]}", 
                    "select": "*"
         }
 
@@ -1967,7 +1990,8 @@ class SupaBase:
 
         params = {
                    "username":  f"eq.{data["username"]}", 
-                   "date":  f"eq.{data["date"]}", 
+                   "date":  f"eq.{data["date"]}",
+                   "name_subproject":  f"eq.{data["name_subproject"]}", 
                    "select": "*"
         }
 
@@ -1990,6 +2014,7 @@ class SupaBase:
         params = {
                    "username":  f"eq.{data["username"]}", 
                    "date":  f"eq.{data["date"]}", 
+                   "subproject":  f"eq.{data["subproject"]}", 
                    "select": "*"
         }
 
