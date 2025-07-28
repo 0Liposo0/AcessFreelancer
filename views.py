@@ -1023,7 +1023,7 @@ def create_page_initial_adm(page):
             ]
         )
 
-    if dict_profile["permission"] == "est":
+    if dict_profile["permission"] != "adm":
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_subprojects) 
         drawer.controls.remove(btn_see_freelancers) 
@@ -3650,7 +3650,7 @@ def create_page_see_freelancers(page):
         ]
     )
     
-    if dict_profile["permission"] == "est":
+    if dict_profile["permission"] != "adm":
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_subprojects) 
         drawer.controls.remove(btn_see_freelancers) 
@@ -3960,39 +3960,66 @@ def create_page_freelancer_token(page, username, est=False):
     #Calculo de tudo que já foi feito pelo usuario baseado em todas as entregas
     #....................................................................
 
+    is_editable1 = dict_profile["permission"] != "adm"
+
     subprojects = []
-    subprojects.append(ft.dropdown.Option("."))
+    subprojects.append(ft.dropdown.Option(".", content=ft.Text(value=".", color=ft.Colors.BLACK)))
     get_subprojects = (base.get_all_subprojects()).json()
     for item in get_subprojects:
-        subprojects.append(ft.dropdown.Option(item["name_subproject"]))
+        subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
     dropdow2 = ft.Dropdown(
         options=subprojects,
         label="SubProjeto",
         value=get_info2["current_project"],
         text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
         bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
         width=300,
         enable_filter=True,
         editable=True,
+        disabled=is_editable1,
         )
     
     if est == True:
-        dropdow2 = ft.TextField(label="SubProjeto Atual", value=get_info2["current_project"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK))
+        dropdow2 = ft.TextField(label="SubProjeto Atual", value=get_info2["current_project"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1)
 
+    dropdow3 = ft.Dropdown(
+        options=[
+            ft.dropdown.Option("adm", content=ft.Text(value="adm", color=ft.Colors.BLACK)),
+            ft.dropdown.Option("est", content=ft.Text(value="est", color=ft.Colors.BLACK)),
+            ft.dropdown.Option("ldr", content=ft.Text(value="ldr", color=ft.Colors.BLACK)),
+        ],
+        label="Permissão",
+        value=get_info2["permission"],
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
+        bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+        width=300,
+        enable_filter=True,
+        editable=True,
+        disabled=is_editable1,
+        )
+    
     view_user ={
-        "name": ft.TextField(label="Nome do Freelancer", value=get_info2["name"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "username": ft.TextField(label="Nome de Usuario", value=get_info2["username"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "password": ft.TextField(label="Senha", value=get_info2["password"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "email": ft.TextField(label="Email", value=get_info2["email"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "permission": ft.TextField(label="Permissão", value=get_info2["permission"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "payment": ft.TextField(label="Pagamento", value=get_info2["payment"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "total_deliverys": ft.TextField(label="Entregas Totais", value=get_info2["total_deliverys"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "name": ft.TextField(label="Nome do Freelancer", value=get_info2["name"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
+        "username": ft.TextField(label="Nome de Usuario", value=get_info2["username"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
+        "password": ft.TextField(label="Senha", value=get_info2["password"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
+        "email": ft.TextField(label="Email", value=get_info2["email"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
+        "permission": dropdow3,
+        "payment": ft.TextField(label="Pagamento", value=get_info2["payment"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
+        "total_deliverys": ft.TextField(label="Entregas Totais", value=get_info2["total_deliverys"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
         "weekly_deliveries": ft.TextField(label="Entregas Semanais", value=number_total_deliverys, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
         "polygons_made": ft.TextField(label="Poligonos Feitos", value=total_polygons, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
         "polygons_wrong": ft.TextField(label="Poligonos Errados", value=total_errors, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
         "delays": ft.TextField(label="Atrasos", value=total_delays, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
-        "warnings": ft.TextField(label="Advertencias", value=get_info2["warnings"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "warnings": ft.TextField(label="Advertencias", value=get_info2["warnings"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
         "current_project": dropdow2,
         "image": ft.TextField(label="Imagem", value=".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
     }
@@ -4649,6 +4676,8 @@ def create_page_delivery_details(page, delivery):
 
     # Campos para exibir os detalhes da entrega
     
+    is_editable1 = dict_profile["permission"] != "adm"
+
     dropdow3 = ft.Dropdown(
         options=[
             ft.dropdown.Option("Sim", content=ft.Text(value="Sim", color=ft.Colors.BLACK)),
@@ -4663,6 +4692,7 @@ def create_page_delivery_details(page, delivery):
         filled=True,
         label_style=ft.TextStyle(color=ft.Colors.BLACK),
         width=300,
+        disabled=is_editable1,
         )
 
     subprojects = [ft.dropdown.Option(".", content=ft.Text(value=".", color=ft.Colors.BLACK))]
@@ -4774,12 +4804,12 @@ def create_page_delivery_details(page, delivery):
         "username": dropdow1, 
         "date": dropdow4, 
         "name_subproject":dropdow2, 
-        "polygons":ft.TextField(label="Polígonos", value=f"{delivery['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "errors":ft.TextField(label="Erros", value=f"{delivery['errors']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "discount":ft.TextField(label="Descontos", value=f"{delivery['discount']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "warning":ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "polygons":ft.TextField(label="Polígonos", value=f"{delivery['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
+        "errors":ft.TextField(label="Erros", value=f"{delivery['errors']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
+        "discount":ft.TextField(label="Descontos", value=f"{delivery['discount']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
+        "warning":ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "delay":dropdow3,
-        "photos":ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "photos":ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "dwg":ft.TextField(label="DWG", value=f"{delivery['dwg']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
 
@@ -5024,7 +5054,7 @@ def create_page_delivery_details(page, delivery):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-    if dict_profile["permission"] == "est":
+    if dict_profile["permission"] != "adm":
         layout.controls[0].controls.remove(btn_delete)
         layout.controls[0].controls.remove(btn_edit)
 
@@ -5100,7 +5130,7 @@ def create_page_files(page):
         ]
     )
     
-    if dict_profile["permission"] == "est":
+    if dict_profile["permission"] != "adm":
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_subprojects) 
         drawer.controls.remove(btn_see_freelancers) 
@@ -5396,16 +5426,17 @@ def create_page_files_details(page, files):
         ],
     )
 
+    is_editable1 = dict_profile["permission"] != "adm"
 
     view_files = {
       
-        "username": ft.TextField(label="Usuário", value=f"{files['username']}", width=300, color=ft.Colors.BLACK),  # usuario_field
-        "date": ft.TextField(label="Data", value=f"{files['date']}", width=300, color=ft.Colors.BLACK),  # data_field
-        "subproject": ft.TextField(label="Subprojeto", value=f"{files['subproject']}", width=300, color=ft.Colors.BLACK),  # subprojeto_field
-        "type": ft.TextField(label="Tipo", value=f"{files['type']}", width=300, color=ft.Colors.BLACK),  # erros_field
-        "average": ft.TextField(label="Média", value=f"{files['average']}", width=300, color=ft.Colors.BLACK),  # desconto_field
-        "amount": ft.TextField(label="Montante", value=f"{files['amount']}", width=300, color=ft.Colors.BLACK),  # desconto_field
-        "delay": ft.TextField(label="Atraso", value=f"{files['delay']}", width=300, color=ft.Colors.BLACK),  # desconto_field
+        "username": ft.TextField(label="Usuário", value=f"{files['username']}", width=300, color=ft.Colors.BLACK, read_only=True),  # usuario_field
+        "date": ft.TextField(label="Data", value=f"{files['date']}", width=300, color=ft.Colors.BLACK, read_only=True),  # data_field
+        "subproject": ft.TextField(label="Subprojeto", value=f"{files['subproject']}", width=300, color=ft.Colors.BLACK, read_only=True),  # subprojeto_field
+        "type": ft.TextField(label="Tipo", value=f"{files['type']}", width=300, color=ft.Colors.BLACK, read_only=True),  # erros_field
+        "average": ft.TextField(label="Média", value=f"{files['average']}", width=300, color=ft.Colors.BLACK, read_only=True),  # desconto_field
+        "amount": ft.TextField(label="Montante", value=f"{files['amount']}", width=300, color=ft.Colors.BLACK, read_only=True),  # desconto_field
+        "delay": ft.TextField(label="Atraso", value=f"{files['delay']}", width=300, color=ft.Colors.BLACK, read_only=True),  # desconto_field
         "url": ft.TextField(label="url", value=f"{files['url']}", width=300, color=ft.Colors.BLACK, read_only=True),  # advertencias_field
 
     }
@@ -5502,7 +5533,7 @@ def create_page_files_details(page, files):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-    if dict_profile["permission"] == "est":
+    if dict_profile["permission"] != "adm":
         layout.controls[0].controls.remove(btn_delete)
 
     return layout
@@ -5895,6 +5926,8 @@ def create_page_models_details(page, model):
 
     # Campos para exibir os detalhes da entrega
     
+    is_editable1 = dict_profile["permission"] != "adm"
+
     users = []
     get_users = (sp.get_all_user_data()).json()
     for item in get_users:
@@ -5990,8 +6023,8 @@ def create_page_models_details(page, model):
         "username": dropdow1, 
         "date":dropdow4, 
         "subproject":dropdow2, 
-        "polygons":ft.TextField(label="Polígonos", value=f"{model['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "numbers":ft.TextField(label="Numeros", value=f"{model['numbers']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "polygons":ft.TextField(label="Polígonos", value=f"{model['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
+        "numbers":ft.TextField(label="Numeros", value=f"{model['numbers']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "dwg":ft.TextField(label="DWG", value=f"{model['dwg']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
 
@@ -6235,7 +6268,7 @@ def create_page_models_details(page, model):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-    if dict_profile["permission"] == "est":
+    if dict_profile["permission"] != "adm":
         layout.controls[0].controls.remove(btn_delete)
         layout.controls[0].controls.remove(btn_edit)
 
