@@ -1363,7 +1363,7 @@ def verificar(username, password, page):
             call_layout=lambda:create_page_user(page),
             )
 
-        elif permission == "est":
+        elif permission != "adm":
 
             loading.new_loading_page(page=page,
             call_layout=lambda:create_page_files(page),
