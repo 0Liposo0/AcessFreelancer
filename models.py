@@ -1505,6 +1505,52 @@ class SupaBase:
         )   
 
         return response  
+    
+    def get_one_delivery_data(self, date, subproject):
+
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "name_subproject": f"eq.{subproject}",
+                   "date": f"eq.{date}",
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )   
+
+        return response  
+    
+    def get_one_model_data(self, date, subproject):
+
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "subproject": f"eq.{subproject}",
+                   "date": f"eq.{date}",
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/models',
+            headers=headers,
+            params=params,
+        )   
+
+        return response  
 
     
 

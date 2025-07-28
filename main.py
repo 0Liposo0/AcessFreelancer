@@ -13,9 +13,9 @@ def main(page: ft.Page):
     loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page))
 
     #page.session.set("profile", {
-    #        "username": "guilherme_casceiro",
+    #        "username": "attam_admin",
     #        "name": "Attam",
-    #        "permission": "ldr",
+    #        "permission": "adm",
     #        "current_project": ".",
     #    })
     

@@ -3039,36 +3039,28 @@ def create_page_new_delivery(page):
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
-        else:
 
-            if add_file[0] == True:
+            return
 
-                response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "deliveries")
+        check = (sp.get_one_delivery_data(data_subproject["date"], data_subproject["name_subproject"])).json()
 
-                if response1.status_code == 200 or response1.status_code == 201:
-                    data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
-                    response2 = sp.post_to_deliverys_data(data_subproject)
+        if len (check) > 0:
+            snack_bar = ft.SnackBar(content=ft.Text("Entrega especificada já cadastrada !!!"), bgcolor=ft.Colors.YELLOW)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
 
-                    if response2.status_code in [200, 201]:
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
-                        snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
-                        page.overlay.append(snack_bar)
-                        snack_bar.open = True
-                        page.update()
-                    else:
-                        snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir tabela: {response2.text}"), bgcolor=ft.Colors.AMBER)
-                        page.overlay.append(snack_bar)
-                        snack_bar.open = True
-                        page.update()
-                else:
-                    snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir arquivo: {response1.text}"), bgcolor=ft.Colors.RED)
-                    page.overlay.append(snack_bar)
-                    snack_bar.open = True
-                    page.update()
-            else:
+            return
+
+        if add_file[0] == True:
+
+            response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "deliveries")
+
+            if response1.status_code == 200 or response1.status_code == 201:
+                data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
                 response2 = sp.post_to_deliverys_data(data_subproject)
 
-                if response2.status_code in [200, 204]:
+                if response2.status_code in [200, 201]:
                     loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
@@ -3079,6 +3071,25 @@ def create_page_new_delivery(page):
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
+            else:
+                snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir arquivo: {response1.text}"), bgcolor=ft.Colors.RED)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+        else:
+            response2 = sp.post_to_deliverys_data(data_subproject)
+
+            if response2.status_code in [200, 204]:
+                loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+                snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+            else:
+                snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir tabela: {response2.text}"), bgcolor=ft.Colors.AMBER)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
 
 
     # Campos para exibir os detalhes da entrega
@@ -6323,36 +6334,29 @@ def create_page_new_model(page):
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
-        else:
 
-            if add_file[0] == True:
+            return
+        
+        check = (sp.get_one_model_data(data_subproject["date"], data_subproject["subproject"])).json()
 
-                response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "models")
+        if len (check) > 0:
+            snack_bar = ft.SnackBar(content=ft.Text("Modelo especificado já cadastrado !!!"), bgcolor=ft.Colors.YELLOW)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
 
-                if response1.status_code == 200 or response1.status_code == 201:
-                    data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/models//{file_name[0]}"
-                    response2 = sp.post_to_models_data(data_subproject)
+            return
+        
 
-                    if response2.status_code in [200, 201]:
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
-                        snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
-                        page.overlay.append(snack_bar)
-                        snack_bar.open = True
-                        page.update()
-                    else:
-                        snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir tabela: {response2.text}"), bgcolor=ft.Colors.AMBER)
-                        page.overlay.append(snack_bar)
-                        snack_bar.open = True
-                        page.update()
-                else:
-                    snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir arquivo: {response1.text}"), bgcolor=ft.Colors.RED)
-                    page.overlay.append(snack_bar)
-                    snack_bar.open = True
-                    page.update()
-            else:
+        if add_file[0] == True:
+
+            response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "models")
+
+            if response1.status_code == 200 or response1.status_code == 201:
+                data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/models//{file_name[0]}"
                 response2 = sp.post_to_models_data(data_subproject)
 
-                if response2.status_code in [200, 204]:
+                if response2.status_code in [200, 201]:
                     loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
@@ -6363,6 +6367,25 @@ def create_page_new_model(page):
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
+            else:
+                snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir arquivo: {response1.text}"), bgcolor=ft.Colors.RED)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+        else:
+            response2 = sp.post_to_models_data(data_subproject)
+
+            if response2.status_code in [200, 204]:
+                loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
+                snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+            else:
+                snack_bar = ft.SnackBar(content=ft.Text(f"Erro ao inserir tabela: {response2.text}"), bgcolor=ft.Colors.AMBER)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
 
 
     # Campos para exibir os detalhes da entrega
