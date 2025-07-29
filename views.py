@@ -4294,7 +4294,7 @@ def create_page_freelancer_token(page, username, est=False):
 
 
 
-def create_page_see_deliverys(page):
+def create_page_see_deliverys(page, filtros=[None]):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
@@ -4304,6 +4304,12 @@ def create_page_see_deliverys(page):
 
     get_base = base.get_all_deliverys()
     get_json = get_base.json()
+    dicio_projects = {}
+    list_projects = (base.get_all_project_data()).json()
+
+    for item in list_projects:
+
+        dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
 
     # Lista para exibir as entregas
     history_list = ft.Column(
@@ -4337,9 +4343,13 @@ def create_page_see_deliverys(page):
         expand=True,  
     )
 
+    list_filtros = [None]
+
     # Preenche a lista com os dados das entregas
     for delev in get_json:
         
+        project = next((k for k, v in dicio_projects.items() if delev['name_subproject'] in v), None)
+
         history_list.controls[0].content.rows.append(
             ft.DataRow(cells=[
                             ft.DataCell(ft.Text(
@@ -4362,6 +4372,7 @@ def create_page_see_deliverys(page):
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
+                                data=project
                                 )),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['polygons']}",
@@ -4384,7 +4395,7 @@ def create_page_see_deliverys(page):
                                 expand=True,
                                 on_click=lambda e, delivery=delev: loading.new_loading_page(
                                         page=page,
-                                        call_layout=lambda: create_page_delivery_details(page=page, delivery=delivery)
+                                        call_layout=lambda: create_page_delivery_details(page=page, delivery=delivery, filtros=list_filtros)
                                     ),
                                 )),
                             
@@ -4405,11 +4416,12 @@ def create_page_see_deliverys(page):
     "mes": None,
     "ano": None,
     "usuario": None,
+    "projeto": None,
     "subprojeto": None
     }
 
     # Função para filtrar a tabela
-    def aplicar_filtros():
+    def aplicar_filtros(update=True):
         for item in history_list.controls[0].content.rows:
             dia = ((item.cells[1].content.value).split("/"))[0]  
             mes = ((item.cells[1].content.value).split("/"))[1]  
@@ -4422,17 +4434,25 @@ def create_page_see_deliverys(page):
                 (filtros_ativos["dia"] is None or filtros_ativos["dia"] == dia) and
                 (filtros_ativos["mes"] is None or filtros_ativos["mes"] == mes) and
                 (filtros_ativos["ano"] is None or filtros_ativos["ano"] == ano) and
+                (filtros_ativos["projeto"] is None or filtros_ativos["projeto"] == project) and
                 (filtros_ativos["subprojeto"] is None or filtros_ativos["subprojeto"] == subproject) and
                 (filtros_ativos["usuario"] is None or filtros_ativos["usuario"] == usuario)
             )
 
-        history_list.update()  # Atualiza a UI
+        if update == True:
+            history_list.update()
+
+        list_filtros[0] = filtros_ativos  
 
     # Função chamada quando um Dropdown muda
     def on_dropdown_change(e, filtro):
         filtros_ativos[filtro] = e.control.value if e.control.value and e.control.value != "Nulo" else None
         aplicar_filtros()
 
+
+    name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
+    for item in list_projects:
+        name_projects.append(ft.dropdown.Option(item["name_project"], content=ft.Text(value=item["name_project"], color=ft.Colors.BLACK)))
 
     subprojects = (base.get_all_subprojects()).json()
     name_subprojects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
@@ -4521,6 +4541,20 @@ def create_page_see_deliverys(page):
                 editable=True,
             ),
             ft.Dropdown(
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label="Projeto",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                expand=True,
+                options=name_projects,
+                on_change=lambda e: on_dropdown_change(e, "projeto"),
+                enable_filter=True,
+                editable=True,
+                width=250,
+            ),
+            ft.Dropdown(
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
                 color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
@@ -4540,6 +4574,18 @@ def create_page_see_deliverys(page):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
+
+    if filtros[0] != None:
+
+        list_dropdown.controls[0].value = filtros[0]["dia"]
+        list_dropdown.controls[1].value = filtros[0]["mes"]
+        list_dropdown.controls[2].value = filtros[0]["ano"]
+        list_dropdown.controls[3].value = filtros[0]["usuario"]
+        list_dropdown.controls[4].value = filtros[0]["projeto"]
+        list_dropdown.controls[5].value = filtros[0]["subprojeto"]
+
+        filtros_ativos = filtros[0]
+        aplicar_filtros(update=False)
 
     # Container principal
     main_container = ft.Container(
@@ -4562,7 +4608,26 @@ def create_page_see_deliverys(page):
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=20,
                 ),
-                list_dropdown,
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                    controls=[
+                        list_dropdown.controls[4],
+                        list_dropdown.controls[5],
+                        list_dropdown.controls[3],
+                    ]
+                ),
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                    controls=[
+                        list_dropdown.controls[0],
+                        list_dropdown.controls[1],
+                        list_dropdown.controls[2],
+                    ]
+                ),
                 history_list,  # Adiciona a lista de entregas
             ],
             expand=True,
@@ -4590,7 +4655,7 @@ def create_page_see_deliverys(page):
 
     return layout
 # Pagina De Visualização de Entregas
-def create_page_delivery_details(page, delivery):
+def create_page_delivery_details(page, delivery, filtros):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
@@ -4600,7 +4665,7 @@ def create_page_delivery_details(page, delivery):
     # Definir o tema global para garantir que o texto seja preto por padrão
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page, filtros=filtros))
 
 
     # AppBar
@@ -5074,7 +5139,7 @@ def create_page_delivery_details(page, delivery):
 
 
 
-def create_page_files(page):
+def create_page_files(page, filtros=[None]):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
@@ -5162,6 +5227,12 @@ def create_page_files(page):
 
     get_base = base.get_all_files()
     get_json = get_base.json()
+    dicio_projects = {}
+    list_projects = (base.get_all_project_data()).json()
+
+    for item in list_projects:
+
+        dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
 
     # Lista para exibir as entregas
     history_list = ft.Column(
@@ -5192,10 +5263,13 @@ def create_page_files(page):
         expand=True,  
     )
 
+    list_filtros = [None]
+
     # Preenche a lista com os dados das entregas
     for delev in get_json:
 
-        
+        project = next((k for k, v in dicio_projects.items() if delev['subproject'] in v), None)
+
         history_list.controls[0].content.rows.append(
             ft.DataRow(cells=[
                             ft.DataCell(ft.Text(
@@ -5215,6 +5289,7 @@ def create_page_files(page):
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
+                                data=project
                                 )),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['type']}",
@@ -5240,7 +5315,7 @@ def create_page_files(page):
                                 icon_color=ft.Colors.WHITE,
                                 on_click=lambda e, files=delev: loading.new_loading_page(
                                         page=page,
-                                        call_layout=lambda: create_page_files_details(page=page, files=files)
+                                        call_layout=lambda: create_page_files_details(page=page, files=files, filtros=list_filtros)
                                     ),
                                 )),
                             
@@ -5254,16 +5329,18 @@ def create_page_files(page):
     "mes": None,
     "ano": None,
     "usuario": None,
+    "projeto": None,
     "subprojeto": None
     }
 
     # Função para filtrar a tabela
-    def aplicar_filtros():
+    def aplicar_filtros(update=True):
         for item in history_list.controls[0].content.rows:
             dia = ((item.cells[1].content.value).split("/"))[0]  
             mes = ((item.cells[1].content.value).split("/"))[1]  
             ano = ((item.cells[1].content.value).split("/"))[2]  
             usuario = item.cells[0].content.value  
+            project = item.cells[2].content.data  
             subproject = item.cells[2].content.value  
 
             # Verifica se o item atende a TODOS os filtros ativos
@@ -5271,18 +5348,25 @@ def create_page_files(page):
                 (filtros_ativos["dia"] is None or filtros_ativos["dia"] == dia) and
                 (filtros_ativos["mes"] is None or filtros_ativos["mes"] == mes) and
                 (filtros_ativos["ano"] is None or filtros_ativos["ano"] == ano) and
+                (filtros_ativos["projeto"] is None or filtros_ativos["projeto"] == project) and
                 (filtros_ativos["subprojeto"] is None or filtros_ativos["subprojeto"] == subproject) and
                 (filtros_ativos["usuario"] is None or filtros_ativos["usuario"] == usuario)
             )
 
-        history_list.update()  # Atualiza a UI
+        if update == True:
+            history_list.update()  
+
+        list_filtros[0] = filtros_ativos
 
     # Função chamada quando um Dropdown muda
     def on_dropdown_change(e, filtro):
         filtros_ativos[filtro] = e.control.value if e.control.value and e.control.value != "Nulo" else None
         aplicar_filtros()
 
-
+    
+    name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
+    for item in list_projects:
+        name_projects.append(ft.dropdown.Option(item["name_project"], content=ft.Text(value=item["name_project"], color=ft.Colors.BLACK)))
 
     subprojects = (base.get_all_subprojects()).json()
     name_subprojects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
@@ -5371,6 +5455,20 @@ def create_page_files(page):
                 bgcolor=ft.Colors.WHITE,
                 fill_color=ft.Colors.WHITE,
                 filled=True,
+                label="Projeto",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                expand=True,
+                options=name_projects,
+                on_change=lambda e: on_dropdown_change(e, "projeto"),
+                enable_filter=True,
+                editable=True,
+                width=250,
+            ),
+            ft.Dropdown(
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
                 label="Subprojeto",
                 label_style=ft.TextStyle(color=ft.Colors.BLACK),
                 expand=True,
@@ -5386,12 +5484,44 @@ def create_page_files(page):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
+
+    if filtros[0] != None:
+        
+        list_dropdown.controls[0].value = filtros[0]["dia"]
+        list_dropdown.controls[1].value = filtros[0]["mes"]
+        list_dropdown.controls[2].value = filtros[0]["ano"]
+        list_dropdown.controls[3].value = filtros[0]["usuario"]
+        list_dropdown.controls[4].value = filtros[0]["projeto"]
+        list_dropdown.controls[5].value = filtros[0]["subprojeto"]
+
+        filtros_ativos = filtros[0]
+        aplicar_filtros(update=False)
+
     # Container principal
     main_container = ft.Container(
         content=ft.Column(
             controls=[
                 ft.Text("Arquivos", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
-                list_dropdown,
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                    controls=[
+                        list_dropdown.controls[4],
+                        list_dropdown.controls[5],
+                        list_dropdown.controls[3],
+                    ]
+                ),
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                    controls=[
+                        list_dropdown.controls[0],
+                        list_dropdown.controls[1],
+                        list_dropdown.controls[2],
+                    ]
+                ),
                 history_list,  
             ],
             spacing=15,
@@ -5415,7 +5545,7 @@ def create_page_files(page):
 
     return layout
 # Pagina de Visualização de Arquivos
-def create_page_files_details(page, files):
+def create_page_files_details(page, files, filtros):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
@@ -5424,7 +5554,7 @@ def create_page_files_details(page, files):
     # Definir o tema global para garantir que o texto seja preto por padrão
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_files(page=page))
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_files(page=page, filtros=filtros))
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -5551,7 +5681,7 @@ def create_page_files_details(page, files):
 # Pagina De Visualização de Todas as Informações de Arquivos
 
 
-def create_page_see_models(page):
+def create_page_see_models(page, filtros=[None]):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
@@ -5561,6 +5691,12 @@ def create_page_see_models(page):
 
     get_base = base.get_all_models()
     get_json = get_base.json()
+    dicio_projects = {}
+    list_projects = (base.get_all_project_data()).json()
+
+    for item in list_projects:
+
+        dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
 
     # Lista para exibir as entregas
     history_list = ft.Column(
@@ -5594,8 +5730,12 @@ def create_page_see_models(page):
         expand=True,  
     )
 
+    list_filtros = [None]
+
     # Preenche a lista com os dados das entregas
     for delev in get_json:
+
+        project = next((k for k, v in dicio_projects.items() if delev['subproject'] in v), None)
         
         history_list.controls[0].content.rows.append(
             ft.DataRow(cells=[
@@ -5619,6 +5759,7 @@ def create_page_see_models(page):
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
+                                data=project
                                 )),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['polygons']}",
@@ -5641,7 +5782,7 @@ def create_page_see_models(page):
                                 expand=True,
                                 on_click=lambda e, delivery=delev: loading.new_loading_page(
                                         page=page,
-                                        call_layout=lambda: create_page_models_details(page=page, model=delivery)
+                                        call_layout=lambda: create_page_models_details(page=page, model=delivery, filtros=list_filtros)
                                     ),
                                 )),
                             
@@ -5663,16 +5804,18 @@ def create_page_see_models(page):
     "mes": None,
     "ano": None,
     "usuario": None,
+    "projeto": None,
     "subprojeto": None
     }
 
     # Função para filtrar a tabela
-    def aplicar_filtros():
+    def aplicar_filtros(update=True):
         for item in history_list.controls[0].content.rows:
             dia = ((item.cells[1].content.value).split("/"))[0]  
             mes = ((item.cells[1].content.value).split("/"))[1]  
             ano = ((item.cells[1].content.value).split("/"))[2]  
-            usuario = item.cells[0].content.value  
+            usuario = item.cells[0].content.value
+            project = item.cells[2].content.data  
             subproject = item.cells[2].content.value  
 
             # Verifica se o item atende a TODOS os filtros ativos
@@ -5680,18 +5823,24 @@ def create_page_see_models(page):
                 (filtros_ativos["dia"] is None or filtros_ativos["dia"] == dia) and
                 (filtros_ativos["mes"] is None or filtros_ativos["mes"] == mes) and
                 (filtros_ativos["ano"] is None or filtros_ativos["ano"] == ano) and
+                (filtros_ativos["projeto"] is None or filtros_ativos["projeto"] == project) and
                 (filtros_ativos["subprojeto"] is None or filtros_ativos["subprojeto"] == subproject) and
                 (filtros_ativos["usuario"] is None or filtros_ativos["usuario"] == usuario)
             )
 
-        history_list.update()  # Atualiza a UI
+        if update == True:
+            history_list.update()  
+
+        list_filtros[0] = filtros_ativos
 
     # Função chamada quando um Dropdown muda
     def on_dropdown_change(e, filtro):
         filtros_ativos[filtro] = e.control.value if e.control.value and e.control.value != "Nulo" else None
         aplicar_filtros()
 
-
+    name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
+    for item in list_projects:
+        name_projects.append(ft.dropdown.Option(item["name_project"], content=ft.Text(value=item["name_project"], color=ft.Colors.BLACK)))
 
     subprojects = (base.get_all_subprojects()).json()
     name_subprojects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
@@ -5780,6 +5929,20 @@ def create_page_see_models(page):
                 editable=True,
             ),
             ft.Dropdown(
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label="Projeto",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                expand=True,
+                options=name_projects,
+                on_change=lambda e: on_dropdown_change(e, "projeto"),
+                enable_filter=True,
+                editable=True,
+                width=250,
+            ),
+            ft.Dropdown(
                 text_style=ft.TextStyle(color=ft.Colors.BLACK),
                 color=ft.Colors.BLACK,
                 bgcolor=ft.Colors.WHITE,
@@ -5799,6 +5962,18 @@ def create_page_see_models(page):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
+
+    if filtros[0] != None:
+        
+        list_dropdown.controls[0].value = filtros[0]["dia"]
+        list_dropdown.controls[1].value = filtros[0]["mes"]
+        list_dropdown.controls[2].value = filtros[0]["ano"]
+        list_dropdown.controls[3].value = filtros[0]["usuario"]
+        list_dropdown.controls[4].value = filtros[0]["projeto"]
+        list_dropdown.controls[5].value = filtros[0]["subprojeto"]
+
+        filtros_ativos = filtros[0]
+        aplicar_filtros(update=False)
 
     # Container principal
     main_container = ft.Container(
@@ -5821,7 +5996,26 @@ def create_page_see_models(page):
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=20,
                 ),
-                list_dropdown,
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                    controls=[
+                        list_dropdown.controls[4],
+                        list_dropdown.controls[5],
+                        list_dropdown.controls[3],
+                    ]
+                ),
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                    controls=[
+                        list_dropdown.controls[0],
+                        list_dropdown.controls[1],
+                        list_dropdown.controls[2],
+                    ]
+                ),
                 history_list,  # Adiciona a lista de entregas
             ],
             expand=True,
@@ -5846,7 +6040,7 @@ def create_page_see_models(page):
 
     return layout
 
-def create_page_models_details(page, model):
+def create_page_models_details(page, model, filtros):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
@@ -5856,7 +6050,7 @@ def create_page_models_details(page, model):
     # Definir o tema global para garantir que o texto seja preto por padrão
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page, filtros=filtros))
 
     # AppBar
     page.appbar = ft.AppBar(
