@@ -4760,7 +4760,7 @@ def create_page_delivery_details(page, delivery, filtros):
                     response2 = sp.edit_delivery_data(data_subproject)
 
                     if response2.status_code in [200, 204]:
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=data_subproject))
+                        loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=data_subproject, filtros=filtros))
                         snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
@@ -4779,7 +4779,7 @@ def create_page_delivery_details(page, delivery, filtros):
                 response2 = sp.edit_delivery_data(data_subproject)
 
                 if response2.status_code in [200, 204]:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=data_subproject))
+                    loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=data_subproject, filtros=filtros))
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
@@ -6139,7 +6139,7 @@ def create_page_models_details(page, model, filtros):
                     response2 = sp.edit_model_data(data_subproject)
 
                     if response2.status_code in [200, 204]:
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_models_details(page=page, model=data_subproject))
+                        loading.new_loading_page(page=page, call_layout=lambda: create_page_models_details(page=page, model=data_subproject, filtros=filtros))
                         snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
