@@ -1225,6 +1225,29 @@ class SupaBase:
         )
 
         return response
+    
+
+    def get_frella_user_data(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "permission":  f"eq.{"user"}", 
+                   "select": "*"
+        }
+
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )
+
+        return response
 
     def get_all_project_data(self):
 

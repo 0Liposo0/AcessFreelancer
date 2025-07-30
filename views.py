@@ -3129,7 +3129,7 @@ def create_page_new_delivery(page):
         )
     
     users = []
-    get_users = (sp.get_all_user_data()).json()
+    get_users = (sp.get_frella_user_data()).json()
     for item in get_users:
         users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
 
@@ -3218,7 +3218,7 @@ def create_page_new_delivery(page):
         "warning":ft.TextField(label="Advertências", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "delay":dropdow3, 
         "photos":ft.TextField(label="Fotos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "dwg":ft.TextField(label="DWG", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "dwg":ft.TextField(label="DWG", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
 
     def on_file_selected():
@@ -3236,6 +3236,10 @@ def create_page_new_delivery(page):
         page.update()
 
     def get_uploaded_file_bytes(e: ft.FilePickerUploadEvent):
+
+        dropdow1.disabled = True
+        dropdow2.disabled = True
+        dropdow4.disabled = True
 
         file_path = f"uploads/{file_old_name[0]}"    
 
@@ -3273,13 +3277,43 @@ def create_page_new_delivery(page):
     fp = ft.FilePicker(on_result=on_image_selected, on_upload=get_uploaded_file_bytes, data="fp")
     page.overlay.append(fp)
 
-    def open_gallery(e, type): 
+    def open_gallery(e, type, view_deliveries):
+
+        copy = view_deliveries.copy()
+
+        del copy["dwg"]
+
+        if any(field.value == "" or field.value is None for field in copy.values()):
+            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+            return
+
         fp.pick_files(              
             allow_multiple=False,
         )
 
         file_type.clear()
         file_type.append(type)
+
+    def remove_dwg(e):
+
+        view_deliveries["dwg"].value=""
+
+        file_selected.clear()
+        file_name.clear()
+        file_type.clear()
+        file_old_name.clear()
+        add_file[0] = False
+
+        dropdow1.disabled = False
+        dropdow2.disabled = False
+        dropdow4.disabled = False
+
+
+        page.update()
 
 
     botao_edit = buttons.create_button(on_click=lambda e: editar_dados(view_deliveries),
@@ -3288,17 +3322,24 @@ def create_page_new_delivery(page):
                                       col=7,
                                       padding=5,)
      
-    btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type="dwg"),
+    btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type="dwg", view_deliveries=view_deliveries),
                                       text="Upload DWG",
                                       color=ft.Colors.AMBER,
                                       col=7,
                                       padding=5,) 
     
+    btn_remove_dwg = buttons.create_button(on_click=lambda e: remove_dwg(e),
+                                      text="Remover DWG",
+                                      color=ft.Colors.RED,
+                                      col=7,
+                                      padding=5,)
+
     main_container = ft.Container(
         content=ft.Column(
             controls=[
                 *(view_deliveries.values()),
                 btn_dwg,
+                btn_remove_dwg
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             scroll=ft.ScrollMode.AUTO,
@@ -6117,7 +6158,7 @@ def create_page_models_details(page, model, filtros):
                 response2 = sp.edit_model_data(data_subproject)
 
                 if response2.status_code in [200, 204]:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_models_details(page=page, model=data_subproject))
+                    loading.new_loading_page(page=page, call_layout=lambda: create_page_models_details(page=page, model=data_subproject, filtros=filtros))
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
