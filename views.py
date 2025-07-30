@@ -6602,6 +6602,7 @@ def create_page_new_model(page):
         width=300,
         enable_filter=True,
         editable=True,
+        disabled=True
         )
     
     subprojects = []
@@ -6670,8 +6671,8 @@ def create_page_new_model(page):
         "username": dropdow1, 
         "date":dropdow4, 
         "subproject":dropdow2,   
-        "polygons":ft.TextField(label="Polígonos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "numbers":ft.TextField(label="Numeros", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "polygons":ft.TextField(label="Polígonos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), keyboard_type=ft.KeyboardType.NUMBER), 
+        "numbers":ft.TextField(label="Numeros", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), keyboard_type=ft.KeyboardType.NUMBER), 
         "dwg":ft.TextField(label="DWG", value=f".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
 
@@ -6690,6 +6691,10 @@ def create_page_new_model(page):
         page.update()
 
     def get_uploaded_file_bytes(e: ft.FilePickerUploadEvent):
+
+        dropdow1.disabled = True
+        dropdow2.disabled = True
+        dropdow4.disabled = True
 
         file_path = f"uploads/{file_old_name[0]}"    
 
@@ -6727,13 +6732,43 @@ def create_page_new_model(page):
     fp = ft.FilePicker(on_result=on_image_selected, on_upload=get_uploaded_file_bytes, data="fp")
     page.overlay.append(fp)
 
-    def open_gallery(e, type): 
+    def open_gallery(e, type, view_deliveries):
+
+        copy = view_deliveries.copy()
+
+        del copy["dwg"]
+
+        if any(field.value == "" or field.value is None for field in copy.values()):
+            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+            return
+
         fp.pick_files(              
             allow_multiple=False,
         )
 
         file_type.clear()
         file_type.append(type)
+
+    def remove_dwg(e):
+
+        view_deliveries["dwg"].value=""
+
+        file_selected.clear()
+        file_name.clear()
+        file_type.clear()
+        file_old_name.clear()
+        add_file[0] = False
+
+        dropdow1.disabled = False
+        dropdow2.disabled = False
+        dropdow4.disabled = False
+
+
+        page.update()
 
 
     botao_edit = buttons.create_button(on_click=lambda e: editar_dados(view_deliveries),
@@ -6742,9 +6777,19 @@ def create_page_new_model(page):
                                       col=7,
                                       padding=5,)
      
-    btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type="dwg"),
+    btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(
+                                                                e,
+                                                                type="dwg",
+                                                                view_deliveries=view_deliveries
+                                                                ),
                                       text="Upload DWG",
                                       color=ft.Colors.AMBER,
+                                      col=7,
+                                      padding=5,) 
+    
+    btn_remove_dwg = buttons.create_button(on_click=lambda e: remove_dwg(e),
+                                      text="Remover DWG",
+                                      color=ft.Colors.RED,
                                       col=7,
                                       padding=5,) 
     
@@ -6753,6 +6798,7 @@ def create_page_new_model(page):
             controls=[
                 *(view_deliveries.values()),
                 btn_dwg,
+                btn_remove_dwg
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             scroll=ft.ScrollMode.AUTO,
