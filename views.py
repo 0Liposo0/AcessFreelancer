@@ -6372,17 +6372,32 @@ def create_page_models_details(page, model, filtros):
 
             data_subproject["username"] = view_deliveries["username"].value
             data_subproject["date"] = view_deliveries["date"].value
+            data_subproject["subproject"] = view_deliveries["subproject"].value
+            data_subproject["polygons"] = view_deliveries["polygons"].value
+            data_subproject["numbers"] = view_deliveries["numbers"].value
 
 
             date = (data_subproject["date"]).split("/")
             name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.dwg'
+            print(f"\n saporra:{name_file} \n")
             response1 = base.delete_storage(local="models", object=f"{name_file}", type="image/vnd.dwg")
-            if response1.status_code in [200, 204]:   
-                data_dwg = {"dwg":".", "username": data_subproject["username"], "date": data_subproject["date"] }
+            if response1.status_code in [200, 204]:
+
+                data_dwg = {
+                    "dwg":".",
+                    "username": data_subproject["username"],
+                    "date": data_subproject["date"], 
+                    "subproject": data_subproject["subproject"],
+                    "polygons": data_subproject["polygons"],
+                    "numbers": data_subproject["numbers"],
+                    }
+
+                print(f"\n Samerda: {data_dwg}\n")
+
                 response2 = sp.edit_model_data(data_dwg)
                 if response2.status_code in [200, 204]:
                         model["dwg"] = "."
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_models_details(page=page, model=model))
+                        loading.new_loading_page(page=page, call_layout=lambda: create_page_models_details(page=page, model=model, filtros=filtros))
                         snack_bar = ft.SnackBar(content=ft.Text("Arquivo excluido"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
@@ -6643,7 +6658,7 @@ def create_page_new_model(page):
         width=300,
         enable_filter=True,
         editable=True,
-        disabled=True
+        disabled=dict_profile["permission"] != "adm",
         )
     
     subprojects = []

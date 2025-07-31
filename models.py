@@ -2161,6 +2161,8 @@ class SupaBase:
             "Content-Type": type,
         }
 
+        print(f'\n saporra 2: {self.supabase_url}/storage/v1/object/{local}/{object} \n')
+
         response = requests.delete(
             f'{self.supabase_url}/storage/v1/object/{local}/{object}',  
             headers=headers,
