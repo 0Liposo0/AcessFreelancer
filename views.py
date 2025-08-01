@@ -1589,10 +1589,12 @@ def create_page_project_token(page, project):
 
     view_project ={
         "name_project": ft.TextField(label="Nome do projeto", value=get_info2["name_project"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "current_subprojects": ft.TextField(label="Nome", value=get_info2["current_subprojects"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "final_delivery": ft.TextField(label="Lotes Previstos", value=get_info2["final_delivery"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "predicted_lots": ft.TextField(label="Lotes Feitos", value=get_info2["predicted_lots"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "current_subprojects": ft.TextField(label="Subprojetos", value=get_info2["current_subprojects"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "final_delivery": ft.TextField(label="Entrega final", value=get_info2["final_delivery"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "predicted_lots": ft.TextField(label="Lotes Previstos", value=get_info2["predicted_lots"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "ecw": ft.TextField(label="Ortofotos", value=get_info2["ecw"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "preview": ft.TextField(label="Prévia", value=get_info2["preview"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "dwg": ft.TextField(label="Dwg", value=get_info2["dwg"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
     }
 
 
@@ -1617,12 +1619,12 @@ def create_page_project_token(page, project):
     margin=10,  # Margem externa
 )
 
-    
 
-    # Layout responsivo com as duas fichas lado a lado
+    # Layout responsivo
     layout = ft.ResponsiveRow(
-    [
-        ft.Column(
+        columns=12,
+        controls=[
+            ft.Column(
             [
                 ft.Container(
                     projects_token,
@@ -1636,16 +1638,125 @@ def create_page_project_token(page, project):
             col={"sm": 12, "md": 6},
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             alignment=ft.MainAxisAlignment.CENTER
-        ),
-    ],
-    alignment=ft.MainAxisAlignment.CENTER,
-    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-    spacing=20,
-    expand=True
-)
+        )
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,  # Alinha no topo
+        spacing=20,
+        expand=True
+    )
 
 
     return layout
+
+def create_page_project_token_user(page, project):
+
+    loading = LoadingPages(page=page)
+    base = SupaBase(page=page)
+    buttons = Buttons(page)
+    get_base_Project = base.get_one_project_data(project)
+    get_info1 = get_base_Project.json()
+
+    get_info2 = {
+        "preview": "."
+    }
+
+    if len(get_info1) > 0:
+        get_info2 = get_info1[0]
+
+   
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
+        bgcolor=ft.Colors.WHITE70,
+    )
+
+   
+    def get_preview_image():
+            if get_info2["preview"] in [".", "", None]:
+                image = ft.Text("Sem Imagem", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK)
+            else:
+                image = ft.Image(  
+                            src=get_info2["preview"],  
+                            fit=ft.ImageFit.COVER,
+                            expand=True,
+                        )
+            
+            return image
+
+    btn_download = buttons.create_button(on_click=lambda e: page.launch_url(get_info2["dwg"]),
+                                      text="Download",
+                                      color=ft.Colors.AMBER,
+                                      col=7,
+                                      padding=5,)
+
+
+    preview_image = ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.Container(
+                    width=500,
+                    height=500,
+                    alignment=ft.alignment.center,
+                    content=get_preview_image(),
+                    border=ft.Border(
+                        left=ft.BorderSide(2, ft.Colors.BLACK),  
+                        top=ft.BorderSide(2, ft.Colors.BLACK),    
+                        right=ft.BorderSide(2, ft.Colors.BLACK), 
+                        bottom=ft.BorderSide(2, ft.Colors.BLACK) 
+                    ),
+                    bgcolor=ft.Colors.WHITE,
+                    border_radius=ft.border_radius.all(20),
+                    clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                ),
+                btn_download
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.AUTO,
+            expand=True,
+            spacing=10,
+        ),
+        padding=20,
+        border=ft.border.all(2, ft.Colors.BLUE),
+        border_radius=10,
+        bgcolor=ft.Colors.WHITE,
+        width=min(1000, page.width * 0.9),
+        alignment=ft.alignment.center,  
+        margin=10,
+        expand=True  
+    )
+
+    if get_info2["preview"] in [".", "", None]:
+        preview_image.content.controls.remove(btn_download)
+    
+    # Layout responsivo
+    layout = ft.ResponsiveRow(
+        columns=12,
+        controls=[
+            ft.Column(
+            [
+                ft.Container(
+                    preview_image,
+                    alignment=ft.alignment.center
+                ),
+            ],
+            col={"sm": 12, "md": 6},
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,  # Alinha no topo
+        spacing=20,
+        expand=True
+    )
+
+
+    return layout
+
 # Pagina de Ficha Editavel de Projetos
 def create_page_new_project(page):
 
@@ -1910,6 +2021,10 @@ def create_page_subproject(page, project):
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1()
 
+    get_base_Project = base.get_one_project_data(project)
+    get_info1 = get_base_Project.json()
+    get_info2 = get_info1[0]
+
     get_base = base.get_all_subproject_data(project)
     get_json = get_base.json()
 
@@ -2071,13 +2186,83 @@ def create_page_subproject(page, project):
         alignment=ft.alignment.center,
     )
 
-    # Layout da página
+
+    def get_preview_image():
+        if get_info2["preview"] in [".", "", None]:
+            image = ft.Text("Sem Imagem", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK)
+        else:
+            image = ft.Image(  
+                        src=get_info2["preview"],  
+                        fit=ft.ImageFit.COVER,
+                        expand=True,
+                    )
+        
+        return image
+
+    preview_image = ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.Container(
+                    width=500,
+                    height=500,
+                    alignment=ft.alignment.center,
+                    content=get_preview_image(),
+                    border=ft.Border(
+                        left=ft.BorderSide(2, ft.Colors.BLACK),  
+                        top=ft.BorderSide(2, ft.Colors.BLACK),    
+                        right=ft.BorderSide(2, ft.Colors.BLACK), 
+                        bottom=ft.BorderSide(2, ft.Colors.BLACK) 
+                    ),
+                    bgcolor=ft.Colors.WHITE,
+                    border_radius=ft.border_radius.all(20),
+                    clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                )
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.AUTO,
+            expand=True,
+            spacing=10,
+        ),
+        padding=20,
+        border=ft.border.all(2, ft.Colors.BLUE),
+        border_radius=10,
+        bgcolor=ft.Colors.WHITE,
+        width=min(1000, page.width * 0.9),
+        alignment=ft.alignment.center,  
+        margin=10,
+        expand=True  
+    )
+
+
+
+    # Layout responsivo
     layout = ft.ResponsiveRow(
         columns=12,
         controls=[
-            main_container
+            ft.Column(
+            [
+                main_container
+            ],
+            col={"sm": 12, "md": 6},
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.CENTER
+        ),
+            ft.Column(
+                col={"sm": 12, "md": 6},
+                controls=[
+                    preview_image
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.MainAxisAlignment.CENTER,  # Alinha no topo
+                spacing=20,
+                expand=True
+            ),
         ],
         alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,  # Alinha no topo
+        spacing=20,
+        expand=True
     )
 
     return layout
@@ -4017,8 +4202,11 @@ def create_page_freelancer_token(page, username, est=False):
     subprojects = []
     subprojects.append(ft.dropdown.Option(".", content=ft.Text(value=".", color=ft.Colors.BLACK)))
     get_subprojects = (base.get_all_subprojects()).json()
+    get_projects = (base.get_projects_data()).json()
     for item in get_subprojects:
         subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
+    for item in get_projects:
+        subprojects.append(ft.dropdown.Option(item["name_project"], content=ft.Text(value=item["name_project"], color=ft.Colors.BLACK)))
 
     dropdow2 = ft.Dropdown(
         options=subprojects,
@@ -5198,6 +5386,11 @@ def create_page_files(page, filtros=[None]):
                                       color=ft.Colors.GREY,
                                       col=12,
                                       padding=10,)         
+    btn_projeto_user = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_project_token_user(page, dict_profile["current_project"])),
+                                      text= "Projeto",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)         
     btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
                                             text= "Arquivos",
                                             color=ft.Colors.GREY,
@@ -5237,6 +5430,7 @@ def create_page_files(page, filtros=[None]):
     drawer = ft.NavigationDrawer(
     controls=[
         btn_projeto,
+        btn_projeto_user,
         btn_see_subprojects,
         btn_see_freelancers,
         btn_payment,
@@ -6379,7 +6573,6 @@ def create_page_models_details(page, model, filtros):
 
             date = (data_subproject["date"]).split("/")
             name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.dwg'
-            print(f"\n saporra:{name_file} \n")
             response1 = base.delete_storage(local="models", object=f"{name_file}", type="image/vnd.dwg")
             if response1.status_code in [200, 204]:
 
@@ -6392,7 +6585,6 @@ def create_page_models_details(page, model, filtros):
                     "numbers": data_subproject["numbers"],
                     }
 
-                print(f"\n Samerda: {data_dwg}\n")
 
                 response2 = sp.edit_model_data(data_dwg)
                 if response2.status_code in [200, 204]:
