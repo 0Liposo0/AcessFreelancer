@@ -3819,7 +3819,7 @@ def create_page_payment(page, month=None):
 
     return layout
 # Pagina de Status Financeiros
-def create_page_see_freelancers(page):
+def create_page_see_freelancers(page, filtros=[None]):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
@@ -3909,6 +3909,14 @@ def create_page_see_freelancers(page):
     get_base = base.get_all_user_data()
     get_json = get_base.json()
 
+    dicio_projects = {}
+    list_projects = (base.get_all_project_data()).json()
+
+    for item in list_projects:
+
+        dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
+        dicio_projects[item["name_project"]].append(item["name_project"])
+
     # Lista para exibir as entregas
     history_list = ft.Column(
         controls=[
@@ -3937,9 +3945,12 @@ def create_page_see_freelancers(page):
         expand=True,  
     )
 
+    list_filtros = [None]
 
     # Preenche a lista com os dados das entregas
     for delev in get_json:
+
+        project = next((k for k, v in dicio_projects.items() if delev['current_project'] in v), ".")
 
         perfil = ft.Column(
             alignment=ft.MainAxisAlignment.CENTER,
@@ -3987,6 +3998,7 @@ def create_page_see_freelancers(page):
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
+                                data=project
                                 )),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
@@ -3994,7 +4006,7 @@ def create_page_see_freelancers(page):
                                 icon_color=ft.Colors.WHITE,
                                 on_click=lambda e, username=delev['username']: loading.new_loading_page(
                                         page=page,
-                                        call_layout=lambda: create_page_freelancer_token(page=page, username=username)
+                                        call_layout=lambda: create_page_freelancer_token(page=page, username=username, filtros=list_filtros)
                                     ),
                                 )),
                             
@@ -4002,6 +4014,78 @@ def create_page_see_freelancers(page):
                 )
         )
 
+    filtros_ativos = {
+    "permission": None,
+    "projeto": None,
+    }
+
+    # Função para filtrar a tabela
+    def aplicar_filtros(update=True):
+        for item in history_list.controls[0].content.rows:
+            permission = item.cells[2].content.value  
+            project = item.cells[3].content.data  
+
+            # Verifica se o item atende a TODOS os filtros ativos
+            item.visible = (
+                (filtros_ativos["permission"] is None or filtros_ativos["permission"] == permission) and
+                (filtros_ativos["projeto"] is None or filtros_ativos["projeto"] == project)
+            )
+
+        if update == True:
+            history_list.update()  
+
+        list_filtros[0] = filtros_ativos
+
+    # Função chamada quando um Dropdown muda
+    def on_dropdown_change(e, filtro):
+        filtros_ativos[filtro] = e.control.value if e.control.value and e.control.value != "Nulo" else None
+        aplicar_filtros()
+
+    name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
+    name_projects.append(ft.dropdown.Option(".", content=ft.Text(value=f"Sem Projeto", color=ft.Colors.BLACK)))
+    for item in list_projects:
+        name_projects.append(ft.dropdown.Option(item["name_project"], content=ft.Text(value=item["name_project"], color=ft.Colors.BLACK)))
+
+    list_dropdown = ft.Row(
+        controls=[
+            ft.Dropdown(
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label="Permissão",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                expand=True,
+                width=300,
+                options=[
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("user", content=ft.Text(value=f"Freelancer", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("est", content=ft.Text(value=f"Estagiário", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("ldr", content=ft.Text(value=f"Lider", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("adm", content=ft.Text(value=f"Administrador", color=ft.Colors.BLACK)),
+                ],
+                on_change=lambda e: on_dropdown_change(e, "permission"),
+            ),
+            ft.Dropdown(
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label="Projeto",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                expand=True,
+                options=name_projects,
+                on_change=lambda e: on_dropdown_change(e, "projeto"),
+                enable_filter=True,
+                editable=True,
+                width=300,
+            ),
+            
+        ],
+        expand=True,
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
 
     def filtrar_usuarios(e):
         texto = e.control.value.lower().strip()
@@ -4009,6 +4093,11 @@ def create_page_see_freelancers(page):
         for item in history_list.controls[0].content.rows:
             item.visible = texto in item.cells[1].content.value.lower() if texto else True
 
+        list_dropdown.controls[0].value = "Nulo"
+        list_dropdown.controls[1].value = "Nulo"
+
+        list_dropdown.controls[0].update()
+        list_dropdown.controls[1].update()
         history_list.update()
 
     # Campo de pesquisa
@@ -4022,6 +4111,14 @@ def create_page_see_freelancers(page):
         width=350,
         on_change=filtrar_usuarios,
     )
+
+    if filtros[0] != None:
+        
+        list_dropdown.controls[0].value = filtros[0]["permission"]
+        list_dropdown.controls[1].value = filtros[0]["projeto"]
+
+        filtros_ativos = filtros[0]
+        aplicar_filtros(update=False)
 
     # Container principal
     main_container = ft.Container(
@@ -4045,6 +4142,15 @@ def create_page_see_freelancers(page):
                 spacing=20,
                 ),
                 search_field,
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                    controls=[
+                        list_dropdown.controls[0],
+                        list_dropdown.controls[1],
+                    ]
+                ),
                 ft.Container(
                     content=history_list,
                     expand=True,
@@ -4072,7 +4178,7 @@ def create_page_see_freelancers(page):
 
     return layout
 
-def create_page_freelancer_token(page, username, est=False):
+def create_page_freelancer_token(page, username, filtros, est=False):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=page)
@@ -4083,7 +4189,7 @@ def create_page_freelancer_token(page, username, est=False):
     get_info2 = get_info1[0]
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page, filtros=filtros))
 
     # AppBar
     page.appbar = ft.AppBar(

@@ -13,10 +13,10 @@ def main(page: ft.Page):
     loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page))
 
     #page.session.set("profile", {
-    #        "username": "guilherme_casceiro",
-    #        "name": "Guilherme Casceiro",
-    #        "permission": "ldr",
-    #        "current_project": "Sales de Oliveira",
+    #        "username": "attam_admin",
+    #        "name": "Attam",
+    #        "permission": "adm",
+    #        "current_project": ".",
     #    })
     
     #loading.new_loading_page(page=page, call_layout=lambda:create_page_see_freelancers(page))
