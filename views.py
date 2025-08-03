@@ -3220,7 +3220,15 @@ def create_page_new_delivery(page):
         
 
         if any(field == "" or field is None for field in data_subproject.values()):
-            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
+            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.YELLOW)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+            return
+        
+        if data_subproject["dwg"] == ".":
+            snack_bar = ft.SnackBar(content=ft.Text("Insira um arquivo para fazer o envio"), bgcolor=ft.Colors.YELLOW)
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
@@ -3231,6 +3239,16 @@ def create_page_new_delivery(page):
 
         if len (check) > 0:
             snack_bar = ft.SnackBar(content=ft.Text("Entrega especificada já cadastrada !!!"), bgcolor=ft.Colors.YELLOW)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+            return
+        
+        check2 = (sp.get_one_file_data(data_subproject["date"], data_subproject["name_subproject"])).json()
+
+        if len (check2) < 1:
+            snack_bar = ft.SnackBar(content=ft.Text("Nenhum arquivo encontrado na data especificada !!!"), bgcolor=ft.Colors.YELLOW)
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
@@ -3328,7 +3346,10 @@ def create_page_new_delivery(page):
             find_file.append(value["current_project"])
         else:
             if find_file[0] != ".":
-                dropdow3.value = (((sp.get_one_file_data(e.control.value, find_file[0])).json())[0])["delay"]
+                try:
+                    dropdow3.value = (((sp.get_one_file_data(e.control.value, find_file[0])).json())[0])["delay"]
+                except:
+                    None
 
         page.update()
 
@@ -6878,7 +6899,15 @@ def create_page_new_model(page):
         
 
         if any(field == "" or field is None for field in data_subproject.values()):
-            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
+            snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.YELLOW)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+            return
+        
+        if data_subproject["dwg"] == ".":
+            snack_bar = ft.SnackBar(content=ft.Text("Insira um arquivo para fazer o envio"), bgcolor=ft.Colors.YELLOW)
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
@@ -6889,6 +6918,16 @@ def create_page_new_model(page):
 
         if len (check) > 0:
             snack_bar = ft.SnackBar(content=ft.Text("Modelo especificado já cadastrado !!!"), bgcolor=ft.Colors.YELLOW)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+            return
+        
+        check2 = (sp.get_one_delivery_data(data_subproject["date"], data_subproject["subproject"])).json()
+
+        if len (check2) < 1:
+            snack_bar = ft.SnackBar(content=ft.Text("Nenhuma entrega encontrada na data especificada !!!"), bgcolor=ft.Colors.YELLOW)
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
