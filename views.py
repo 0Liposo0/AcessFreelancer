@@ -1654,16 +1654,29 @@ def create_page_project_token_user(page, project):
     loading = LoadingPages(page=page)
     base = SupaBase(page=page)
     buttons = Buttons(page)
+    textthemes = TextTheme()
+    texttheme1 = textthemes.create_text_theme1()
     get_base_Project = base.get_one_project_data(project)
     get_info1 = get_base_Project.json()
 
     get_info2 = {
-        "preview": "."
+        "preview": ".",
+        "ecw": ".",
+        "planner": ".",
     }
 
     if len(get_info1) > 0:
         get_info2 = get_info1[0]
 
+    get_info3 = {
+        "preview": ".",
+        "ecw": ".",
+    }
+
+    get_base = base.get_all_subproject_data(project)
+
+    if len(get_info1) > 0:
+        get_info3 = get_base.json()
    
     # AppBar
     page.appbar = ft.AppBar(
@@ -1687,15 +1700,31 @@ def create_page_project_token_user(page, project):
             return image
 
     btn_download = buttons.create_button(on_click=lambda e: page.launch_url(get_info2["dwg"]),
-                                      text="Download",
+                                      text="DWG Acumulado",
                                       color=ft.Colors.AMBER,
                                       col=7,
                                       padding=5,)
+    
+    url = get_info2["ecw"]
+    btn_ecw = buttons.create_button(on_click=lambda e: page.launch_url(url),
+                                      text="Ortofoto e arquivos",
+                                      color=ft.Colors.AMBER,
+                                      col=7,
+                                      padding=5,
+                                      )
+    url2 = get_info2["planner"]
+    btn_planner = buttons.create_button(on_click=lambda e: page.launch_url(url2),
+                                      text="Planilha",
+                                      color=ft.Colors.AMBER,
+                                      col=7,
+                                      padding=5,
+                                      )
 
 
     preview_image = ft.Container(
         content=ft.Column(
             controls=[
+                ft.Text(value=project, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
                 ft.Container(
                     width=500,
                     height=500,
@@ -1711,7 +1740,9 @@ def create_page_project_token_user(page, project):
                     border_radius=ft.border_radius.all(20),
                     clip_behavior=ft.ClipBehavior.HARD_EDGE,
                 ),
-                btn_download
+                btn_download,
+                btn_ecw,
+                btn_planner
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -1729,9 +1760,85 @@ def create_page_project_token_user(page, project):
         expand=True  
     )
 
-    if get_info2["preview"] in [".", "", None]:
-        preview_image.content.controls.remove(btn_download)
     
+
+    if len(get_info1) == 0:
+        preview_image.content.controls.remove(btn_download)
+        preview_image.content.controls.remove(btn_ecw)
+        preview_image.content.controls.remove(btn_planner)
+    
+
+    history_list = ft.Column(
+        controls=[
+            ft.Container(
+                width=500,
+                height=500,
+                alignment=ft.alignment.center,
+                border=ft.Border(
+                    left=ft.BorderSide(2, ft.Colors.BLACK),  
+                    top=ft.BorderSide(2, ft.Colors.BLACK),    
+                    right=ft.BorderSide(2, ft.Colors.BLACK), 
+                    bottom=ft.BorderSide(2, ft.Colors.BLACK) 
+                ),
+                bgcolor=ft.Colors.WHITE,
+                border_radius=ft.border_radius.all(20),
+                padding=0,  
+                expand=True,  
+                theme=texttheme1,
+                content=ft.DataTable(
+                    data_row_max_height=50,
+                    column_spacing=40,  
+                    expand=True,  
+                    columns=[
+                        ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                        ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                        ft.DataColumn(ft.Text(value="Perímetro", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                    ],
+                    rows=[],  
+                ),
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,  
+        alignment=ft.MainAxisAlignment.CENTER,  
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        expand=True,  
+    )
+
+    users = {}
+    get_users = (base.get_frella_user_data()).json()
+    for item in get_users:
+        users[item["current_project"]] = item["username"]
+
+    if len(get_info1) > 0:
+        for city in get_info3:
+
+            user = users[city["name_subproject"]]
+
+            history_list.controls[0].content.rows.append(
+                ft.DataRow(cells=[
+                                ft.DataCell(ft.Text(
+                                    value=f"{city["name_subproject"]}",
+                                    theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                    text_align=ft.TextAlign.CENTER,
+                                    color=ft.Colors.BLACK,
+                                    )),
+                                ft.DataCell(ft.Text(
+                                    value=f"{user}",
+                                    theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                    text_align=ft.TextAlign.CENTER,
+                                    color=ft.Colors.BLACK,
+                                    )),
+
+                                ft.DataCell(ft.ElevatedButton(
+                                    text="Download",
+                                    bgcolor=ft.Colors.AMBER,
+                                    color=ft.Colors.WHITE,
+                                    width=150,
+                                    on_click= lambda e: page.launch_url(city["dwg"]),
+                                )),
+                ])
+            )
+
     # Layout responsivo
     layout = ft.ResponsiveRow(
         columns=12,
@@ -1746,13 +1853,26 @@ def create_page_project_token_user(page, project):
             col={"sm": 12, "md": 6},
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             alignment=ft.MainAxisAlignment.CENTER
-        )
+            ),
+            ft.Column(
+            [
+                ft.Container(
+                    history_list,
+                    alignment=ft.alignment.center
+                ),
+            ],
+            col={"sm": 12, "md": 6},
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.CENTER
+            ),
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,  # Alinha no topo
         spacing=20,
         expand=True
     )
+
+
 
 
     return layout
@@ -5548,7 +5668,7 @@ def create_page_files(page, filtros=[None]):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_profile = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page, dict_profile["username"], est=True)),
+    btn_profile = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page, dict_profile["username"], filtros=[None], est=True)),
                                             text= "Perfil",
                                             color=ft.Colors.GREY,
                                             col=12,
