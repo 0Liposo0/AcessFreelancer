@@ -2173,8 +2173,11 @@ def create_page_subproject(page, project):
         expand=True,  
     )
 
+    list_subprojects = []
+
     for city in get_json:
         name_subproject = city["name_subproject"]
+        list_subprojects.append(name_subproject)
         data = city
         
         def delete_subproject(name_subproject):
@@ -2319,6 +2322,20 @@ def create_page_subproject(page, project):
         
         return image
 
+    get_models = ((base.get_all_models()).json())
+
+    count_poligons = 0
+    count_unknown = 0
+    
+    for model in get_models:
+        if model["subproject"] in list_subprojects:
+            count_poligons = count_poligons + int(model["polygons"])
+            count_unknown = count_unknown + (int(model["polygons"]) - int(model["numbers"]))
+          
+    text_poligons = ft.Text(value=f"Imóveis: {count_poligons} / {get_info2["predicted_lots"]} ({count_poligons/(int(get_info2["predicted_lots"])/100):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+    text_regular = ft.Text(value=f"Regulares e Prefeitura: {count_poligons - count_unknown}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+    text_unknown = ft.Text(value=f"Dúvidas: {count_unknown} ({(count_unknown/(count_poligons/100)):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+
     preview_image = ft.Container(
         content=ft.Column(
             controls=[
@@ -2326,7 +2343,16 @@ def create_page_subproject(page, project):
                     width=500,
                     height=500,
                     alignment=ft.alignment.center,
-                    content=get_preview_image(),
+                    content=ft.Column(
+                                controls=[
+                                    get_preview_image(),
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                scroll=ft.ScrollMode.AUTO,
+                                expand=True,
+                                spacing=10,
+                            ),
                     border=ft.Border(
                         left=ft.BorderSide(2, ft.Colors.BLACK),  
                         top=ft.BorderSide(2, ft.Colors.BLACK),    
@@ -2336,7 +2362,10 @@ def create_page_subproject(page, project):
                     bgcolor=ft.Colors.WHITE,
                     border_radius=ft.border_radius.all(20),
                     clip_behavior=ft.ClipBehavior.HARD_EDGE,
-                )
+                ),
+                text_poligons,
+                text_regular,
+                text_unknown,
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -2354,8 +2383,7 @@ def create_page_subproject(page, project):
         expand=True  
     )
 
-
-
+    
     # Layout responsivo
     layout = ft.ResponsiveRow(
         columns=12,
@@ -2367,11 +2395,11 @@ def create_page_subproject(page, project):
             col={"sm": 12, "md": 6},
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             alignment=ft.MainAxisAlignment.CENTER
-        ),
+            ),
             ft.Column(
                 col={"sm": 12, "md": 6},
                 controls=[
-                    preview_image
+                    preview_image,
                 ],
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 alignment=ft.MainAxisAlignment.CENTER,  # Alinha no topo
