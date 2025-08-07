@@ -2334,7 +2334,7 @@ def create_page_subproject(page, project):
           
     text_poligons = ft.Text(value=f"Imóveis: {count_poligons} / {get_info2["predicted_lots"]} ({count_poligons/(int(get_info2["predicted_lots"])/100):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
     text_regular = ft.Text(value=f"Regulares e Prefeitura: {count_poligons - count_unknown}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
-    text_unknown = ft.Text(value=f"Dúvidas: {count_unknown} ({(count_unknown/(count_poligons/100)):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+    text_unknown = ft.Text(value=f"Dúvidas: {count_unknown} ({(count_unknown/(count_poligons/100)):.0f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
 
     preview_image = ft.Container(
         content=ft.Column(
@@ -6227,6 +6227,7 @@ def create_page_see_models(page, filtros=[None]):
                         ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="Poligonos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="Numeros", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Porcentagem", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                     ],
                     rows=[],
@@ -6280,6 +6281,13 @@ def create_page_see_models(page, filtros=[None]):
                                 )),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['numbers']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                )),
+                            ft.DataCell(ft.Text(
+                                value=f"{(int((int(delev['numbers']))/((int(delev['polygons']))/100)))}%",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
