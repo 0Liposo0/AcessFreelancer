@@ -7151,7 +7151,7 @@ def create_page_new_model(page):
         width=300,
         enable_filter=True,
         editable=True,
-        disabled=dict_profile["permission"] != "adm",
+        disabled=dict_profile["permission"] == "est",
         )
     
     project = ((sp.get_one_project_data(dict_profile["current_project"])).json())[0]
