@@ -1306,6 +1306,30 @@ class SupaBase:
 
         return response
     
+    def get_all_subprojects_filter(self, subprojects_list):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        
+        subprojects_str = ",".join([f'"{item}"' for item in subprojects_list])
+        filter_value = f"in.({subprojects_str})"
+
+        params = {
+            "name_subproject": filter_value,
+            "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/subprojects',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
     def get_all_subproject_data(self, project):
 
         headers = {

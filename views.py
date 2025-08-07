@@ -7146,8 +7146,11 @@ def create_page_new_model(page):
         disabled=dict_profile["permission"] != "adm",
         )
     
+    project = ((sp.get_one_project_data(dict_profile["current_project"])).json())[0]
+    subprojects_list = (project["current_subprojects"]).split(",")
+
     subprojects = []
-    get_subprojects = (sp.get_all_subprojects()).json()
+    get_subprojects = (sp.get_all_subprojects_filter(subprojects_list)).json()
     for item in get_subprojects:
         subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
