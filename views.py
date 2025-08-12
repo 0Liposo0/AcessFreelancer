@@ -407,7 +407,7 @@ def create_page_user(page):
     change_text_date(text_date_file, "now")    
     change_text_date(text_date_file_before, "before")    
 
-    # Texto de verificação de entrega
+    # Texto de verificação de entregaK)
     #....................................................................
 
     #....................................................................
@@ -1812,7 +1812,7 @@ def create_page_project_token_user(page, project):
     if len(get_info1) > 0:
         for city in get_info3:
 
-            user = users[city["name_subproject"]]
+            user = users.get(city["name_subproject"], ".")
 
             history_list.controls[0].content.rows.append(
                 ft.DataRow(cells=[
@@ -2326,15 +2326,22 @@ def create_page_subproject(page, project):
 
     count_poligons = 0
     count_unknown = 0
-    
+    models = 0
+
     for model in get_models:
         if model["subproject"] in list_subprojects:
+            models += 1
             count_poligons = count_poligons + int(model["polygons"])
             count_unknown = count_unknown + (int(model["polygons"]) - int(model["numbers"]))
-          
-    text_poligons = ft.Text(value=f"Imóveis: {count_poligons} / {get_info2["predicted_lots"]} ({count_poligons/(int(get_info2["predicted_lots"])/100):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
-    text_regular = ft.Text(value=f"Regulares e Prefeitura: {count_poligons - count_unknown}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
-    text_unknown = ft.Text(value=f"Dúvidas: {count_unknown} ({(count_unknown/(count_poligons/100)):.0f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+
+    if models == 0:
+        text_poligons = ft.Text(value=f"0 / {get_info2["predicted_lots"]} ({count_poligons/(int(get_info2["predicted_lots"])/100):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+        text_regular = ft.Text(value=f"Regulares e Prefeitura: 0", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+        text_unknown = ft.Text(value=f"Dúvidas: 0", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+    else:    
+        text_poligons = ft.Text(value=f"Imóveis: {count_poligons} / {get_info2["predicted_lots"]} ({count_poligons/(int(get_info2["predicted_lots"])/100):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+        text_regular = ft.Text(value=f"Regulares e Prefeitura: {count_poligons - count_unknown}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+        text_unknown = ft.Text(value=f"Dúvidas: {count_unknown} ({(count_unknown/(count_poligons/100)):.0f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
 
     preview_image = ft.Container(
         content=ft.Column(
