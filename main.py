@@ -12,17 +12,6 @@ def main(page: ft.Page):
     
     loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page))
 
-    #page.session.set("profile", {
-    #        "username": "attam_admin",
-    #        "name": "Attam",
-    #        "permission": "adm",
-    #        "current_project": ".",
-    #    })
-    
-    #loading.new_loading_page(page=page, call_layout=lambda:create_page_see_freelancers(page))
-
-    #loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page))
-
 
 if __name__ == "__main__":
     ft.app(target=main, upload_dir="uploads", assets_dir="assets")
