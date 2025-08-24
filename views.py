@@ -43,6 +43,13 @@ def create_page_login(page):
         color= ft.Colors.GREEN,
         on_click=lambda e: verificar(login.value, password.value, page)
     )
+
+    def on_keyboard(e: ft.KeyboardEvent):
+        if e.key == "Enter":
+            verificar(login.value, password.value, page)
+            
+    page.on_keyboard_event = on_keyboard
+
     logo = ft.Image(
         src="https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/images//acess.jpg",
         repeat=ft.ImageRepeat.NO_REPEAT,
@@ -92,7 +99,8 @@ def create_page_login(page):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
-#Página de Login   
+#Página de Login  
+ 
 def create_page_user(page):
 
     loading = LoadingPages(page)
@@ -1355,7 +1363,7 @@ def verificar(username, password, page):
             "current_project": current_project,
         })
         
-
+        page.on_keyboard_event = None
 
         if permission == "user":
 
@@ -1673,7 +1681,7 @@ def create_page_project_token_user(page, project):
         "ecw": ".",
     }
 
-    get_base = base.get_all_subproject_data(project)
+    get_base = base.get_all_subproject_data_type(project)
 
     if len(get_info1) > 0:
         get_info3 = get_base.json()
@@ -1812,18 +1820,24 @@ def create_page_project_token_user(page, project):
     if len(get_info1) > 0:
         for city in get_info3:
 
-            user = users.get(city["name_subproject"], ".")
+            def get_subproject(city):
+                return city["name_subproject"]
+            def get_name(city):
+                return users.get(city["name_subproject"], ".")
+            def get_url(city):
+                return city["dwg"]
+
 
             history_list.controls[0].content.rows.append(
                 ft.DataRow(cells=[
                                 ft.DataCell(ft.Text(
-                                    value=f"{city["name_subproject"]}",
+                                    value=get_subproject(city),
                                     theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                     text_align=ft.TextAlign.CENTER,
                                     color=ft.Colors.BLACK,
                                     )),
                                 ft.DataCell(ft.Text(
-                                    value=f"{user}",
+                                    value=get_name(city),
                                     theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                     text_align=ft.TextAlign.CENTER,
                                     color=ft.Colors.BLACK,
@@ -1834,7 +1848,7 @@ def create_page_project_token_user(page, project):
                                     bgcolor=ft.Colors.AMBER,
                                     color=ft.Colors.WHITE,
                                     width=150,
-                                    on_click= lambda e: page.launch_url(city["dwg"]),
+                                    on_click=lambda e, url=get_url(city): page.launch_url(url),
                                 )),
                 ])
             )
@@ -3332,6 +3346,7 @@ def create_page_new_delivery(page):
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
     sp = SupaBase(page)
+    dict_profile = page.session.get("profile")
 
     # Definir o tema global para garantir que o texto seja preto por padrão
 
@@ -3372,6 +3387,8 @@ def create_page_new_delivery(page):
         data_subproject["delay"] = view_deliveries["delay"].value
         data_subproject["photos"] = view_deliveries["photos"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
+
+        del data_subproject["type"]
         
 
         if any(field == "" or field is None for field in data_subproject.values()):
@@ -3415,7 +3432,7 @@ def create_page_new_delivery(page):
             response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "deliveries")
 
             if response1.status_code == 200 or response1.status_code == 201:
-                data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
+                data_subproject["dwg"] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
                 response2 = sp.post_to_deliverys_data(data_subproject)
 
                 if response2.status_code in [200, 201]:
@@ -3468,7 +3485,12 @@ def create_page_new_delivery(page):
         )
 
     subprojects = [ft.dropdown.Option(".", content=ft.Text(value=".", color=ft.Colors.BLACK))]
-    get_subprojects = (sp.get_all_subprojects()).json()
+    if dict_profile["permission"] != "adm":
+        project = ((sp.get_one_project_data(dict_profile["current_project"])).json())[0]
+        subprojects_list = (project["current_subprojects"]).split(",")
+        get_subprojects = (sp.get_all_subprojects_filter(subprojects_list, "poligonos,fotos")).json()
+    else:
+        get_subprojects = (sp.get_all_subprojects()).json()
     for item in get_subprojects:
         subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
@@ -3487,7 +3509,10 @@ def create_page_new_delivery(page):
         )
     
     users = []
-    get_users = (sp.get_frella_user_data()).json()
+    if dict_profile["permission"] != "adm":
+        get_users = (sp.get_frella_user_data_filter(subprojects_list)).json()
+    else:
+        get_users = (sp.get_frella_user_data()).json()
     for item in get_users:
         users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
 
@@ -3569,6 +3594,21 @@ def create_page_new_delivery(page):
         on_change=on_dropdow_changed
     )
 
+    dropdow5 = ft.Dropdown(
+        options=[
+            ft.dropdown.Option("dwg", content=ft.Text(value="Poligonos", color=ft.Colors.BLACK)),
+            ft.dropdown.Option("xlsx", content=ft.Text(value="Fotos", color=ft.Colors.BLACK)),
+        ],
+        label="Tipo",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
+        bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+        width=300,
+        )
+
     view_deliveries = {
         "username": dropdow1, 
         "date":dropdow4, 
@@ -3579,6 +3619,7 @@ def create_page_new_delivery(page):
         "warning":ft.TextField(label="Advertências", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "delay":dropdow3, 
         "photos":ft.TextField(label="Fotos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "type":dropdow5, 
         "dwg":ft.TextField(label="DWG", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
 
@@ -3683,14 +3724,14 @@ def create_page_new_delivery(page):
                                       col=7,
                                       padding=5,)
      
-    btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type="dwg", view_deliveries=view_deliveries),
-                                      text="Upload DWG",
+    btn_dwg = buttons.create_button(on_click=lambda e: open_gallery(e, type=view_deliveries["type"].value, view_deliveries=view_deliveries),
+                                      text="Upload Arquivo",
                                       color=ft.Colors.AMBER,
                                       col=7,
                                       padding=5,) 
     
     btn_remove_dwg = buttons.create_button(on_click=lambda e: remove_dwg(e),
-                                      text="Remover DWG",
+                                      text="Remover Arquivo",
                                       color=ft.Colors.RED,
                                       col=7,
                                       padding=5,)
@@ -4813,10 +4854,20 @@ def create_page_see_deliverys(page, filtros=[None]):
     texttheme1 = textthemes.create_text_theme1()
     dict_profile = page.session.get("profile")
 
-    get_base = base.get_all_deliverys()
-    get_json = get_base.json()
+    if dict_profile["permission"] != "adm":
+        project = ((base.get_one_project_data(dict_profile["current_project"])).json())[0]
+        subprojects_list = (project["current_subprojects"]).split(",")
+        get_json = (base.get_all_deliverys_filter(subprojects_list)).json()
+    else:
+        get_json = (base.get_all_deliverys()).json()
+        subprojects_list = (base.get_all_subprojects()).json()
+
     dicio_projects = {}
-    list_projects = (base.get_all_project_data()).json()
+
+    if dict_profile["permission"] != "adm":
+        list_projects = [project]
+    else:
+        list_projects = (base.get_all_project_data()).json()
 
     for item in list_projects:
 
@@ -4965,12 +5016,15 @@ def create_page_see_deliverys(page, filtros=[None]):
     for item in list_projects:
         name_projects.append(ft.dropdown.Option(item["name_project"], content=ft.Text(value=item["name_project"], color=ft.Colors.BLACK)))
 
-    subprojects = (base.get_all_subprojects()).json()
+    if dict_profile["permission"] != "adm":
+        subprojects = (base.get_all_subprojects_filter(subprojects_list, type="poligonos,fotos")).json()
+    else:
+        subprojects = (base.get_all_subprojects()).json()
     name_subprojects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in subprojects:
         name_subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
-    users = (base.get_all_user_data()).json()
+    users = (base.get_frella_user_data()).json()
     name_users = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in users:
         name_users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
@@ -5050,6 +5104,7 @@ def create_page_see_deliverys(page, filtros=[None]):
                 on_change= lambda e: on_dropdown_change(e, "usuario"),
                 enable_filter=True,
                 editable=True,
+                width=250,
             ),
             ft.Dropdown(
                 color=ft.Colors.BLACK,
@@ -5212,6 +5267,8 @@ def create_page_delivery_details(page, delivery, filtros):
         data_subproject["delay"] = view_deliveries["delay"].value
         data_subproject["photos"] = view_deliveries["photos"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
+
+        del data_subproject["type"]
         
 
         if any(field == "" or field is None for field in data_subproject.values()):
@@ -5222,11 +5279,11 @@ def create_page_delivery_details(page, delivery, filtros):
         else:
 
             if add_file[0] == True:
-
+        
                 response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "deliveries")
 
                 if response1.status_code == 200 or response1.status_code == 201:
-                    data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
+                    data_subproject["dwg"] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
                     response2 = sp.edit_delivery_data(data_subproject)
 
                     if response2.status_code in [200, 204]:
@@ -5387,6 +5444,27 @@ def create_page_delivery_details(page, delivery, filtros):
         disabled=True,
     )
 
+    current_extension = {
+        True: "dwg",
+        False: "xlsx"
+    }
+
+    dropdow5 = ft.Dropdown(
+        options=[
+            ft.dropdown.Option("dwg", content=ft.Text(value="Poligonos", color=ft.Colors.BLACK)),
+            ft.dropdown.Option("xlsx", content=ft.Text(value="Fotos", color=ft.Colors.BLACK)),
+        ],
+        label="Tipo",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        color=ft.Colors.BLACK,
+        bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+        width=300,
+        value=current_extension[delivery['photos'] == "0"]
+        )
+
     view_deliveries = {
         "username": dropdow1, 
         "date": dropdow4, 
@@ -5397,6 +5475,7 @@ def create_page_delivery_details(page, delivery, filtros):
         "warning":ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "delay":dropdow3,
         "photos":ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
+        "type":dropdow5, 
         "dwg":ft.TextField(label="DWG", value=f"{delivery['dwg']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
 
@@ -5469,23 +5548,36 @@ def create_page_delivery_details(page, delivery, filtros):
             data_subproject["username"] = view_deliveries["username"].value
             data_subproject["date"] = view_deliveries["date"].value
             data_subproject["name_subproject"] = view_deliveries["name_subproject"].value
+            data_subproject["type"] = view_deliveries["type"].value
+
+            extension = {
+                "dwg": "image/vnd.dwg",
+                "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
 
 
             date = (data_subproject["date"]).split("/")
-            name_file = f'{view_deliveries["username"].value}_{view_deliveries["name_subproject"].value}_{date[0]}{date[1]}{date[2]}.dwg'
-            response1 = base.delete_storage(local="deliveries", object=f"{name_file}", type="image/vnd.dwg")   
-            response2 = base.delete_delivery(data_subproject)
+            name_file = f'{view_deliveries["username"].value}_{view_deliveries["name_subproject"].value}_{date[0]}{date[1]}{date[2]}.{data_subproject["type"]}'
 
-            if response2.status_code in [200, 204]:
-            
+            response1 = base.delete_storage(local="deliveries", object=f"{name_file}", type=extension[data_subproject["type"]])  
+            if response1.status_code in [200, 204]: 
+                response2 = base.delete_delivery(data_subproject)
+
+                if response2.status_code in [200, 204]:
+                
+                        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+                        snack_bar = ft.SnackBar(content=ft.Text("Entrega excluida"), bgcolor=ft.Colors.GREEN)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+                else:
                     loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
-                    snack_bar = ft.SnackBar(content=ft.Text("Entrega excluida"), bgcolor=ft.Colors.GREEN)
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
             else:
-                loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
-                snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+                snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir arquivo: {response1.text}"), bgcolor=ft.Colors.RED)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
                 page.update()
@@ -5498,17 +5590,24 @@ def create_page_delivery_details(page, delivery, filtros):
 
             data_subproject["username"] = view_deliveries["username"].value
             data_subproject["date"] = view_deliveries["date"].value
+            data_subproject["name_subproject"] = view_deliveries["name_subproject"].value
+            data_subproject["type"] = view_deliveries["type"].value
+
+            extension = {
+                "dwg": "image/vnd.dwg",
+                "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
 
 
             date = (data_subproject["date"]).split("/")
-            name_file = f'{view_deliveries["username"].value}_{view_deliveries["name_subproject"].value}_{date[0]}{date[1]}{date[2]}.dwg'
-            response1 = base.delete_storage(local="deliveries", object=f"{name_file}", type="image/vnd.dwg")
+            name_file = f'{view_deliveries["username"].value}_{view_deliveries["name_subproject"].value}_{date[0]}{date[1]}{date[2]}.{data_subproject["type"]}'
+            response1 = base.delete_storage(local="deliveries", object=f"{name_file}", type=extension[data_subproject["type"]])
             if response1.status_code in [200, 204]:   
-                data_dwg = {"dwg":".", "username": data_subproject["username"], "date": data_subproject["date"] }
+                data_dwg = {"dwg":".", "username": data_subproject["username"], "date": data_subproject["date"], "name_subproject": data_subproject["name_subproject"]}
                 response2 = sp.edit_delivery_data(data_dwg)
                 if response2.status_code in [200, 204]:
                         delivery["dwg"] = "."
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=delivery))
+                        loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=delivery, filtros=filtros))
                         snack_bar = ft.SnackBar(content=ft.Text("Arquivo excluido"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
@@ -5574,7 +5673,7 @@ def create_page_delivery_details(page, delivery, filtros):
                         icon=ft.Icons.UPLOAD,
                         bgcolor=ft.Colors.BLUE,
                         icon_color=ft.Colors.WHITE,
-                        on_click=lambda e: open_gallery(e, type="dwg"),
+                        on_click=lambda e: open_gallery(e, type=view_deliveries["type"].value),
                         ),
                     item[1],
                     ft.IconButton(
@@ -5741,11 +5840,20 @@ def create_page_files(page, filtros=[None]):
         leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
     )
 
+    if dict_profile["permission"] != "adm":
+        project = ((base.get_one_project_data(dict_profile["current_project"])).json())[0]
+        subprojects_list = (project["current_subprojects"]).split(",")
+        get_json = (base.get_all_files_filter(subprojects_list)).json()
+    else:
+        get_json = (base.get_all_files()).json()
+        subprojects_list = (base.get_all_subprojects()).json()
 
-    get_base = base.get_all_files()
-    get_json = get_base.json()
     dicio_projects = {}
-    list_projects = (base.get_all_project_data()).json()
+
+    if dict_profile["permission"] != "adm":
+        list_projects = [project]
+    else:
+        list_projects = (base.get_all_project_data()).json()
 
     for item in list_projects:
 
@@ -5885,12 +5993,17 @@ def create_page_files(page, filtros=[None]):
     for item in list_projects:
         name_projects.append(ft.dropdown.Option(item["name_project"], content=ft.Text(value=item["name_project"], color=ft.Colors.BLACK)))
 
-    subprojects = (base.get_all_subprojects()).json()
+
+    if dict_profile["permission"] != "adm":
+        subprojects = (base.get_all_subprojects_filter(subprojects_list, type="poligonos,fotos")).json()
+    else:
+        subprojects = (base.get_all_subprojects()).json()
     name_subprojects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in subprojects:
         name_subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
-    users = (base.get_all_user_data()).json()
+
+    users = (base.get_frella_user_data()).json()
     name_users = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in users:
         name_users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
@@ -5966,6 +6079,7 @@ def create_page_files(page, filtros=[None]):
                 on_change= lambda e: on_dropdown_change(e, "usuario"),
                 enable_filter=True,
                 editable=True,
+                width=250,
             ),
             ft.Dropdown(
                 color=ft.Colors.BLACK,
@@ -6206,10 +6320,20 @@ def create_page_see_models(page, filtros=[None]):
     dict_profile = page.session.get("profile")
     texttheme1 = textthemes.create_text_theme1()
 
-    get_base = base.get_all_models()
-    get_json = get_base.json()
+    if dict_profile["permission"] != "adm":
+        project = ((base.get_one_project_data(dict_profile["current_project"])).json())[0]
+        subprojects_list = (project["current_subprojects"]).split(",")
+        get_json = (base.get_all_models_filter(subprojects_list)).json()
+    else:
+        get_json = (base.get_all_models()).json()
+        subprojects_list = (base.get_all_subprojects()).json()
+
     dicio_projects = {}
-    list_projects = (base.get_all_project_data()).json()
+
+    if dict_profile["permission"] != "adm":
+        list_projects = [project]
+    else:
+        list_projects = (base.get_all_project_data()).json()
 
     for item in list_projects:
 
@@ -6367,12 +6491,15 @@ def create_page_see_models(page, filtros=[None]):
     for item in list_projects:
         name_projects.append(ft.dropdown.Option(item["name_project"], content=ft.Text(value=item["name_project"], color=ft.Colors.BLACK)))
 
-    subprojects = (base.get_all_subprojects()).json()
+    if dict_profile["permission"] != "adm":
+        subprojects = (base.get_all_subprojects_filter(subprojects_list, type="poligonos")).json()
+    else:
+        subprojects = (base.get_all_subprojects()).json()
     name_subprojects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in subprojects:
         name_subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 
-    users = (base.get_all_user_data()).json()
+    users = (base.get_est_user_data()).json()
     name_users = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in users:
         name_users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
@@ -6452,6 +6579,7 @@ def create_page_see_models(page, filtros=[None]):
                 on_change= lambda e: on_dropdown_change(e, "usuario"),
                 enable_filter=True,
                 editable=True,
+                width=250,
             ),
             ft.Dropdown(
                 color=ft.Colors.BLACK,
@@ -7141,7 +7269,10 @@ def create_page_new_model(page):
     # Campos para exibir os detalhes da entrega
     
     users = []
-    get_users = (sp.get_all_user_data()).json()
+    if dict_profile["permission"] != "adm":
+        get_users = (sp.get_all_user_data_filter_project(dict_profile["current_project"])).json()
+    else:
+        get_users = (sp.get_all_user_data_filter_est()).json()
     for item in get_users:
         users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
 
@@ -7161,11 +7292,14 @@ def create_page_new_model(page):
         disabled=dict_profile["permission"] == "est",
         )
     
-    project = ((sp.get_one_project_data(dict_profile["current_project"])).json())[0]
-    subprojects_list = (project["current_subprojects"]).split(",")
+    if dict_profile["permission"] != "adm":
+        project = ((sp.get_one_project_data(dict_profile["current_project"])).json())[0]
+        subprojects_list = (project["current_subprojects"]).split(",")
+        get_subprojects = (sp.get_all_subprojects_filter(subprojects_list, "poligonos")).json()
+    else:
+        get_subprojects = (sp.get_all_subprojects()).json()
 
     subprojects = []
-    get_subprojects = (sp.get_all_subprojects_filter(subprojects_list)).json()
     for item in get_subprojects:
         subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
 

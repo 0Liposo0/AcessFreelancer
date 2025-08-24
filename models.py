@@ -1226,7 +1226,72 @@ class SupaBase:
 
         return response
     
+    def get_all_user_data_filter_project(self, project):
 
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "current_project":  f"eq.{project}",
+                   "select": "*"
+        }
+
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+    def get_all_user_data_filter_est(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+
+        params = {
+                   "permission":  "in.(est,ldr)",
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+
+    def get_est_user_data(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "permission":  f"neq.{"user"}", 
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
     def get_frella_user_data(self):
 
         headers = {
@@ -1237,6 +1302,31 @@ class SupaBase:
 
         params = {
                    "permission":  f"eq.{"user"}", 
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/users',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+
+    def get_frella_user_data_filter(self, subprojects_list):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        subprojects_str = ",".join([f'"{item}"' for item in subprojects_list])
+        filter_value = f"in.({subprojects_str})"
+
+        params = {
+                   "permission":  f"eq.{"user"}", 
+                   "current_project": filter_value,
                    "select": "*"
         }
 
@@ -1306,7 +1396,7 @@ class SupaBase:
 
         return response
     
-    def get_all_subprojects_filter(self, subprojects_list):
+    def get_all_subprojects_filter(self, subprojects_list, type):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1319,6 +1409,7 @@ class SupaBase:
 
         params = {
             "name_subproject": filter_value,
+            "type": f"in.({type})",
             "select": "*"
         }
 
@@ -1340,6 +1431,28 @@ class SupaBase:
         
         params = { 
                    "project": f"eq.{project}",
+                   "select": "*"        
+                   }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/subprojects',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+    def get_all_subproject_data_type(self, project):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+        
+        params = { 
+                   "project": f"eq.{project}",
+                   "type": "eq.poligonos",
                    "select": "*"        
                    }
 
@@ -1412,6 +1525,30 @@ class SupaBase:
 
         return response
     
+    def get_all_deliverys_filter(self, subprojects_list):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        subprojects_str = ",".join([f'"{item}"' for item in subprojects_list])
+        filter_value = f"in.({subprojects_str})"
+
+        params = { 
+                   "name_subproject": filter_value, 
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/deliverys',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
     def get_all_models(self):
 
         headers = {
@@ -1432,7 +1569,31 @@ class SupaBase:
 
         return response
     
-    def get_all_files(self):#
+    def get_all_models_filter(self, subprojects_list):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        subprojects_str = ",".join([f'"{item}"' for item in subprojects_list])
+        filter_value = f"in.({subprojects_str})"
+
+        params = { 
+                   "subproject": filter_value, 
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/models',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+    def get_all_files(self):
         headers = {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
@@ -1440,6 +1601,29 @@ class SupaBase:
         }
 
         params = {                    
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/files',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
+    def get_all_files_filter(self, subprojects_list):
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        subprojects_str = ",".join([f'"{item}"' for item in subprojects_list])
+        filter_value = f"in.({subprojects_str})"
+
+        params = {     
+                   "subproject": filter_value,                
                    "select": "*"
         }
 
