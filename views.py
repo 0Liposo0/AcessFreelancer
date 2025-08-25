@@ -1594,6 +1594,7 @@ def create_page_project_token(page, project):
         data_project["final_delivery"] = view_project["final_delivery"].value
         data_project["predicted_lots"] = view_project["predicted_lots"].value
         data_project["ecw"] = view_project["ecw"].value
+        data_project["planner"] = view_project["planner"].value
         data_project["preview"] = view_project["preview"].value
         data_project["dwg"] = view_project["dwg"].value
 
@@ -1639,6 +1640,7 @@ def create_page_project_token(page, project):
         "final_delivery": ft.TextField(label="Entrega final", value=get_info2["final_delivery"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "predicted_lots": ft.TextField(label="Lotes Previstos", value=get_info2["predicted_lots"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "ecw": ft.TextField(label="Ortofotos", value=get_info2["ecw"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
+        "planner": ft.TextField(label="Planilha", value=get_info2["planner"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "preview": ft.TextField(label="Prévia", value=get_info2["preview"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
         "dwg": ft.TextField(label="Dwg", value=get_info2["dwg"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
     }
