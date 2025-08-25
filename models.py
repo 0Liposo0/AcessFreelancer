@@ -792,7 +792,7 @@ class LoadingPages:
     def __init__(self, page):
         self.page = page
 
-    def new_loading_page(self, page, call_layout, text="Carregando", route ="/"):
+    def new_loading_page(self, page, call_layout, text="Carregando"):
 
         page.floating_action_button = None
         page.bottom_appbar = None
@@ -840,7 +840,7 @@ class LoadingPages:
             page.remove(loading_text)
 
         page.update()
-        page.go(route)
+       
 
     def new_loading_overlay_page(self, page, call_layout, text="Carregando"):
 

@@ -1369,21 +1369,16 @@ def verificar(username, password, page):
 
             loading.new_loading_page(page=page,
             call_layout=lambda:create_page_user(page),
-            route="user"
             )
 
         elif permission != "adm":
 
             loading.new_loading_page(page=page,
             call_layout=lambda:create_page_files(page),
-            route="files"
             )
 
         else:
-            loading.new_loading_page(page=page,
-            call_layout=lambda:create_page_see_freelancers(page),
-            route="freelancers"
-            )
+            page.go("/freelancers")
         
     else:
         # Exibe mensagem de erro se as credenciais não forem encontradas
@@ -4260,42 +4255,42 @@ def create_page_see_freelancers(page, filtros=[None]):
                                       color=ft.Colors.RED,
                                       col=12,
                                       padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page),route="projects"),
+    btn_projeto = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page)),
                                       text= "Projetos",
                                       color=ft.Colors.GREY,
                                       col=12,
                                       padding=10,)         
-    btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page),route="files"),
+    btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
                                             text= "Arquivos",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page),route="deliveries"),
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
                                             text= "Entregas",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_see_subprojects = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_list_subproject(page),route="subprojects"),
+    btn_see_subprojects = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_list_subproject(page)),
                                             text= "Subprojetos",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_freelancers(page),route="freelancers"),
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_freelancers(page)),
                                             text= "Freelancers",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page),route="models"),
+    btn_see_models = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page)),
                                             text= "Modelos",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page),route="payment"),
+    btn_payment = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_profile = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page, dict_profile["username"], est=True),route="profile"),
+    btn_profile = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page, dict_profile["username"], est=True)),
                                             text= "Perfil",
                                             color=ft.Colors.GREY,
                                             col=12,
@@ -4434,7 +4429,6 @@ def create_page_see_freelancers(page, filtros=[None]):
                                 on_click=lambda e, username=delev['username']: loading.new_loading_page(
                                         page=page,
                                         call_layout=lambda: create_page_freelancer_token(page=page, username=username, filtros=list_filtros),
-                                        route=f"freelancers/{username}"
                                     ),
                                 )),
                             
