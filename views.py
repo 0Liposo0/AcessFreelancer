@@ -6826,7 +6826,6 @@ def create_page_files_details(page):
 
 def create_page_see_models(page):
 
-    print(f"\n modelos chamados")
     base = SupaBase(page=None)
     textthemes = TextTheme()
     dict_profile = page.client_storage.get("profile")

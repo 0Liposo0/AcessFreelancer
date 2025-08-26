@@ -30,24 +30,19 @@ def main(page: ft.Page):
         }
 
     def route_change(e: ft.RouteChangeEvent):
-        print(f"\n route_change chamdo")
         page.on_keyboard_event = None
 
         if page.route in url:
-            print(f"\n url encontrada: {page.route}")
             url[page.route]()   
         else:
-            print(f"\n url não encontrada")
             url["/"]()     
     
     page.on_route_change = route_change
 
     profile = page.client_storage.get("profile")
     if profile:
-        print(f"\n perfil encontrado: {profile}")
         url[page.route]()
     else:
-        print(f"\n perfil não encontrado")
         page.go("/") 
 
 
