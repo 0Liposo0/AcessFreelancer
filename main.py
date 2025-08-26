@@ -12,20 +12,43 @@ def main(page: ft.Page):
     page.bgcolor = ft.Colors.INDIGO_600
     loading = LoadingPages(page)
 
-    def route_change(e: ft.RouteChangeEvent):
-        url = {
+    url = {
             "/": lambda: loading.new_loading_page(page=page, call_layout=lambda: create_page_login(page)),
             "/freelancers": lambda: loading.new_loading_page(page, lambda: create_page_see_freelancers(page)),
+            "/projects": lambda: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page)),
+            "/files": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
+            "/files/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_files_details(page)),
+            "/deliveries": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
+            "/deliveries/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_delivery_details(page)),
+            "/deliveries/insert": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_new_delivery(page)),
+            "/models": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page)),
+            "/models/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_models_details(page)),
+            "/models/insert": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_new_model(page)),
+            "/payment": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
+            "/freelancers/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page)),
+            "/project/user": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_project_token_user(page)),
         }
 
+    def route_change(e: ft.RouteChangeEvent):
+        print(f"\n route_change chamdo")
+        page.on_keyboard_event = None
+
         if page.route in url:
+            print(f"\n url encontrada: {page.route}")
             url[page.route]()   
         else:
+            print(f"\n url não encontrada")
             url["/"]()     
     
     page.on_route_change = route_change
 
-    route_change(ft.RouteChangeEvent(page.route))
+    profile = page.client_storage.get("profile")
+    if profile:
+        print(f"\n perfil encontrado: {profile}")
+        url[page.route]()
+    else:
+        print(f"\n perfil não encontrado")
+        page.go("/") 
 
 
 if __name__ == "__main__":

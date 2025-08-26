@@ -793,6 +793,7 @@ class LoadingPages:
 
     def new_loading_page(self, page, call_layout, text="Carregando"):
 
+        print(f"\n iniciando carregamento: {page.route}")
         page.floating_action_button = None
         page.bottom_appbar = None
         page.clean()

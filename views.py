@@ -1368,9 +1368,7 @@ def verificar(username, password, page):
 
         elif permission != "adm":
 
-            loading.new_loading_page(page=page,
-            call_layout=lambda:create_page_files(page),
-            )
+            page.go("/files")
 
         else:
             page.go("/freelancers")
@@ -6828,7 +6826,7 @@ def create_page_files_details(page):
 
 def create_page_see_models(page):
 
-    loading = LoadingPages(page=page)
+    print(f"\n modelos chamados")
     base = SupaBase(page=None)
     textthemes = TextTheme()
     dict_profile = page.client_storage.get("profile")
