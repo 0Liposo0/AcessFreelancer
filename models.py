@@ -212,7 +212,6 @@ class Web_Image:
             image_url = response.json()[0]["imagem_url"]
             return image_url
         else:
-            print("Erro ao buscar a imagem.")
             return None
         
     def create_web_image(self, src):
@@ -1818,7 +1817,7 @@ class SupaBase:
         geo_objects = Objects(page=None)
         method_map = geo_objects.sp_get_forms_object(name)
 
-        current_profile = page.session.get("profile")
+        current_profile = page.client_storage.get("profile")
 
         response = requests.get(
             f'{self.supabase_url}/rest/v1/form_{object}_{current_profile["city_call_name"]}',
@@ -2210,7 +2209,7 @@ class SupaBase:
             "select": "*"
         }
 
-        current_profile = page.session.get("profile")
+        current_profile = page.client_storage.get("profile")
 
         response = requests.get(
             f'{self.supabase_url}/rest/v1/users',
@@ -2634,7 +2633,7 @@ class Objects:
         data_formatada = data_atual.strftime("%d/%m/%Y")
         id = str(sp.get_os_id(object))
         new_order = id.zfill(4)
-        dict_profile = page.session.get("profile")
+        dict_profile = page.client_storage.get("profile")
 
         def drop_down_menu(value=None, opt1=None, opt2=None, opt3=None, opt4=None, opt5=None, opt6=None):
 

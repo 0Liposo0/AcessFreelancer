@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 def create_page_login(page):
 
+    page.client_storage.clear()
     
     container = []
     page.appbar = None
@@ -111,7 +112,7 @@ def create_page_user(page):
     buttons = Buttons(page)
     sp = SupaBase(page)
     texttheme1 = textthemes.create_text_theme1()
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
 
     
     perfil = ft.Column(
@@ -648,9 +649,8 @@ def create_page_user(page):
                         else:
                             page.overlay.remove(item)
 
-                    print(f" \n Erro ao enviar arquivo: {response2.status_code} - {response2.text} \n")
                     snack_bar = ft.SnackBar(
-                    content=ft.Text(value="Falha ao enviar arquivo", color=ft.Colors.BLACK),
+                    content=ft.Text(value=f"Falha ao enviar arquivo {response2.status_code} - {response2.text}", color=ft.Colors.BLACK),
                     duration=2000,
                     bgcolor=ft.Colors.RED,
                     data="bar",
@@ -975,7 +975,7 @@ def create_page_initial_adm(page):
     sp = SupaBase(page)
     buttons = Buttons(page)
     loading = LoadingPages(page)
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
     
     btn_exit = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)),
                                       text="Logout",
@@ -994,11 +994,6 @@ def create_page_initial_adm(page):
                                             padding=10,)
     btn_see_deliverys = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
                                             text= "Entregas",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_subprojects = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_list_subproject(page)),
-                                            text= "Subprojetos",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
@@ -1021,7 +1016,6 @@ def create_page_initial_adm(page):
     drawer = ft.NavigationDrawer(
         controls=[
             btn_projeto,
-            btn_see_subprojects,
             btn_see_freelancers,
             btn_payment,
             btn_see_file,
@@ -1032,8 +1026,7 @@ def create_page_initial_adm(page):
         )
 
     if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_subprojects) 
+        drawer.controls.remove(btn_projeto)  
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment) 
     
@@ -1356,15 +1349,17 @@ def verificar(username, password, page):
         permission = row["permission"]
         current_project = row["current_project"]
 
-        page.session.set("profile", {
+        page.client_storage.set("profile", {
             "username": username,
             "name": name,
             "permission": permission,
             "current_project": current_project,
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
         })
         
-        page.on_keyboard_event = None
-
         if permission == "user":
 
             loading.new_loading_page(page=page,
@@ -1397,13 +1392,106 @@ def create_page_project(page):
     loading = LoadingPages(page=page)
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1()
+    dict_profile = page.client_storage.get("profile")
+    buttons = Buttons(page)
+
+    def go_url(url):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
+        })
+        page.client_storage.set("profile", profile)
+        page.go(url)
+
+    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
+                                      text="Logout",
+                                      color=ft.Colors.RED,
+                                      col=12,
+                                      padding=10,)
+    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
+                                      text= "Projetos",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,) 
+    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
+                                            text= "Arquivos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
+                                            text= "Entregas",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
+                                            text= "Freelancers",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
+                                            text= "Modelos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
+                                            text= "Financeiro",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    
+    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
+                                      text= "Projeto",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)
+
+
+
+    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
+                                            text= "Perfil",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+
+    drawer = ft.NavigationDrawer(
+    controls=[
+        btn_projeto,
+        btn_projeto_user,
+        btn_see_freelancers,
+        btn_payment,
+        btn_see_file,
+        btn_see_deliverys,
+        btn_see_models,
+        btn_exit,
+        ]
+    )
+    
+    if dict_profile["permission"] != "adm":
+        drawer.controls.remove(btn_projeto) 
+        drawer.controls.remove(btn_see_freelancers) 
+        drawer.controls.remove(btn_payment)
+        drawer.controls.insert(0, btn_profile)
+
+    page.drawer = drawer
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
+        bgcolor=ft.Colors.WHITE70,
+        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
+    )
 
     base = SupaBase(page=None)
     get_base = base.get_projects_data()
     get_json = get_base.json()
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page=page))
+        page.go("/freelancers")
    
 
     history_list = ft.Column(
@@ -1469,17 +1557,7 @@ def create_page_project(page):
 
 
         # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
-        ],
-        
-        
-    )
+
 
     def filtrar_usuarios(e):
         texto = e.control.value.lower().strip()
@@ -1852,13 +1930,108 @@ def create_page_project_token(page, project):
 
     return layout
 
-def create_page_project_token_user(page, project):
+def create_page_project_token_user(page):
 
-    loading = LoadingPages(page=page)
     base = SupaBase(page=page)
     buttons = Buttons(page)
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1()
+    dict_profile = page.client_storage.get("profile")
+    project = dict_profile["current_project"]
+
+
+    buttons = Buttons(page)
+    def go_url(url):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
+        })
+        page.client_storage.set("profile", profile)
+        page.go(url)
+
+    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
+                                      text="Logout",
+                                      color=ft.Colors.RED,
+                                      col=12,
+                                      padding=10,)
+    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
+                                      text= "Projetos",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,) 
+    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
+                                            text= "Arquivos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
+                                            text= "Entregas",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
+                                            text= "Freelancers",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
+                                            text= "Modelos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
+                                            text= "Financeiro",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    
+    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
+                                      text= "Projeto",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)
+
+
+
+    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
+                                            text= "Perfil",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+
+    drawer = ft.NavigationDrawer(
+    controls=[
+        btn_projeto,
+        btn_projeto_user,
+        btn_see_freelancers,
+        btn_payment,
+        btn_see_file,
+        btn_see_deliverys,
+        btn_see_models,
+        btn_exit,
+        ]
+    )
+    
+    if dict_profile["permission"] != "adm":
+        drawer.controls.remove(btn_projeto) 
+        drawer.controls.remove(btn_see_freelancers) 
+        drawer.controls.remove(btn_payment)
+        drawer.controls.insert(0, btn_profile)
+
+    page.drawer = drawer
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
+        bgcolor=ft.Colors.WHITE70,
+        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
+    )
+
     get_base_Project = base.get_one_project_data(project)
     get_info1 = get_base_Project.json()
 
@@ -2631,155 +2804,7 @@ def create_page_subproject(page, project):
 
     return layout
 # Pagina de Subprojetos - Continuação de Projetos
-def create_page_list_subproject(page):#ESTOU MEXENDO NESSE AQUI
 
-    loading = LoadingPages(page=page)
-    textthemes = TextTheme()
-    texttheme1 = textthemes.create_text_theme1()
-
-    base = SupaBase(page=None)
-    get_base = base.get_all_subprojects()
-    get_json = get_base.json()
-
-    def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda:create_page_initial_adm(page=page))
-
-
-    history_list = ft.Column(
-        controls=[
-            ft.Container(
-                padding=0,  
-                expand=True,  
-                theme=texttheme1,
-                content=ft.DataTable(
-                    data_row_max_height=50,
-                    column_spacing=40,  
-                    expand=True,  
-                    columns=[
-                        ft.DataColumn(ft.Text(value="Subprojetos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
-                        ft.DataColumn(ft.Text(value="Lotes_Previstos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)), 
-                        ft.DataColumn(ft.Text(value="Media_Recomendada", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="Projeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="Entrega_Final", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="Editar", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-
-                    ],
-                    rows=[],  
-                ),
-            )
-        ],
-        scroll=ft.ScrollMode.AUTO,  
-        alignment=ft.MainAxisAlignment.CENTER,  
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        expand=True,  
-    )
-
-    for city in get_json: 
-        name_subproject = city["name_subproject"] 
-        predicted_lots = city["predicted_lots"] 
-        deliverys = city["deliverys"] 
-        recommended_medium = city["recommended_medium"] 
-        project = city["project"]  
-        final_delivery = city["final_delivery"] 
-
-        
-        history_list.controls[0].content.rows.append(
-            ft.DataRow(cells=[
-                            ft.DataCell(ft.Text(value=f"{name_subproject}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{predicted_lots}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{recommended_medium}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{project}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{final_delivery}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.IconButton(
-                                icon=ft.Icons.EDIT,
-                                on_click=lambda e, subproject=city: loading.new_loading_page(
-                                    page=page,
-                                    call_layout=lambda: create_page_subproject_token(page=page, subproject=subproject
-                                        
-                                    )
-                                    ),
-                                bgcolor=ft.Colors.BLUE,
-                                icon_color=ft.Colors.WHITE,
-                                ))
-                                        
-                           
-                        ]
-                )
-        )
-        
-        
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
-        ],
-            
-    )
-
-    def filtrar_usuarios(e):
-        texto = e.control.value.lower().strip()
-        
-        for item in history_list.controls[0].content.rows:
-            item.visible = texto in item.cells[0].content.value.lower() if texto else True
-
-        history_list.update()
-
-    # Campo de pesquisa
-    search_field = ft.TextField(
-        label="Pesquisar",
-        text_style=ft.TextStyle(color=ft.Colors.BLACK),
-        hint_text="Digite para pesquisar...",
-        border_color=ft.Colors.BLUE_800,
-        filled=True,
-        bgcolor=ft.Colors.WHITE,
-        width=350,
-        on_change=filtrar_usuarios,
-    )
-
-
-    main_container = ft.Container(
-        content=ft.Column(
-            controls=[
-                ft.Row(
-                    controls=[
-                        ft.Text("Subprojetos", size=35, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=20,
-                ),
-                search_field,
-                ft.Container(
-                    content=history_list,
-                    expand=True,
-                    padding=ft.padding.only(bottom=20)
-                )
-            ],
-            expand=True,
-            scroll=ft.ScrollMode.AUTO,
-            alignment=ft.MainAxisAlignment.START,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            spacing=20
-        ),
-        bgcolor=ft.Colors.WHITE,
-        padding=20,
-        margin=0,
-        border_radius=5,
-        expand=True
-    )
-
-    # Layout da página
-    layout = ft.Column(
-        controls=[main_container],
-        expand=True,
-        scroll=ft.ScrollMode.AUTO
-    )
-
-    return layout
-# Pagina com conteudos de Subprojetos
 def create_page_subproject_token(page, subproject, back_project=None):
 # Pagina de Ficha edital de subprojeto
 
@@ -2791,10 +2816,8 @@ def create_page_subproject_token(page, subproject, back_project=None):
 
 
     def go_back():
-        if back_project != None:
-            loading.new_loading_page(page=page, call_layout=lambda: create_page_subproject(page=page , project=back_project))
-        else:
-            loading.new_loading_page(page=page, call_layout=lambda: create_page_list_subproject(page=page))
+        loading.new_loading_page(page=page, call_layout=lambda: create_page_subproject(page=page , project=back_project))
+        
 
     
     file_selected = []
@@ -2930,7 +2953,13 @@ def create_page_subproject_token(page, subproject, back_project=None):
 
     def go_freelancer(name_freela):
         if name_freela not in [".", ""]:
-            loading.new_loading_page(page=page, call_layout=lambda: create_page_freelancer_token(page=page, username=name_freela))
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "freelancer": name_freela,
+                "filtros": [None]
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/freelancers/token")
         else:
             pass
 
@@ -2962,7 +2991,13 @@ def create_page_subproject_token(page, subproject, back_project=None):
 
     def go_freelancer(name_est):
         if name_est not in [".", ""]:
-            loading.new_loading_page(page=page, call_layout=lambda: create_page_freelancer_token(page=page, username=name_est))
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "freelancer": name_est,
+                "filtros": [None]
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/freelancers/token")
         else:
             pass
 
@@ -3551,12 +3586,12 @@ def create_page_new_delivery(page):
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
     sp = SupaBase(page)
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
 
     # Definir o tema global para garantir que o texto seja preto por padrão
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+        page.go("/deliveries")
 
 
     # AppBar
@@ -3641,7 +3676,7 @@ def create_page_new_delivery(page):
                 response2 = sp.post_to_deliverys_data(data_subproject)
 
                 if response2.status_code in [200, 201]:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+                    page.go("/deliveries")
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
@@ -3660,7 +3695,7 @@ def create_page_new_delivery(page):
             response2 = sp.post_to_deliverys_data(data_subproject)
 
             if response2.status_code in [200, 204]:
-                loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+                page.go("/deliveries")
                 snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
@@ -3814,19 +3849,43 @@ def create_page_new_delivery(page):
         width=300,
         )
 
+    dropdow1.value = dict_profile.get("delivery_username", "")
+    dropdow4.value = dict_profile.get("delivery_date", "")
+    dropdow2.value = dict_profile.get("delivery_subproject", "")
+    dropdow3.value = dict_profile.get("delivery_delay", "")
+    dropdow5.value = dict_profile.get("delivery_type", "")
+
     view_deliveries = {
         "username": dropdow1, 
         "date":dropdow4, 
         "name_subproject":dropdow2,   
-        "polygons":ft.TextField(label="Polígonos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "errors":ft.TextField(label="Erros", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "discount":ft.TextField(label="Descontos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
-        "warning":ft.TextField(label="Advertências", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "polygons":ft.TextField(label="Polígonos", value=dict_profile["delivery_polygons"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "errors":ft.TextField(label="Erros", value=dict_profile["delivery_errors"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "discount":ft.TextField(label="Descontos", value=dict_profile["delivery_discount"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "warning":ft.TextField(label="Advertências", value=dict_profile["delivery_warning"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "delay":dropdow3, 
-        "photos":ft.TextField(label="Fotos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
+        "photos":ft.TextField(label="Fotos", value=dict_profile["delivery_photos"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)), 
         "type":dropdow5, 
         "dwg":ft.TextField(label="DWG", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
+
+    def on_keyboard(e: ft.KeyboardEvent):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "delivery_username": dropdow1.value,
+            "delivery_date": dropdow4.value,
+            "delivery_subproject": dropdow2.value,
+            "delivery_type": dropdow5.value,
+            "delivery_delay": dropdow3.value,
+            "delivery_polygons": view_deliveries["polygons"].value,
+            "delivery_errors": view_deliveries["errors"].value,  
+            "delivery_discount": view_deliveries["discount"].value,  
+            "delivery_warning": view_deliveries["warning"].value,  
+            "delivery_photos": view_deliveries["photos"].value,  
+        })
+        page.client_storage.set("profile", profile)
+
+    page.on_keyboard_event = on_keyboard
 
     def on_file_selected():
 
@@ -3987,12 +4046,98 @@ def create_page_payment(page, month=None):
     sp = SupaBase(page)
     texttheme1 = textthemes.create_text_theme1()
     loading = LoadingPages(page)
+    dict_profile = page.client_storage.get("profile")
+    buttons = Buttons(page)
+    
+    def go_url(url):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
+        })
+        page.client_storage.set("profile", profile)
+        page.go(url)
 
+    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
+                                      text="Logout",
+                                      color=ft.Colors.RED,
+                                      col=12,
+                                      padding=10,)
+    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
+                                      text= "Projetos",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,) 
+    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
+                                            text= "Arquivos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
+                                            text= "Entregas",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
+                                            text= "Freelancers",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
+                                            text= "Modelos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
+                                            text= "Financeiro",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    
+    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
+                                      text= "Projeto",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)
+
+
+
+    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
+                                            text= "Perfil",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+
+    drawer = ft.NavigationDrawer(
+    controls=[
+        btn_projeto,
+        btn_projeto_user,
+        btn_see_freelancers,
+        btn_payment,
+        btn_see_file,
+        btn_see_deliverys,
+        btn_see_models,
+        btn_exit,
+        ]
+    )
+    
+    if dict_profile["permission"] != "adm":
+        drawer.controls.remove(btn_projeto) 
+        drawer.controls.remove(btn_see_freelancers) 
+        drawer.controls.remove(btn_payment)
+        drawer.controls.insert(0, btn_profile)
+
+    page.drawer = drawer
+
+    # AppBar
     page.appbar = ft.AppBar(
         leading_width=40,
         center_title=True,
         title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
         bgcolor=ft.Colors.WHITE70,
+        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
     )
 
     meses_pt_1 = {
@@ -4241,56 +4386,63 @@ def create_page_payment(page, month=None):
 
     return layout
 # Pagina de Status Financeiros
-def create_page_see_freelancers(page, filtros=[None]):
+def create_page_see_freelancers(page):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
     buttons = Buttons(page)
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
+    filtros = dict_profile["freelancers_filter"]
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1()
 
-    btn_exit = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)),
+    def go_url(url):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
+        })
+        page.client_storage.set("profile", profile)
+        page.go(url)
+
+    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
                                       text="Logout",
                                       color=ft.Colors.RED,
                                       col=12,
                                       padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page)),
+    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
                                       text= "Projetos",
                                       color=ft.Colors.GREY,
                                       col=12,
-                                      padding=10,)         
-    btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
+                                      padding=10,) 
+    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
                                             text= "Arquivos",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
                                             text= "Entregas",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_see_subprojects = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_list_subproject(page)),
-                                            text= "Subprojetos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_freelancers(page)),
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
                                             text= "Freelancers",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page)),
+    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
                                             text= "Modelos",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
+    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_profile = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page, dict_profile["username"], est=True)),
+    btn_profile = buttons.create_button(on_click=lambda e: page.go("/freelancers/token"),
                                             text= "Perfil",
                                             color=ft.Colors.GREY,
                                             col=12,
@@ -4299,7 +4451,6 @@ def create_page_see_freelancers(page, filtros=[None]):
     drawer = ft.NavigationDrawer(
     controls=[
         btn_projeto,
-        btn_see_subprojects,
         btn_see_freelancers,
         btn_payment,
         btn_see_file,
@@ -4311,7 +4462,6 @@ def create_page_see_freelancers(page, filtros=[None]):
     
     if dict_profile["permission"] != "adm":
         drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_subprojects) 
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
         drawer.controls.insert(0, btn_profile)
@@ -4374,6 +4524,15 @@ def create_page_see_freelancers(page, filtros=[None]):
 
         project = next((k for k, v in dicio_projects.items() if delev['current_project'] in v), ".")
 
+        def go_token(delev):
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "freelancer": delev['username'],
+                "freelancers_filter": list_filtros
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/freelancers/token")
+
         perfil = ft.Column(
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -4426,10 +4585,7 @@ def create_page_see_freelancers(page, filtros=[None]):
                                 icon=ft.Icons.SEARCH,
                                 bgcolor=ft.Colors.BLUE,
                                 icon_color=ft.Colors.WHITE,
-                                on_click=lambda e, username=delev['username']: loading.new_loading_page(
-                                        page=page,
-                                        call_layout=lambda: create_page_freelancer_token(page=page, username=username, filtros=list_filtros),
-                                    ),
+                                on_click=lambda e, delev=delev: go_token(delev),
                                 )),
                             
                         ]
@@ -4600,18 +4756,26 @@ def create_page_see_freelancers(page, filtros=[None]):
 
     return layout
 
-def create_page_freelancer_token(page, username, filtros, est=False):
+def create_page_freelancer_token(page):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=page)
     buttons = Buttons(page)
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
+    est = dict_profile["permission"] != "adm"
+    if est == False:
+        username = dict_profile["freelancer"]
+    else:
+        username = dict_profile["username"]
     get_base_Project = base.get_user_data(username)
     get_info1 = get_base_Project.json()
     get_info2 = get_info1[0]
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page, filtros=filtros), route="freelancers")
+        if est == True:
+            page.go("/files")
+        else:
+            page.go("/freelancers")
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -4662,7 +4826,6 @@ def create_page_freelancer_token(page, username, filtros, est=False):
                 if response1.status_code == 200 or response1.status_code == 201:
                     response2 = base.edit_user_data(data_project)
                     if response2.status_code in [200, 204]:
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
                         snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
@@ -4682,7 +4845,6 @@ def create_page_freelancer_token(page, username, filtros, est=False):
             else:
                 response = base.edit_user_data(data_project)
                 if response.status_code in [200, 204]:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
@@ -4897,16 +5059,21 @@ def create_page_freelancer_token(page, username, filtros, est=False):
         name_file = f'{view_files["username"].value}.jpg'
         response1 = base.delete_storage(local="freelancers", object=f"{name_file}", type="image/jpeg")   
         response2 = base.delete_user_data(data_subproject)
-
-        if response2.status_code in [200, 204]:
-            loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
-            snack_bar = ft.SnackBar(content=ft.Text("Usuário Excluido"), bgcolor=ft.Colors.GREEN)
-            page.overlay.append(snack_bar)
-            snack_bar.open = True
-            page.update()
+        if response1.status_code in [200, 204]:
+            response2 = base.delete_user_data(data_subproject)
+            if response2.status_code in [200, 204]:
+                page.go("/freelancers")
+                snack_bar = ft.SnackBar(content=ft.Text("Usuário Excluido"), bgcolor=ft.Colors.GREEN)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+            else:
+                snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
         else:
-            loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
-            snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+            snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir arquivo: {response1.text}"), bgcolor=ft.Colors.RED)
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
@@ -4923,7 +5090,6 @@ def create_page_freelancer_token(page, username, filtros, est=False):
             response1 = base.delete_storage(local="freelancers", object=f"{name_file}", type="image/jpeg")   
 
             if response1.status_code in [200, 204]:   
-                loading.new_loading_page(page=page, call_layout=lambda: create_page_freelancer_token(page=page, username=view_files["username"].value))
                 snack_bar = ft.SnackBar(content=ft.Text("Imagem excluida"), bgcolor=ft.Colors.GREEN)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
@@ -5047,17 +5213,111 @@ def create_page_freelancer_token(page, username, filtros, est=False):
         layout.controls[0].controls.pop(2)
         layout.controls[0].controls.pop(1)
 
+
     return layout
 
 
 
-def create_page_see_deliverys(page, filtros=[None]):
+def create_page_see_deliverys(page):
 
-    loading = LoadingPages(page=page)
+    buttons = Buttons(page)
     base = SupaBase(page=None)
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1()
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
+    filtros = dict_profile["deliveries_filter"]
+
+    buttons = Buttons(page)
+    def go_url(url):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
+        })
+        page.client_storage.set("profile", profile)
+        page.go(url)
+
+    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
+                                      text="Logout",
+                                      color=ft.Colors.RED,
+                                      col=12,
+                                      padding=10,)
+    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
+                                      text= "Projetos",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,) 
+    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
+                                            text= "Arquivos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
+                                            text= "Entregas",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
+                                            text= "Freelancers",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
+                                            text= "Modelos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
+                                            text= "Financeiro",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    
+    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
+                                      text= "Projeto",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)
+
+
+
+    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
+                                            text= "Perfil",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+
+    drawer = ft.NavigationDrawer(
+    controls=[
+        btn_projeto,
+        btn_projeto_user,
+        btn_see_freelancers,
+        btn_payment,
+        btn_see_file,
+        btn_see_deliverys,
+        btn_see_models,
+        btn_exit,
+        ]
+    )
+    
+    if dict_profile["permission"] != "adm":
+        drawer.controls.remove(btn_projeto) 
+        drawer.controls.remove(btn_see_freelancers) 
+        drawer.controls.remove(btn_payment)
+        drawer.controls.insert(0, btn_profile)
+
+    page.drawer = drawer
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
+        bgcolor=ft.Colors.WHITE70,
+        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
+    )
 
     if dict_profile["permission"] != "adm":
         project = ((base.get_one_project_data(dict_profile["current_project"])).json())[0]
@@ -5117,6 +5377,16 @@ def create_page_see_deliverys(page, filtros=[None]):
         
         project = next((k for k, v in dicio_projects.items() if delev['name_subproject'] in v), None)
 
+        def go_token(delev):
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "delivery": { **delev, "dwg": delev.get("dwg") or "" },
+                "deliveries_filter": list_filtros
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/deliveries/token")
+
+    
         history_list.controls[0].content.rows.append(
             ft.DataRow(cells=[
                             ft.DataCell(ft.Text(
@@ -5160,10 +5430,7 @@ def create_page_see_deliverys(page, filtros=[None]):
                                 bgcolor=ft.Colors.BLUE,
                                 icon_color=ft.Colors.WHITE,
                                 expand=True,
-                                on_click=lambda e, delivery=delev: loading.new_loading_page(
-                                        page=page,
-                                        call_layout=lambda: create_page_delivery_details(page=page, delivery=delivery, filtros=list_filtros)
-                                    ),
+                                on_click=lambda e, delev=delev: go_token(delev),
                                 )),
                             
                         ]
@@ -5358,6 +5625,24 @@ def create_page_see_deliverys(page, filtros=[None]):
         filtros_ativos = filtros[0]
         aplicar_filtros(update=False)
 
+    def go_insert():
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "deliveries_filter": list_filtros,
+                "delivery_username": "",
+                "delivery_date": "",
+                "delivery_subproject": "",
+                "delivery_type": "",
+                "delivery_delay": "",
+                "delivery_polygons": "",
+                "delivery_errors": "",  
+                "delivery_discount": "",  
+                "delivery_warning": "",  
+                "delivery_photos": "",
+                })
+            page.client_storage.set("profile", profile)
+            page.go("/deliveries/insert")
+
     # Container principal
     main_container = ft.Container(
         content=ft.Column(
@@ -5367,10 +5652,7 @@ def create_page_see_deliverys(page, filtros=[None]):
                     ft.Text("Entregas", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
                     ft.IconButton(
                         icon=ft.Icons.ADD,
-                        on_click=lambda e: loading.new_loading_page(
-                            page=page,
-                            call_layout=lambda: create_page_new_delivery(page=page),
-                            ),
+                        on_click=lambda e: go_insert(),
                         bgcolor=ft.Colors.GREEN,
                         icon_color=ft.Colors.WHITE,
                     )
@@ -5426,17 +5708,18 @@ def create_page_see_deliverys(page, filtros=[None]):
 
     return layout
 # Pagina De Visualização de Entregas
-def create_page_delivery_details(page, delivery, filtros):
+def create_page_delivery_details(page):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
+    delivery = dict_profile["delivery"]
     sp = SupaBase(page)
 
     # Definir o tema global para garantir que o texto seja preto por padrão
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page, filtros=filtros))
+        page.go("/deliveries")
 
 
     # AppBar
@@ -5492,7 +5775,12 @@ def create_page_delivery_details(page, delivery, filtros):
                     response2 = sp.edit_delivery_data(data_subproject)
 
                     if response2.status_code in [200, 204]:
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=data_subproject, filtros=filtros))
+                        profile = page.client_storage.get("profile")
+                        profile.update({
+                            "delivery": data_subproject,
+                        })
+                        page.client_storage.set("profile", profile)
+                        view_deliveries["dwg"].value = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/deliveries//{file_name[0]}"
                         snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
@@ -5511,7 +5799,11 @@ def create_page_delivery_details(page, delivery, filtros):
                 response2 = sp.edit_delivery_data(data_subproject)
 
                 if response2.status_code in [200, 204]:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=data_subproject, filtros=filtros))
+                    profile = page.client_storage.get("profile")
+                    profile.update({
+                        "delivery": data_subproject,
+                    })
+                    page.client_storage.set("profile", profile)
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
@@ -5770,13 +6062,13 @@ def create_page_delivery_details(page, delivery, filtros):
 
                 if response2.status_code in [200, 204]:
                 
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+                        page.go("/deliveries")
                         snack_bar = ft.SnackBar(content=ft.Text("Entrega excluida"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
                         page.update()
                 else:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_see_deliverys(page=page))
+                    page.go("/deliveries")
                     snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
@@ -5811,14 +6103,18 @@ def create_page_delivery_details(page, delivery, filtros):
                 data_dwg = {"dwg":".", "username": data_subproject["username"], "date": data_subproject["date"], "name_subproject": data_subproject["name_subproject"]}
                 response2 = sp.edit_delivery_data(data_dwg)
                 if response2.status_code in [200, 204]:
-                        delivery["dwg"] = "."
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_delivery_details(page=page, delivery=delivery, filtros=filtros))
+                        profile = page.client_storage.get("profile")
+                        profile.update({
+                            "delivery": data_dwg,
+                        })
+                        page.client_storage.set("profile", profile)
+                        view_deliveries["dwg"].value = "."
                         snack_bar = ft.SnackBar(content=ft.Text("Arquivo excluido"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
                         page.update()
                 else:
-                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar tabela: {response2.text}"), bgcolor=ft.Colors.RED)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
@@ -5959,55 +6255,62 @@ def create_page_files(page, filtros=[None]):
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
     buttons = Buttons(page)
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
+    filtros = dict_profile["files_filter"]
 
 
-    btn_exit = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)),
+    def go_url(url):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
+        })
+        page.client_storage.set("profile", profile)
+        page.go(url)
+
+    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
                                       text="Logout",
                                       color=ft.Colors.RED,
                                       col=12,
                                       padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page)),
+    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
                                       text= "Projetos",
                                       color=ft.Colors.GREY,
                                       col=12,
-                                      padding=10,)         
-    btn_projeto_user = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_project_token_user(page, dict_profile["current_project"])),
-                                      text= "Projeto",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,)         
-    btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
+                                      padding=10,) 
+    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
                                             text= "Arquivos",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
                                             text= "Entregas",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_see_subprojects = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_list_subproject(page)),
-                                            text= "Subprojetos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_freelancers(page)),
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
                                             text= "Freelancers",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page)),
+    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
                                             text= "Modelos",
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
+    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
                                             col=12,
-                                            padding=10,)
-    btn_profile = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page, dict_profile["username"], filtros=[None], est=True)),
+                                            padding=10,)    
+    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
+                                      text= "Projeto",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)
+    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
                                             text= "Perfil",
                                             color=ft.Colors.GREY,
                                             col=12,
@@ -6017,7 +6320,6 @@ def create_page_files(page, filtros=[None]):
     controls=[
         btn_projeto,
         btn_projeto_user,
-        btn_see_subprojects,
         btn_see_freelancers,
         btn_payment,
         btn_see_file,
@@ -6029,7 +6331,6 @@ def create_page_files(page, filtros=[None]):
     
     if dict_profile["permission"] != "adm":
         drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_subprojects) 
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
         drawer.controls.insert(0, btn_profile)
@@ -6100,6 +6401,15 @@ def create_page_files(page, filtros=[None]):
 
         project = next((k for k, v in dicio_projects.items() if delev['subproject'] in v), None)
 
+        def go_token(delev):
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "file": delev,
+                "files_filter": list_filtros
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/files/token")
+
         history_list.controls[0].content.rows.append(
             ft.DataRow(cells=[
                             ft.DataCell(ft.Text(
@@ -6143,10 +6453,7 @@ def create_page_files(page, filtros=[None]):
                                 icon=ft.Icons.SEARCH,
                                 bgcolor=ft.Colors.BLUE,
                                 icon_color=ft.Colors.WHITE,
-                                on_click=lambda e, files=delev: loading.new_loading_page(
-                                        page=page,
-                                        call_layout=lambda: create_page_files_details(page=page, files=files, filtros=list_filtros)
-                                    ),
+                                on_click=lambda e, delev=delev: go_token(delev),
                                 )),
                             
                         ]
@@ -6381,16 +6688,17 @@ def create_page_files(page, filtros=[None]):
 
     return layout
 # Pagina de Visualização de Arquivos
-def create_page_files_details(page, files, filtros):
+def create_page_files_details(page):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
+    files = dict_profile["file"]
 
     # Definir o tema global para garantir que o texto seja preto por padrão
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_files(page=page, filtros=filtros))
+        page.go("/files")
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -6404,6 +6712,7 @@ def create_page_files_details(page, files, filtros):
     )
 
     is_editable1 = dict_profile["permission"] != "adm"
+
 
     view_files = {
       
@@ -6436,13 +6745,13 @@ def create_page_files_details(page, files, filtros):
         response2 = base.delete_file_data(data_subproject)
 
         if response2.status_code in [200, 204]:
-            loading.new_loading_page(page=page, call_layout=lambda: create_page_files(page=page))
-            snack_bar = ft.SnackBar(content=ft.Text("Entrega excluida"), bgcolor=ft.Colors.GREEN)
+            page.go("/files")
+            snack_bar = ft.SnackBar(content=ft.Text("Arquivo excluido"), bgcolor=ft.Colors.GREEN)
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
         else:
-            loading.new_loading_page(page=page, call_layout=lambda: create_page_files(page=page))
+            page.go("/files")
             snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
             page.overlay.append(snack_bar)
             snack_bar.open = True
@@ -6517,13 +6826,106 @@ def create_page_files_details(page, files, filtros):
 # Pagina De Visualização de Todas as Informações de Arquivos
 
 
-def create_page_see_models(page, filtros=[None]):
+def create_page_see_models(page):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
     textthemes = TextTheme()
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
+    filtros = dict_profile["models_filter"]
     texttheme1 = textthemes.create_text_theme1()
+
+    buttons = Buttons(page)
+    def go_url(url):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
+        })
+        page.client_storage.set("profile", profile)
+        page.go(url)
+
+    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
+                                      text="Logout",
+                                      color=ft.Colors.RED,
+                                      col=12,
+                                      padding=10,)
+    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
+                                      text= "Projetos",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,) 
+    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
+                                            text= "Arquivos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
+                                            text= "Entregas",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
+                                            text= "Freelancers",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
+                                            text= "Modelos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
+                                            text= "Financeiro",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    
+    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
+                                      text= "Projeto",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)
+
+
+
+    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
+                                            text= "Perfil",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+
+    drawer = ft.NavigationDrawer(
+    controls=[
+        btn_projeto,
+        btn_projeto_user,
+        btn_see_freelancers,
+        btn_payment,
+        btn_see_file,
+        btn_see_deliverys,
+        btn_see_models,
+        btn_exit,
+        ]
+    )
+    
+    if dict_profile["permission"] != "adm":
+        drawer.controls.remove(btn_projeto)  
+        drawer.controls.remove(btn_see_freelancers) 
+        drawer.controls.remove(btn_payment)
+        drawer.controls.insert(0, btn_profile)
+
+    page.drawer = drawer
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
+        bgcolor=ft.Colors.WHITE70,
+        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
+    )
 
     if dict_profile["permission"] != "adm":
         project = ((base.get_one_project_data(dict_profile["current_project"])).json())[0]
@@ -6584,6 +6986,15 @@ def create_page_see_models(page, filtros=[None]):
 
         project = next((k for k, v in dicio_projects.items() if delev['subproject'] in v), None)
         
+        def go_token(delev):
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "model": { **delev, "dwg": delev.get("dwg") or "" },
+                "models_filter": list_filtros
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/models/token")
+
         history_list.controls[0].content.rows.append(
             ft.DataRow(cells=[
                             ft.DataCell(ft.Text(
@@ -6634,10 +7045,7 @@ def create_page_see_models(page, filtros=[None]):
                                 bgcolor=ft.Colors.BLUE,
                                 icon_color=ft.Colors.WHITE,
                                 expand=True,
-                                on_click=lambda e, delivery=delev: loading.new_loading_page(
-                                        page=page,
-                                        call_layout=lambda: create_page_models_details(page=page, model=delivery, filtros=list_filtros)
-                                    ),
+                                on_click=lambda e, delev=delev: go_token(delev),
                                 )),
                             
                         ]
@@ -6833,6 +7241,19 @@ def create_page_see_models(page, filtros=[None]):
         filtros_ativos = filtros[0]
         aplicar_filtros(update=False)
 
+    def go_insert():
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "models_filter": list_filtros,
+                "model_username": "",
+                "model_date": "",
+                "model_subproject": "",
+                "model_polygons": "",
+                "model_numbers": "",
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/models/insert")
+
     # Container principal
     main_container = ft.Container(
         content=ft.Column(
@@ -6842,10 +7263,7 @@ def create_page_see_models(page, filtros=[None]):
                     ft.Text("Modelos", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
                     ft.IconButton(
                         icon=ft.Icons.ADD,
-                        on_click=lambda e: loading.new_loading_page(
-                            page=page,
-                            call_layout=lambda: create_page_new_model(page=page),
-                            ),
+                        on_click=lambda e: go_insert(),
                         bgcolor=ft.Colors.GREEN,
                         icon_color=ft.Colors.WHITE,
                     )
@@ -6898,17 +7316,17 @@ def create_page_see_models(page, filtros=[None]):
 
     return layout
 
-def create_page_models_details(page, model, filtros):
+def create_page_models_details(page):
 
-    loading = LoadingPages(page=page)
     buttons = Buttons(page)
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
+    model = dict_profile["model"]
     sp = SupaBase(page)
 
     # Definir o tema global para garantir que o texto seja preto por padrão
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page, filtros=filtros))
+        page.go("/models")
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -6956,7 +7374,12 @@ def create_page_models_details(page, model, filtros):
                     response2 = sp.edit_model_data(data_subproject)
 
                     if response2.status_code in [200, 204]:
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_models_details(page=page, model=data_subproject, filtros=filtros))
+                        profile = page.client_storage.get("profile")
+                        profile.update({
+                            "model": data_subproject,
+                        })
+                        page.client_storage.set("profile", profile)
+                        view_deliveries["dwg"].value = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/models//{file_name[0]}"
                         snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
@@ -6975,7 +7398,11 @@ def create_page_models_details(page, model, filtros):
                 response2 = sp.edit_model_data(data_subproject)
 
                 if response2.status_code in [200, 204]:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_models_details(page=page, model=data_subproject, filtros=filtros))
+                    profile = page.client_storage.get("profile")
+                    profile.update({
+                        "model": data_subproject,
+                    })
+                    page.client_storage.set("profile", profile)
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
@@ -7165,21 +7592,26 @@ def create_page_models_details(page, model, filtros):
             date = (data_subproject["date"]).split("/")
             name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.dwg'
             response1 = base.delete_storage(local="models", object=f"{name_file}", type="image/vnd.dwg")   
-            response2 = base.delete_model(data_subproject)
-
-            if response2.status_code in [200, 204]:
-            
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
+            if response1.status_code in[200, 204]:
+                response2 = base.delete_model(data_subproject)
+                if response2.status_code in [200, 204]:
+                    page.go("/models")
                     snack_bar = ft.SnackBar(content=ft.Text("Modelo excluido"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
+                else:
+                    page.go("/models")
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+                    page.overlay.append(snack_bar)
+                    snack_bar.open = True
+                    page.update()
             else:
-                loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
-                snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+                snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir arquivo: {response1.text}"), bgcolor=ft.Colors.RED)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
                 page.update()
+
 
     def delete_file(view_deliveries):
 
@@ -7211,14 +7643,18 @@ def create_page_models_details(page, model, filtros):
 
                 response2 = sp.edit_model_data(data_dwg)
                 if response2.status_code in [200, 204]:
-                        model["dwg"] = "."
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_models_details(page=page, model=model, filtros=filtros))
+                        profile = page.client_storage.get("profile")
+                        profile.update({
+                            "model": data_dwg,
+                        })
+                        page.client_storage.set("profile", profile)
+                        view_deliveries["dwg"].value = "."
                         snack_bar = ft.SnackBar(content=ft.Text("Arquivo excluido"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
                         page.update()
                 else:
-                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
+                    snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar tabela: {response2.text}"), bgcolor=ft.Colors.RED)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
@@ -7354,13 +7790,13 @@ def create_page_new_model(page):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
-    dict_profile = page.session.get("profile")
+    dict_profile = page.client_storage.get("profile")
     sp = SupaBase(page)
 
     # Definir o tema global para garantir que o texto seja preto por padrão
 
     def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
+        page.go("/models")
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -7440,7 +7876,7 @@ def create_page_new_model(page):
                 response2 = sp.post_to_models_data(data_subproject)
 
                 if response2.status_code in [200, 201]:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
+                    page.go("/models")
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
@@ -7459,7 +7895,7 @@ def create_page_new_model(page):
             response2 = sp.post_to_models_data(data_subproject)
 
             if response2.status_code in [200, 204]:
-                loading.new_loading_page(page=page, call_layout=lambda: create_page_see_models(page=page))
+                page.go("/models")
                 snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
@@ -7565,14 +8001,32 @@ def create_page_new_model(page):
 
         )
 
+
+    dropdow1.value = dict_profile.get("model_username", "")
+    dropdow4.value = dict_profile.get("model_date", "")
+    dropdow2.value = dict_profile.get("model_subproject", "")
+
     view_deliveries = {
         "username": dropdow1, 
-        "date":dropdow4, 
+        "date": dropdow4, 
         "subproject":dropdow2,   
-        "polygons":ft.TextField(label="Polígonos", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), keyboard_type=ft.KeyboardType.NUMBER), 
-        "numbers":ft.TextField(label="Numeros", value=f"", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), keyboard_type=ft.KeyboardType.NUMBER), 
+        "polygons":ft.TextField(label="Polígonos", value=dict_profile["model_polygons"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), keyboard_type=ft.KeyboardType.NUMBER), 
+        "numbers":ft.TextField(label="Numeros", value=dict_profile["model_numbers"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), keyboard_type=ft.KeyboardType.NUMBER), 
         "dwg":ft.TextField(label="DWG", value=f".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
+
+    def on_keyboard(e: ft.KeyboardEvent):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "model_username": dropdow1.value,
+            "model_date": dropdow4.value,
+            "model_subproject": dropdow2.value,
+            "model_polygons": view_deliveries["polygons"].value,
+            "model_numbers": view_deliveries["numbers"].value,  
+        })
+        page.client_storage.set("profile", profile)
+
+    page.on_keyboard_event = on_keyboard
 
     def on_file_selected():
 
