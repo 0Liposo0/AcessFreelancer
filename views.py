@@ -5393,14 +5393,18 @@ def create_page_see_deliverys(page):
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['date']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['name_subproject']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
@@ -5408,28 +5412,36 @@ def create_page_see_deliverys(page):
                                 color=ft.Colors.BLACK,
                                 expand=True,
                                 data=project
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['polygons']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['photos']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
                                 bgcolor=ft.Colors.BLUE,
                                 icon_color=ft.Colors.WHITE,
                                 expand=True,
                                 on_click=lambda e, delev=delev: go_token(delev),
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             
                         ]
                 )
@@ -6415,38 +6427,50 @@ def create_page_files(page, filtros=[None]):
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['date']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['subproject']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 data=project
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['type']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['amount']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['average']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
                                 bgcolor=ft.Colors.BLUE,
@@ -7000,14 +7024,18 @@ def create_page_see_models(page):
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['date']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['subproject']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
@@ -7015,35 +7043,45 @@ def create_page_see_models(page):
                                 color=ft.Colors.BLACK,
                                 expand=True,
                                 data=project
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['polygons']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{delev['numbers']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.Text(
                                 value=f"{(int((int(delev['numbers']))/((int(delev['polygons']))/100)))}%",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
                                 expand=True,
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
                                 bgcolor=ft.Colors.BLUE,
                                 icon_color=ft.Colors.WHITE,
                                 expand=True,
                                 on_click=lambda e, delev=delev: go_token(delev),
-                                )),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
                             
                         ]
                 )
