@@ -2711,7 +2711,10 @@ def create_page_subproject(page, project):
     for model in get_models:
         if model["subproject"] in list_subprojects:
             models += 1
-            count_poligons = count_poligons + int(model["polygons"])
+            if model["status"] != "Incompleto":
+                count_poligons = count_poligons + int(model["polygons"])
+            else:
+                count_poligons = count_poligons + int(model["numbers"])
             count_unknown = count_unknown + (int(model["polygons"]) - int(model["numbers"]))
 
     if models == 0:
