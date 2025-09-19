@@ -7421,6 +7421,7 @@ def create_page_models_details(page):
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
                         page.update()
+                        page.go("/models")
                     else:
                         snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar dados: {response2.text}"), bgcolor=ft.Colors.RED)
                         page.overlay.append(snack_bar)
@@ -7444,6 +7445,7 @@ def create_page_models_details(page):
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
+                    page.go("/models")
                 else:
                     snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar dados: {response2.text}"), bgcolor=ft.Colors.RED)
                     page.overlay.append(snack_bar)
@@ -7453,7 +7455,9 @@ def create_page_models_details(page):
 
     # Campos para exibir os detalhes da entrega
     
-    is_editable1 = dict_profile["permission"] != "adm"
+    is_editable1 = True 
+    if dict_profile["permission"] != "adm" or model["status"] == "Incompleto":
+        is_editable1 = False
 
     users = []
     get_users = (sp.get_all_user_data()).json()
@@ -7627,7 +7631,16 @@ def create_page_models_details(page):
     fp = ft.FilePicker(on_result=on_image_selected, on_upload=get_uploaded_file_bytes, data="fp")
     page.overlay.append(fp)
 
-    def open_gallery(e, type): 
+    def open_gallery(e, type):
+        dict_profile = page.client_storage.get("profile") 
+        model = dict_profile["model"]
+        if model["dwg"] != ".":
+            snack_bar = ft.SnackBar(content=ft.Text("Arquivo existente, exclua para editar"), bgcolor=ft.Colors.AMBER)
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+            return
+
         fp.pick_files(              
             allow_multiple=False,
         )
@@ -7681,6 +7694,7 @@ def create_page_models_details(page):
             data_subproject["subproject"] = view_deliveries["subproject"].value
             data_subproject["polygons"] = view_deliveries["polygons"].value
             data_subproject["numbers"] = view_deliveries["numbers"].value
+            data_subproject["status"] = view_deliveries["status"].value
 
 
             date = (data_subproject["date"]).split("/")
@@ -7695,6 +7709,7 @@ def create_page_models_details(page):
                     "subproject": data_subproject["subproject"],
                     "polygons": data_subproject["polygons"],
                     "numbers": data_subproject["numbers"],
+                    "status": data_subproject["status"],
                     }
 
 
@@ -7763,7 +7778,7 @@ def create_page_models_details(page):
 
     for item in view_deliveries.items():
         
-        if item[0] == "dwg" and dict_profile["permission"] == "adm":
+        if item[0] == "dwg" and (dict_profile["permission"] == "adm" or model["status"] == "Incompleto"):
             view_column.controls.append(ft.Row(
                 controls=[
                     ft.IconButton(
@@ -7838,8 +7853,12 @@ def create_page_models_details(page):
     )
 
     if dict_profile["permission"] != "adm":
-        layout.controls[0].controls.remove(btn_delete)
-        layout.controls[0].controls.remove(btn_edit)
+        if model["status"] == "Incompleto":
+            layout.controls[0].controls.remove(btn_delete)
+        else:
+            layout.controls[0].controls.remove(btn_delete)
+            layout.controls[0].controls.remove(btn_edit)
+
 
     return layout
 
