@@ -6985,7 +6985,7 @@ def create_page_see_models(page):
                         ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
                         ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="Poligonos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="Numeros", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Status", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="Porcentagem", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                     ],
@@ -7056,7 +7056,7 @@ def create_page_see_models(page):
                                 on_long_press=lambda e, delev=delev: go_token(delev)
                                 ),
                             ft.DataCell(ft.Text(
-                                value=f"{delev['numbers']}",
+                                value=f"{delev['status']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
@@ -7285,6 +7285,7 @@ def create_page_see_models(page):
                 "model_subproject": "",
                 "model_polygons": "",
                 "model_numbers": "",
+                "model_status": "",
             })
             page.client_storage.set("profile", profile)
             page.go("/models/insert")
@@ -7390,6 +7391,7 @@ def create_page_models_details(page):
         data_subproject["subproject"] = view_deliveries["subproject"].value
         data_subproject["polygons"] = view_deliveries["polygons"].value
         data_subproject["numbers"] = view_deliveries["numbers"].value
+        data_subproject["status"] = view_deliveries["status"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
         
 
@@ -7539,6 +7541,25 @@ def create_page_models_details(page):
         disabled=True,
         )
 
+    dropdow5 = ft.Dropdown(
+        value=model["status"],
+        label="Status",
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+        options=[
+            ft.dropdown.Option(f"Completo",
+                                content=ft.Text(value=f"Completo",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"Incompleto",
+                                content=ft.Text(value=f"Incompleto",
+                                                color=ft.Colors.BLACK)),
+        ],
+        color=ft.Colors.BLACK,
+        bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        width=300,
+
+        )
 
     def go_download(view_deliveries, object):
         if view_deliveries[object].value != "." and view_deliveries[object].value != "":
@@ -7550,6 +7571,7 @@ def create_page_models_details(page):
         "subproject":dropdow2, 
         "polygons":ft.TextField(label="Polígonos", value=f"{model['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "numbers":ft.TextField(label="Numeros", value=f"{model['numbers']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
+        "status":dropdow5,
         "dwg":ft.TextField(label="DWG", value=f"{model['dwg']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
 
@@ -7706,7 +7728,7 @@ def create_page_models_details(page):
                                       padding=5,) 
 
     btn_edit = buttons.create_button(on_click=lambda e: editar_dados(view_deliveries),
-                                      text="Editar",
+                                      text="Salvar",
                                       color=ft.Colors.BLUE,
                                       col=7,
                                       padding=5,) 
@@ -7862,6 +7884,7 @@ def create_page_new_model(page):
         data_subproject["subproject"] = view_deliveries["subproject"].value
         data_subproject["polygons"] = view_deliveries["polygons"].value
         data_subproject["numbers"] = view_deliveries["numbers"].value
+        data_subproject["status"] = view_deliveries["status"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
         
 
@@ -8039,6 +8062,24 @@ def create_page_new_model(page):
 
         )
 
+    dropdow5 = ft.Dropdown(
+        label="Status",
+        label_style=ft.TextStyle(color=ft.Colors.BLACK),
+        options=[
+            ft.dropdown.Option(f"Completo",
+                                content=ft.Text(value=f"Completo",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"Incompleto",
+                                content=ft.Text(value=f"Incompleto",
+                                                color=ft.Colors.BLACK)),
+        ],
+        color=ft.Colors.BLACK,
+        bgcolor=ft.Colors.WHITE,
+        fill_color=ft.Colors.WHITE,
+        filled=True,
+        width=300,
+
+        )
 
     dropdow1.value = dict_profile.get("model_username", "")
     dropdow4.value = dict_profile.get("model_date", "")
@@ -8050,6 +8091,7 @@ def create_page_new_model(page):
         "subproject":dropdow2,   
         "polygons":ft.TextField(label="Polígonos", value=dict_profile["model_polygons"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), keyboard_type=ft.KeyboardType.NUMBER), 
         "numbers":ft.TextField(label="Numeros", value=dict_profile["model_numbers"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), keyboard_type=ft.KeyboardType.NUMBER), 
+        "status":dropdow5,
         "dwg":ft.TextField(label="DWG", value=f".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
 
@@ -8061,6 +8103,7 @@ def create_page_new_model(page):
             "model_subproject": dropdow2.value,
             "model_polygons": view_deliveries["polygons"].value,
             "model_numbers": view_deliveries["numbers"].value,  
+            "model_status": view_deliveries["status"].value,  
         })
         page.client_storage.set("profile", profile)
 
