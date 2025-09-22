@@ -1568,6 +1568,26 @@ class SupaBase:
 
         return response
     
+    def get_all_logs(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/logs',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
     def get_all_models_filter(self, subprojects_list):
 
         headers = {
@@ -1855,6 +1875,22 @@ class SupaBase:
 
         response = requests.post(
             f'{self.supabase_url}/rest/v1/models',
+            headers=headers,
+            json=data,
+        )
+
+        return response
+    
+    def post_to_logs_data(self, data):
+            
+        headers= {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+                }
+
+        response = requests.post(
+            f'{self.supabase_url}/rest/v1/logs',
             headers=headers,
             json=data,
         )
@@ -2169,7 +2205,8 @@ class SupaBase:
         )
 
         return response    
-
+    
+  
     def edit_files(self,supa_list):
         headers = {
             "apikey": self.supabase_key,

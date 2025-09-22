@@ -1434,6 +1434,11 @@ def create_page_project(page):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
+    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
+                                            text= "Logs",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
@@ -1463,6 +1468,7 @@ def create_page_project(page):
         btn_see_file,
         btn_see_deliverys,
         btn_see_models,
+        btn_see_logs,
         btn_exit,
         ]
     )
@@ -1471,6 +1477,7 @@ def create_page_project(page):
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
+        drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
 
     page.drawer = drawer
@@ -1980,6 +1987,11 @@ def create_page_project_token_user(page):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
+    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
+                                            text= "Logs",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
@@ -2009,6 +2021,7 @@ def create_page_project_token_user(page):
         btn_see_file,
         btn_see_deliverys,
         btn_see_models,
+        btn_see_logs,
         btn_exit,
         ]
     )
@@ -2017,6 +2030,7 @@ def create_page_project_token_user(page):
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
+        drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
 
     page.drawer = drawer
@@ -4091,6 +4105,11 @@ def create_page_payment(page, month=None):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
+    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
+                                            text= "Logs",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
@@ -4120,6 +4139,7 @@ def create_page_payment(page, month=None):
         btn_see_file,
         btn_see_deliverys,
         btn_see_models,
+        btn_see_logs,
         btn_exit,
         ]
     )
@@ -4128,6 +4148,7 @@ def create_page_payment(page, month=None):
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
+        drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
 
     page.drawer = drawer
@@ -4438,6 +4459,11 @@ def create_page_see_freelancers(page):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
+    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
+                                            text= "Logs",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
@@ -4457,6 +4483,7 @@ def create_page_see_freelancers(page):
         btn_see_file,
         btn_see_deliverys,
         btn_see_models,
+        btn_see_logs,
         btn_exit,
         ]
     )
@@ -4465,6 +4492,7 @@ def create_page_see_freelancers(page):
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
+        drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
 
 
@@ -5270,6 +5298,11 @@ def create_page_see_deliverys(page):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
+    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
+                                            text= "Logs",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
@@ -5299,6 +5332,7 @@ def create_page_see_deliverys(page):
         btn_see_file,
         btn_see_deliverys,
         btn_see_models,
+        btn_see_logs,
         btn_exit,
         ]
     )
@@ -5307,6 +5341,7 @@ def create_page_see_deliverys(page):
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
+        drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
 
     page.drawer = drawer
@@ -6313,6 +6348,11 @@ def create_page_files(page, filtros=[None]):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
+    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
+                                            text= "Logs",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
@@ -6338,6 +6378,7 @@ def create_page_files(page, filtros=[None]):
         btn_see_file,
         btn_see_deliverys,
         btn_see_models,
+        btn_see_logs,
         btn_exit,
         ]
     )
@@ -6346,6 +6387,7 @@ def create_page_files(page, filtros=[None]):
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
+        drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
 
     page.drawer = drawer
@@ -6901,6 +6943,11 @@ def create_page_see_models(page):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
+    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
+                                            text= "Logs",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
                                             color=ft.Colors.GREY,
@@ -6930,6 +6977,7 @@ def create_page_see_models(page):
         btn_see_file,
         btn_see_deliverys,
         btn_see_models,
+        btn_see_logs,
         btn_exit,
         ]
     )
@@ -6938,6 +6986,7 @@ def create_page_see_models(page):
         drawer.controls.remove(btn_projeto)  
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
+        drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
 
     page.drawer = drawer
@@ -6988,8 +7037,10 @@ def create_page_see_models(page):
                         ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
                         ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="Poligonos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="%", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="Status", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="Porcentagem", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Atualização", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Editor", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                     ],
                     rows=[],
@@ -7014,6 +7065,7 @@ def create_page_see_models(page):
             profile = page.client_storage.get("profile")
             profile.update({
                 "model": { **delev, "dwg": delev.get("dwg") or "" },
+                "logs": { **delev, "dwg": delev.get("dwg") or "" },
                 "models_filter": list_filtros
             })
             page.client_storage.set("profile", profile)
@@ -7059,6 +7111,15 @@ def create_page_see_models(page):
                                 on_long_press=lambda e, delev=delev: go_token(delev)
                                 ),
                             ft.DataCell(ft.Text(
+                                value=f"{(int((int(delev['numbers']))/((int(delev['polygons']))/100)))}%",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
+                            ft.DataCell(ft.Text(
                                 value=f"{delev['status']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
@@ -7068,7 +7129,16 @@ def create_page_see_models(page):
                                 on_long_press=lambda e, delev=delev: go_token(delev)
                                 ),
                             ft.DataCell(ft.Text(
-                                value=f"{(int((int(delev['numbers']))/((int(delev['polygons']))/100)))}%",
+                                value=f"{delev['update']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                ),
+                                on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['editor']}",
                                 theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
                                 text_align=ft.TextAlign.CENTER,
                                 color=ft.Colors.BLACK,
@@ -7360,6 +7430,7 @@ def create_page_models_details(page):
     buttons = Buttons(page)
     dict_profile = page.client_storage.get("profile")
     model = dict_profile["model"]
+    logs = dict_profile["logs"]
     sp = SupaBase(page)
 
     # Definir o tema global para garantir que o texto seja preto por padrão
@@ -7387,6 +7458,7 @@ def create_page_models_details(page):
 
     def editar_dados(view_deliveries):
         
+        logs_data = {}
         data_subproject = view_deliveries.copy()
 
         data_subproject["username"] = view_deliveries["username"].value
@@ -7397,6 +7469,33 @@ def create_page_models_details(page):
         data_subproject["status"] = view_deliveries["status"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
         
+        current_day = datetime.now().day
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        current_hour = datetime.now().hour
+        current_minute = datetime.now().minute
+
+        data_subproject["update"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
+        data_subproject["editor"] = dict_profile["username"]
+
+        date = (view_deliveries["date"].value).split("/")
+        name_file = f'{date[0]}{date[1]}{date[2]}'
+
+        logs_data["date"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
+        logs_data["subproject"] = view_deliveries["subproject"].value
+        logs_data["name"] = name_file
+        logs_data["user"] = dict_profile["username"]
+        logs_data["old_polygons"] = logs["polygons"]
+        logs_data["new_polygons"] = view_deliveries["polygons"].value
+        logs_data["old_numbers"] = logs["numbers"]
+        logs_data["new_numbers"] = view_deliveries["numbers"].value
+        logs_data["action"] = f"Edição"
+        logs_data["type"] = f"Modelo"
+
+        if logs["status"] == "Incompleto" and data_subproject["status"] == "Completo":
+            logs_data["action"] = f"Ativação"
+        if logs["status"] == "Completo" and data_subproject["status"] == "Incompleto":
+            logs_data["action"] = f"Inativação"
 
         if any(field == "" or field is None for field in data_subproject.values()):
             snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
@@ -7406,14 +7505,16 @@ def create_page_models_details(page):
         else:
 
             if add_file[0] == True:
-
+            
                 response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "models")
 
                 if response1.status_code == 200 or response1.status_code == 201:
                     data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/models//{file_name[0]}"
                     response2 = sp.edit_model_data(data_subproject)
-
+                    
                     if response2.status_code in [200, 204]:
+                        logs_data["change_file"] = f"Sim"
+                        sp.post_to_logs_data(logs_data)
                         profile = page.client_storage.get("profile")
                         profile.update({
                             "model": data_subproject,
@@ -7439,6 +7540,8 @@ def create_page_models_details(page):
                 response2 = sp.edit_model_data(data_subproject)
 
                 if response2.status_code in [200, 204]:
+                    logs_data["change_file"] = f"Não"
+                    sp.post_to_logs_data(logs_data)
                     profile = page.client_storage.get("profile")
                     profile.update({
                         "model": data_subproject,
@@ -7459,7 +7562,7 @@ def create_page_models_details(page):
     # Campos para exibir os detalhes da entrega
     
     is_editable1 = True 
-    if dict_profile["permission"] != "adm" or model["status"] == "Incompleto":
+    if dict_profile["permission"] == "adm" or model["status"] == "Incompleto":
         is_editable1 = False
 
     users = []
@@ -7579,6 +7682,7 @@ def create_page_models_details(page):
         "polygons":ft.TextField(label="Polígonos", value=f"{model['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "numbers":ft.TextField(label="Numeros", value=f"{model['numbers']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "status":dropdow5,
+        "update":ft.TextField(label="Atualização", value=f"{model['update']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
         "dwg":ft.TextField(label="DWG", value=f"{model['dwg']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
 
@@ -7655,6 +7759,7 @@ def create_page_models_details(page):
 
             base = SupaBase(page=page)
 
+            logs_data = {}
             data_subproject = view_deliveries.copy()
 
             data_subproject["username"] = view_deliveries["username"].value
@@ -7663,11 +7768,35 @@ def create_page_models_details(page):
 
 
             date = (data_subproject["date"]).split("/")
-            name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.dwg'
+            name_file = f'{date[0]}{date[1]}{date[2]}'
             response1 = base.delete_storage(local="models", object=f"{name_file}", type="image/vnd.dwg")   
             if response1.status_code in[200, 204]:
+
+                current_day = datetime.now().day
+                current_month = datetime.now().month
+                current_year = datetime.now().year
+                current_hour = datetime.now().hour
+                current_minute = datetime.now().minute
+
+                date = (view_deliveries["date"].value).split("/")
+                name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.{file_type[0]}'
+                logs_data["name"] = name_file
+
+                logs_data["date"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
+                logs_data["subproject"] = view_deliveries["subproject"].value
+                logs_data["user"] = dict_profile["username"]
+                logs_data["old_polygons"] = logs["polygons"]
+                logs_data["new_polygons"] = view_deliveries["polygons"].value
+                logs_data["old_numbers"] = logs["numbers"]
+                logs_data["new_numbers"] = view_deliveries["numbers"].value
+                logs_data["action"] = f"Exclusão"
+                logs_data["type"] = f"Modelo"
+
+            
                 response2 = base.delete_model(data_subproject)
                 if response2.status_code in [200, 204]:
+                    logs_data["change_file"] = f"Sim"
+                    sp.post_to_logs_data(logs_data)
                     page.go("/models")
                     snack_bar = ft.SnackBar(content=ft.Text("Modelo excluido"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
@@ -7690,6 +7819,7 @@ def create_page_models_details(page):
 
             base = SupaBase(page=page)
 
+            logs_data = {}
             data_subproject = view_deliveries.copy()
 
             data_subproject["username"] = view_deliveries["username"].value
@@ -7701,7 +7831,7 @@ def create_page_models_details(page):
 
 
             date = (data_subproject["date"]).split("/")
-            name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.dwg'
+            name_file = f'{date[0]}{date[1]}{date[2]}'
             response1 = base.delete_storage(local="models", object=f"{name_file}", type="image/vnd.dwg")
             if response1.status_code in [200, 204]:
 
@@ -7714,10 +7844,34 @@ def create_page_models_details(page):
                     "numbers": data_subproject["numbers"],
                     "status": data_subproject["status"],
                     }
+                
+                current_day = datetime.now().day
+                current_month = datetime.now().month
+                current_year = datetime.now().year
+                current_hour = datetime.now().hour
+                current_minute = datetime.now().minute
 
+                data_dwg["update"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
+                data_dwg["editor"] = dict_profile["username"]
+
+                date = (view_deliveries["date"].value).split("/")
+                name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.{file_type[0]}'
+                logs_data["name"] = name_file
+
+                logs_data["date"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
+                logs_data["subproject"] = view_deliveries["subproject"].value
+                logs_data["user"] = dict_profile["username"]
+                logs_data["old_polygons"] = logs["polygons"]
+                logs_data["new_polygons"] = view_deliveries["polygons"].value
+                logs_data["old_numbers"] = logs["numbers"]
+                logs_data["new_numbers"] = view_deliveries["numbers"].value
+                logs_data["action"] = f"Redução"
+                logs_data["type"] = f"Modelo"
 
                 response2 = sp.edit_model_data(data_dwg)
                 if response2.status_code in [200, 204]:
+                        logs_data["change_file"] = f"Sim"
+                        sp.post_to_logs_data(logs_data)
                         profile = page.client_storage.get("profile")
                         profile.update({
                             "model": data_dwg,
@@ -7898,6 +8052,7 @@ def create_page_new_model(page):
 
     def editar_dados(view_deliveries):
         
+        logs_data = {}
         data_subproject = view_deliveries.copy()
 
         data_subproject["id"] = str(sp.get_model_id())
@@ -7908,7 +8063,29 @@ def create_page_new_model(page):
         data_subproject["numbers"] = view_deliveries["numbers"].value
         data_subproject["status"] = view_deliveries["status"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
-        
+
+        current_day = datetime.now().day
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        current_hour = datetime.now().hour
+        current_minute = datetime.now().minute
+
+        data_subproject["update"] = f"{current_day:02d}/{current_month:02d}/{current_year}"
+        data_subproject["editor"] = dict_profile["username"]
+
+        date = (view_deliveries["date"].value).split("/")
+        name_file = f'{date[0]}{date[1]}{date[2]}'
+        logs_data["name"] = name_file
+
+        logs_data["date"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
+        logs_data["subproject"] = f"{view_deliveries["subproject"].value}"
+        logs_data["user"] = dict_profile["username"]
+        logs_data["old_polygons"] = view_deliveries["polygons"].value
+        logs_data["new_polygons"] = view_deliveries["polygons"].value
+        logs_data["old_numbers"] = view_deliveries["numbers"].value
+        logs_data["new_numbers"] = view_deliveries["numbers"].value
+        logs_data["action"] = f"Inserção"
+        logs_data["type"] = f"Modelo"
 
         if any(field == "" or field is None for field in data_subproject.values()):
             snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.YELLOW)
@@ -7956,6 +8133,8 @@ def create_page_new_model(page):
                 response2 = sp.post_to_models_data(data_subproject)
 
                 if response2.status_code in [200, 201]:
+                    logs_data["change_file"] = f"Sim"
+                    sp.post_to_logs_data(logs_data)
                     page.go("/models")
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
@@ -7975,6 +8154,8 @@ def create_page_new_model(page):
             response2 = sp.post_to_models_data(data_subproject)
 
             if response2.status_code in [200, 204]:
+                logs_data["change_file"] = f"Não"
+                sp.post_to_logs_data(logs_data)
                 page.go("/models")
                 snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                 page.overlay.append(snack_bar)
@@ -8289,6 +8470,517 @@ def create_page_new_model(page):
 
 
 
+def create_page_see_logs(page):
+
+    base = SupaBase(page=None)
+    textthemes = TextTheme()
+    dict_profile = page.client_storage.get("profile")
+    filtros = dict_profile["models_filter"]
+    texttheme1 = textthemes.create_text_theme1()
+
+    buttons = Buttons(page)
+    def go_url(url):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
+        })
+        page.client_storage.set("profile", profile)
+        page.go(url)
+
+    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
+                                      text="Logout",
+                                      color=ft.Colors.RED,
+                                      col=12,
+                                      padding=10,)
+    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
+                                      text= "Projetos",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,) 
+    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
+                                            text= "Arquivos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
+                                            text= "Entregas",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
+                                            text= "Freelancers",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
+                                            text= "Modelos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
+                                            text= "Logs",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
+                                            text= "Financeiro",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    
+    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
+                                      text= "Projeto",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)
+
+
+    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
+                                            text= "Perfil",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+
+    drawer = ft.NavigationDrawer(
+    controls=[
+        btn_projeto,
+        btn_projeto_user,
+        btn_see_freelancers,
+        btn_payment,
+        btn_see_file,
+        btn_see_deliverys,
+        btn_see_models,
+        btn_see_logs,
+        btn_exit,
+        ]
+    )
+    
+    if dict_profile["permission"] != "adm":
+        drawer.controls.remove(btn_projeto)  
+        drawer.controls.remove(btn_see_freelancers) 
+        drawer.controls.remove(btn_payment)
+        drawer.controls.remove(btn_see_logs)
+        drawer.controls.insert(0, btn_profile)
+
+    page.drawer = drawer
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
+        bgcolor=ft.Colors.WHITE70,
+        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
+    )
+
+
+    get_json = (base.get_all_logs()).json()
+    subprojects_list = (base.get_all_subprojects()).json()
+
+    dicio_projects = {}
+
+    if dict_profile["permission"] != "adm":
+        list_projects = [project]
+    else:
+        list_projects = (base.get_all_project_data()).json()
+
+    for item in list_projects:
+
+        dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
+
+    # Lista para exibir as entregas
+    history_list = ft.Column(
+        controls=[
+            ft.Container(
+                padding=0,  
+                expand=True,  
+                theme=texttheme1,
+                clip_behavior=ft.ClipBehavior.NONE,  
+                content=ft.DataTable(
+                    data_row_max_height=50,
+                    column_spacing=40,  
+                    expand=True,
+                    expand_loose=True,
+                    columns=[
+                        ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                        ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                        ft.DataColumn(ft.Text(value="Nome", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                        ft.DataColumn(ft.Text(value="Tipo", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Ação", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Poligonos (<)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Poligonos (>)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Números (<)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Números (>)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="Arquivo", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                    ],
+                    rows=[],
+                    clip_behavior=ft.ClipBehavior.NONE  
+                ),
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,  
+        alignment=ft.MainAxisAlignment.CENTER,  
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        expand=True,  
+    )
+
+    list_filtros = [None]
+
+    # Preenche a lista com os dados das entregas
+    for delev in get_json:
+
+        project = next((k for k, v in dicio_projects.items() if delev['subproject'] in v), None)
+        
+
+        history_list.controls[0].content.rows.append(
+            ft.DataRow(cells=[
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['date']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                ),
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['subproject']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                data=project,
+                                ),
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['name']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                data=project,
+                                ),
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['type']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                data=project,
+                                ),
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['user']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                data=project,
+                                ),
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['action']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                ),
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['old_polygons']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                ),
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['new_polygons']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                ),
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['old_numbers']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                ),
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['new_numbers']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                ),
+                                ),
+                            ft.DataCell(ft.Text(
+                                value=f"{delev['change_file']}",
+                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                                text_align=ft.TextAlign.CENTER,
+                                color=ft.Colors.BLACK,
+                                expand=True,
+                                ),
+                                ),
+                            
+                        ]
+                )
+        )
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
+        bgcolor=ft.Colors.WHITE70,
+    )
+
+
+    filtros_ativos = {
+    "dia": None,
+    "mes": None,
+    "ano": None,
+    "usuario": None,
+    "projeto": None,
+    "subprojeto": None
+    }
+
+    # Função para filtrar a tabela
+    def aplicar_filtros(update=True):
+        for item in history_list.controls[0].content.rows:
+            dia = ((item.cells[0].content.value).split("/"))[0]  
+            mes = ((item.cells[0].content.value).split("/"))[1]  
+            ano = ((item.cells[0].content.value).split("/"))[2]  
+            usuario = item.cells[4].content.value
+            project = item.cells[1].content.data  
+            subproject = item.cells[1].content.value  
+
+            # Verifica se o item atende a TODOS os filtros ativos
+            item.visible = (
+                (filtros_ativos["dia"] is None or filtros_ativos["dia"] == dia) and
+                (filtros_ativos["mes"] is None or filtros_ativos["mes"] == mes) and
+                (filtros_ativos["ano"] is None or filtros_ativos["ano"] == ano) and
+                (filtros_ativos["projeto"] is None or filtros_ativos["projeto"] == project) and
+                (filtros_ativos["subprojeto"] is None or filtros_ativos["subprojeto"] == subproject) and
+                (filtros_ativos["usuario"] is None or filtros_ativos["usuario"] == usuario)
+            )
+
+        if update == True:
+            history_list.update()  
+
+        list_filtros[0] = filtros_ativos
+
+    # Função chamada quando um Dropdown muda
+    def on_dropdown_change(e, filtro):
+        filtros_ativos[filtro] = e.control.value if e.control.value and e.control.value != "Nulo" else None
+        aplicar_filtros()
+
+    name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
+    for item in list_projects:
+        name_projects.append(ft.dropdown.Option(item["name_project"], content=ft.Text(value=item["name_project"], color=ft.Colors.BLACK)))
+
+    subprojects = (base.get_all_subprojects()).json()
+    name_subprojects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
+    for item in subprojects:
+        name_subprojects.append(ft.dropdown.Option(item["name_subproject"], content=ft.Text(value=item["name_subproject"], color=ft.Colors.BLACK)))
+
+    users = (base.get_est_user_data()).json()
+    name_users = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
+    for item in users:
+        name_users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
+
+    dias = [
+        ft.dropdown.Option("Nulo", content=ft.Text(value="Nulo", color=ft.Colors.BLACK))
+    ] + [
+        ft.dropdown.Option(
+            str(dia).zfill(2),  # "01", "02", ...
+            content=ft.Text(value=f"{dia:02d}", color=ft.Colors.BLACK)
+        )
+        for dia in range(1, 32)
+    ]
+
+    list_dropdown = ft.Row(
+        controls=[
+            ft.Dropdown(
+                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                label="Dia",
+                expand=True,
+                options=dias,
+                on_change=lambda e: on_dropdown_change(e, "dia"),
+            ),
+            ft.Dropdown(
+                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                label="Mês",
+                expand=True,
+                options=[
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("01", content=ft.Text(value=f"01", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("02", content=ft.Text(value=f"02", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("03", content=ft.Text(value=f"03", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("04", content=ft.Text(value=f"04", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("05", content=ft.Text(value=f"05", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("06", content=ft.Text(value=f"06", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("07", content=ft.Text(value=f"07", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("08", content=ft.Text(value=f"08", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("09", content=ft.Text(value=f"09", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("10", content=ft.Text(value=f"10", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("11", content=ft.Text(value=f"11", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("12", content=ft.Text(value=f"12", color=ft.Colors.BLACK)),  
+                ],
+                on_change=lambda e: on_dropdown_change(e, "mes"),
+            ),
+            ft.Dropdown(
+                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                label="Ano",
+                expand=True,
+                options=[
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("2025", content=ft.Text(value=f"2025", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("2026", content=ft.Text(value=f"2026", color=ft.Colors.BLACK)),
+                ],
+                on_change=lambda e: on_dropdown_change(e, "ano"),
+            ),
+            ft.Dropdown(
+                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                label="Usuário",
+                expand=True,
+                options=name_users,
+                on_change= lambda e: on_dropdown_change(e, "usuario"),
+                enable_filter=True,
+                editable=True,
+                width=250,
+            ),
+            ft.Dropdown(
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label="Projeto",
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                expand=True,
+                options=name_projects,
+                on_change=lambda e: on_dropdown_change(e, "projeto"),
+                enable_filter=True,
+                editable=True,
+                width=250,
+            ),
+            ft.Dropdown(
+                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                label="Subprojeto",
+                expand=True,
+                options=name_subprojects,
+                on_change=lambda e: on_dropdown_change(e, "subprojeto"),
+                enable_filter=True,
+                editable=True,
+                width=250,
+            ),
+        ],
+        expand=True,
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+
+    if filtros[0] != None:
+        
+        list_dropdown.controls[0].value = filtros[0]["dia"]
+        list_dropdown.controls[1].value = filtros[0]["mes"]
+        list_dropdown.controls[2].value = filtros[0]["ano"]
+        list_dropdown.controls[3].value = filtros[0]["usuario"]
+        list_dropdown.controls[4].value = filtros[0]["projeto"]
+        list_dropdown.controls[5].value = filtros[0]["subprojeto"]
+
+        filtros_ativos = filtros[0]
+        aplicar_filtros(update=False)
+
+
+    # Container principal
+    main_container = ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.Row(
+                controls=[
+                    ft.Text("Logs", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                ],  
+                alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=20,
+                ),
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                    controls=[
+                        list_dropdown.controls[4],
+                        list_dropdown.controls[5],
+                        list_dropdown.controls[3],
+                    ]
+                ),
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                    controls=[
+                        list_dropdown.controls[0],
+                        list_dropdown.controls[1],
+                        list_dropdown.controls[2],
+                    ]
+                ),
+                history_list,  # Adiciona a lista de entregas
+            ],
+            expand=True,
+            spacing=20,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+        bgcolor=ft.Colors.WHITE,
+        padding=10,
+        border_radius=10,
+        expand=True,
+        clip_behavior=ft.ClipBehavior.NONE,
+        alignment=ft.alignment.center,
+    )
+
+    # Layout da página
+    layout = ft.Column(
+        controls=[main_container],
+        expand=True,
+        scroll=ft.ScrollMode.AUTO
+    )
+
+    return layout
 
 
 

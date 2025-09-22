@@ -21,6 +21,7 @@ def main(page: ft.Page):
             "/deliveries": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
             "/deliveries/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_delivery_details(page)),
             "/deliveries/insert": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_new_delivery(page)),
+            "/logs": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_logs(page)),
             "/models": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page)),
             "/models/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_models_details(page)),
             "/models/insert": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_new_model(page)),
