@@ -1462,7 +1462,6 @@ def create_page_project(page):
     drawer = ft.NavigationDrawer(
     controls=[
         btn_projeto,
-        btn_projeto_user,
         btn_see_freelancers,
         btn_payment,
         btn_see_file,
@@ -1479,6 +1478,7 @@ def create_page_project(page):
         drawer.controls.remove(btn_payment)
         drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
+        drawer.controls.insert(1, btn_projeto_user)
 
     page.drawer = drawer
 
@@ -2015,7 +2015,6 @@ def create_page_project_token_user(page):
     drawer = ft.NavigationDrawer(
     controls=[
         btn_projeto,
-        btn_projeto_user,
         btn_see_freelancers,
         btn_payment,
         btn_see_file,
@@ -2032,6 +2031,7 @@ def create_page_project_token_user(page):
         drawer.controls.remove(btn_payment)
         drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
+        drawer.controls.insert(1, btn_projeto_user)
 
     page.drawer = drawer
 
@@ -4131,7 +4131,6 @@ def create_page_payment(page, month=None):
     drawer = ft.NavigationDrawer(
     controls=[
         btn_projeto,
-        btn_projeto_user,
         btn_see_freelancers,
         btn_payment,
         btn_see_file,
@@ -4148,6 +4147,7 @@ def create_page_payment(page, month=None):
         drawer.controls.remove(btn_payment)
         drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
+        drawer.controls.insert(1, btn_projeto_user)
 
     page.drawer = drawer
 
@@ -4472,7 +4472,12 @@ def create_page_see_freelancers(page):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-
+    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
+                                      text= "Projeto",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)
+    
     drawer = ft.NavigationDrawer(
     controls=[
         btn_projeto,
@@ -4492,6 +4497,7 @@ def create_page_see_freelancers(page):
         drawer.controls.remove(btn_payment)
         drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
+        drawer.controls.insert(1, btn_projeto_user)
 
 
     page.drawer = drawer
@@ -5324,7 +5330,6 @@ def create_page_see_deliverys(page):
     drawer = ft.NavigationDrawer(
     controls=[
         btn_projeto,
-        btn_projeto_user,
         btn_see_freelancers,
         btn_payment,
         btn_see_file,
@@ -5341,6 +5346,7 @@ def create_page_see_deliverys(page):
         drawer.controls.remove(btn_payment)
         drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
+        drawer.controls.insert(1, btn_projeto_user)
 
     page.drawer = drawer
 
@@ -6370,7 +6376,6 @@ def create_page_files(page, filtros=[None]):
     drawer = ft.NavigationDrawer(
     controls=[
         btn_projeto,
-        btn_projeto_user,
         btn_see_freelancers,
         btn_payment,
         btn_see_file,
@@ -6387,6 +6392,7 @@ def create_page_files(page, filtros=[None]):
         drawer.controls.remove(btn_payment)
         drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
+        drawer.controls.insert(1, btn_projeto_user)
 
     page.drawer = drawer
 
@@ -6969,7 +6975,6 @@ def create_page_see_models(page):
     drawer = ft.NavigationDrawer(
     controls=[
         btn_projeto,
-        btn_projeto_user,
         btn_see_freelancers,
         btn_payment,
         btn_see_file,
@@ -6981,11 +6986,12 @@ def create_page_see_models(page):
     )
     
     if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto)  
+        drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
         drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
+        drawer.controls.insert(1, btn_projeto_user)
 
     page.drawer = drawer
 
@@ -8546,7 +8552,6 @@ def create_page_see_logs(page):
     drawer = ft.NavigationDrawer(
     controls=[
         btn_projeto,
-        btn_projeto_user,
         btn_see_freelancers,
         btn_payment,
         btn_see_file,
@@ -8558,11 +8563,12 @@ def create_page_see_logs(page):
     )
     
     if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto)  
+        drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_freelancers) 
         drawer.controls.remove(btn_payment)
         drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
+        drawer.controls.insert(1, btn_projeto_user)
 
     page.drawer = drawer
 
