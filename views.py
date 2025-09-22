@@ -3764,10 +3764,8 @@ def create_page_new_delivery(page):
         )
     
     users = []
-    if dict_profile["permission"] != "adm":
-        get_users = (sp.get_frella_user_data_filter(subprojects_list)).json()
-    else:
-        get_users = (sp.get_frella_user_data()).json()
+
+    get_users = (sp.get_frella_user_data()).json()
     for item in get_users:
         users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
 
