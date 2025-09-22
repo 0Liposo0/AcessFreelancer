@@ -7766,7 +7766,7 @@ def create_page_models_details(page):
 
 
             date = (data_subproject["date"]).split("/")
-            name_file = f'{date[0]}{date[1]}{date[2]}'
+            name_file = f'{data_subproject["username"]}_{data_subproject["subproject"]}_{date[0]}{date[1]}{date[2]}.dwg'
             response1 = base.delete_storage(local="models", object=f"{name_file}", type="image/vnd.dwg")   
             if response1.status_code in[200, 204]:
 
@@ -7777,8 +7777,8 @@ def create_page_models_details(page):
                 current_minute = datetime.now().minute
 
                 date = (view_deliveries["date"].value).split("/")
-                name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.{file_type[0]}'
-                logs_data["name"] = name_file
+                name_log = f'{date[0]}{date[1]}{date[2]}'
+                logs_data["name"] = name_log
 
                 logs_data["date"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
                 logs_data["subproject"] = view_deliveries["subproject"].value
@@ -7829,7 +7829,8 @@ def create_page_models_details(page):
 
 
             date = (data_subproject["date"]).split("/")
-            name_file = f'{date[0]}{date[1]}{date[2]}'
+            name_file = f'{data_subproject["username"]}_{data_subproject["subproject"]}_{date[0]}{date[1]}{date[2]}.dwg'
+            
             response1 = base.delete_storage(local="models", object=f"{name_file}", type="image/vnd.dwg")
             if response1.status_code in [200, 204]:
 
@@ -7853,8 +7854,8 @@ def create_page_models_details(page):
                 data_dwg["editor"] = dict_profile["username"]
 
                 date = (view_deliveries["date"].value).split("/")
-                name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.{file_type[0]}'
-                logs_data["name"] = name_file
+                name_log = f'{date[0]}{date[1]}{date[2]}'
+                logs_data["name"] = name_log
 
                 logs_data["date"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
                 logs_data["subproject"] = view_deliveries["subproject"].value
