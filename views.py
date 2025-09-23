@@ -2,7 +2,7 @@ import flet as ft
 from models import *
 import flet.map as map
 from datetime import datetime, timedelta
-
+from zoneinfo import ZoneInfo
 
 
 def create_page_login(page):
@@ -234,14 +234,14 @@ def create_page_user(page):
 
     #....................................................................
     # Processo de calculo financeiro
-    current_day = datetime.now().day
-    current_month = datetime.now().month
-    current_year = datetime.now().year
-    cash_month = (datetime.now().month) - 1
-    cash_year = datetime.now().year
+    current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
+    current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
+    current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+    cash_month = (datetime.now(ZoneInfo("America/Sao_Paulo")).month) - 1
+    cash_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
     if current_day > 7:
         current_month += 1
-        cash_month = (datetime.now().month)
+        cash_month = (datetime.now(ZoneInfo("America/Sao_Paulo")).month)
         if current_month == 12:
             current_year += 1
             current_month = 1
@@ -367,16 +367,16 @@ def create_page_user(page):
 
         date = {
             "now": {
-                "now":datetime.now(),
-                "day":datetime.now().day,
-                "month":datetime.now().month,
-                "year":datetime.now().year
+                "now":datetime.now(ZoneInfo("America/Sao_Paulo")),
+                "day":datetime.now(ZoneInfo("America/Sao_Paulo")).day,
+                "month":datetime.now(ZoneInfo("America/Sao_Paulo")).month,
+                "year":datetime.now(ZoneInfo("America/Sao_Paulo")).year
             },
             "before": {
-                "now":datetime.now() - timedelta(days=7),
-                "day":(datetime.now() - timedelta(days=7)).day,
-                "month":(datetime.now() - timedelta(days=7)).month,
-                "year":(datetime.now() - timedelta(days=7)).year
+                "now":datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=7),
+                "day":(datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=7)).day,
+                "month":(datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=7)).month,
+                "year":(datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=7)).year
             },
         }
 
@@ -597,7 +597,7 @@ def create_page_user(page):
                 id = str(sp.get_file_id())
 
                 data_convertida = datetime.strptime(date, "%d/%m/%Y").replace(hour=23, minute=59, second=59)
-                data_atual = datetime.now()
+                data_atual = datetime.now(ZoneInfo("America/Sao_Paulo"))
 
                 if data_convertida < data_atual:
                     delay = "Sim"
@@ -670,7 +670,7 @@ def create_page_user(page):
 
     def on_file_selected():
 
-        data = (datetime.now().strftime("%d/%m/%Y")).replace("/", "")
+        data = (datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y")).replace("/", "")
         
         btn_send = buttons.create_button(on_click=lambda e: send_file(file_selected[0]),
                                     text="Enviar",
@@ -695,8 +695,8 @@ def create_page_user(page):
                                     padding=5
                     )
         
-        next_month = datetime.now().month + 1
-        year = datetime.now().year
+        next_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month + 1
+        year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
         if next_month == 13:
             next_month = 1
             year += 1
@@ -718,17 +718,17 @@ def create_page_user(page):
                                     ft.Dropdown(
                                         value="",
                                         options=[
-                                            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                                                content=ft.Text(value=f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                            ft.dropdown.Option(f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                                                content=ft.Text(value=f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                                                 color=ft.Colors.BLACK)),
-                                            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                                               content=ft.Text(value=f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                            ft.dropdown.Option(f"14/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                                               content=ft.Text(value=f"14/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                                                 color=ft.Colors.BLACK)),
-                                            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                                               content=ft.Text(value=f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                            ft.dropdown.Option(f"21/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                                               content=ft.Text(value=f"21/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                                                 color=ft.Colors.BLACK)),
-                                            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                                               content=ft.Text(value=f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+                                            ft.dropdown.Option(f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                                               content=ft.Text(value=f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                                                 color=ft.Colors.BLACK)),
                                             ft.dropdown.Option(f"07/{next_month:02d}/{year:02d}",
                                                                content=ft.Text(value=f"07/{next_month:02d}/{year:02d}",
@@ -3039,7 +3039,7 @@ def create_page_subproject_token(page, subproject, back_project=None):
 
     def on_file_selected():
 
-        data = (datetime.now().strftime("%d/%m/%Y")).replace("/", "")
+        data = (datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y")).replace("/", "")
 
         name_file = f'{view_subproject["name_subproject"].value}.{file_config[file_type[0]][0]}'
         file_name.clear()
@@ -3803,14 +3803,14 @@ def create_page_new_delivery(page):
         )
     
     
-    next_month = datetime.now().month + 1
-    year1 = datetime.now().year
+    next_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month + 1
+    year1 = datetime.now(ZoneInfo("America/Sao_Paulo")).year
     if next_month == 13:
         next_month = 1
         year1 += 1
 
-    before_month = datetime.now().month - 1
-    year2 = datetime.now().year
+    before_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month - 1
+    year2 = datetime.now(ZoneInfo("America/Sao_Paulo")).year
     if before_month == 0:
         before_month = 12
         year2 -= 1
@@ -3822,17 +3822,17 @@ def create_page_new_delivery(page):
             ft.dropdown.Option(f"28/{before_month:02d}/{year2:02d}",
                                 content=ft.Text(value=f"28/{before_month:02d}/{year2:02d}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"14/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"14/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"21/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"21/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
             ft.dropdown.Option(f"07/{next_month:02d}/{year1:02d}",
                                 content=ft.Text(value=f"07/{next_month:02d}/{year1:02d}",
@@ -4165,8 +4165,8 @@ def create_page_payment(page, month=None):
     7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
     }
 
-    mes_atual = str(meses_pt_1[datetime.now().month])
-    ano_atual = str(datetime.now().year)
+    mes_atual = str(meses_pt_1[datetime.now(ZoneInfo("America/Sao_Paulo")).month])
+    ano_atual = str(datetime.now(ZoneInfo("America/Sao_Paulo")).year)
 
     if month == None:
         month = mes_atual
@@ -5947,14 +5947,14 @@ def create_page_delivery_details(page):
         )
 
 
-    next_month = datetime.now().month + 1
-    year1 = datetime.now().year
+    next_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month + 1
+    year1 = datetime.now(ZoneInfo("America/Sao_Paulo")).year
     if next_month == 13:
         next_month = 1
         year1 += 1
 
-    before_month = datetime.now().month - 1
-    year2 = datetime.now().year
+    before_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month - 1
+    year2 = datetime.now(ZoneInfo("America/Sao_Paulo")).year
     if before_month == 0:
         before_month = 12
         year2 -= 1
@@ -5967,17 +5967,17 @@ def create_page_delivery_details(page):
             ft.dropdown.Option(f"28/{before_month:02d}/{year2:02d}",
                                 content=ft.Text(value=f"28/{before_month:02d}/{year2:02d}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"14/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"14/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"21/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"21/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
             ft.dropdown.Option(f"07/{next_month:02d}/{year1:02d}",
                                 content=ft.Text(value=f"07/{next_month:02d}/{year1:02d}",
@@ -7473,11 +7473,11 @@ def create_page_models_details(page):
         data_subproject["status"] = view_deliveries["status"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
         
-        current_day = datetime.now().day
-        current_month = datetime.now().month
-        current_year = datetime.now().year
-        current_hour = datetime.now().hour
-        current_minute = datetime.now().minute
+        current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
+        current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
+        current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+        current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
+        current_minute = datetime.now(ZoneInfo("America/Sao_Paulo")).minute
 
         data_subproject["update"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
         data_subproject["editor"] = dict_profile["username"]
@@ -7611,14 +7611,14 @@ def create_page_models_details(page):
         disabled=True,
         )
     
-    next_month = datetime.now().month + 1
-    year1 = datetime.now().year
+    next_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month + 1
+    year1 = datetime.now(ZoneInfo("America/Sao_Paulo")).year
     if next_month == 13:
         next_month = 1
         year1 += 1
 
-    before_month = datetime.now().month - 1
-    year2 = datetime.now().year
+    before_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month - 1
+    year2 = datetime.now(ZoneInfo("America/Sao_Paulo")).year
     if before_month == 0:
         before_month = 12
         year2 -= 1
@@ -7631,17 +7631,17 @@ def create_page_models_details(page):
             ft.dropdown.Option(f"28/{before_month:02d}/{year2:02d}",
                                 content=ft.Text(value=f"28/{before_month:02d}/{year2:02d}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"14/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"14/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"21/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"21/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
             ft.dropdown.Option(f"07/{next_month:02d}/{year1:02d}",
                                 content=ft.Text(value=f"07/{next_month:02d}/{year1:02d}",
@@ -7776,11 +7776,11 @@ def create_page_models_details(page):
             response1 = base.delete_storage(local="models", object=f"{name_file}", type="image/vnd.dwg")   
             if response1.status_code in[200, 204]:
 
-                current_day = datetime.now().day
-                current_month = datetime.now().month
-                current_year = datetime.now().year
-                current_hour = datetime.now().hour
-                current_minute = datetime.now().minute
+                current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
+                current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
+                current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+                current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
+                current_minute = datetime.now(ZoneInfo("America/Sao_Paulo")).minute
 
                 date = (view_deliveries["date"].value).split("/")
                 name_log = f'{date[0]}{date[1]}{date[2]}'
@@ -7850,11 +7850,11 @@ def create_page_models_details(page):
                     "status": data_subproject["status"],
                     }
                 
-                current_day = datetime.now().day
-                current_month = datetime.now().month
-                current_year = datetime.now().year
-                current_hour = datetime.now().hour
-                current_minute = datetime.now().minute
+                current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
+                current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
+                current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+                current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
+                current_minute = datetime.now(ZoneInfo("America/Sao_Paulo")).minute
 
                 data_dwg["update"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
                 data_dwg["editor"] = dict_profile["username"]
@@ -8069,11 +8069,11 @@ def create_page_new_model(page):
         data_subproject["status"] = view_deliveries["status"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
 
-        current_day = datetime.now().day
-        current_month = datetime.now().month
-        current_year = datetime.now().year
-        current_hour = datetime.now().hour
-        current_minute = datetime.now().minute
+        current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
+        current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
+        current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+        current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
+        current_minute = datetime.now(ZoneInfo("America/Sao_Paulo")).minute
 
         data_subproject["update"] = f"{current_day:02d}/{current_month:02d}/{current_year}"
         data_subproject["editor"] = dict_profile["username"]
@@ -8224,14 +8224,14 @@ def create_page_new_model(page):
         editable=True,
         )
     
-    next_month = datetime.now().month + 1
-    year1 = datetime.now().year
+    next_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month + 1
+    year1 = datetime.now(ZoneInfo("America/Sao_Paulo")).year
     if next_month == 13:
         next_month = 1
         year1 += 1
 
-    before_month = datetime.now().month - 1
-    year2 = datetime.now().year
+    before_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month - 1
+    year2 = datetime.now(ZoneInfo("America/Sao_Paulo")).year
     if before_month == 0:
         before_month = 12
         year2 -= 1
@@ -8246,17 +8246,17 @@ def create_page_new_model(page):
             ft.dropdown.Option(f"28/{before_month:02d}/{year2:02d}",
                                 content=ft.Text(value=f"28/{before_month:02d}/{year2:02d}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"07/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"14/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"14/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"14/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"21/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"21/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"21/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
-            ft.dropdown.Option(f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
-                                content=ft.Text(value=f"28/{datetime.now().strftime("%m")}/{datetime.now().year}",
+            ft.dropdown.Option(f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
+                                content=ft.Text(value=f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                 color=ft.Colors.BLACK)),
             ft.dropdown.Option(f"07/{next_month:02d}/{year1:02d}",
                                 content=ft.Text(value=f"07/{next_month:02d}/{year1:02d}",

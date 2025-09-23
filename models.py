@@ -2666,7 +2666,7 @@ class Objects:
         sp = SupaBase(self.page)
         textfields = TextField(self.page)
 
-        data_atual = datetime.now()
+        data_atual = datetime.now(ZoneInfo("America/Sao_Paulo"))
         data_formatada = data_atual.strftime("%d/%m/%Y")
         id = str(sp.get_os_id(object))
         new_order = id.zfill(4)
