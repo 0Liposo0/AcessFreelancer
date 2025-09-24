@@ -2745,19 +2745,32 @@ def create_page_subproject(page, project):
         return image
 
     get_models = ((base.get_all_models()).json())
+    get_deliveries = ((base.get_all_deliverys()).json())
+    get_files = ((base.get_all_files()).json())
 
     count_poligons = 0
     count_unknown = 0
     models = 0
+    complete = 0
+    complete_numbers = 0
+    incomplete = 0
+    incomplete_numbers = 0
+    deliveries = 0
+    files = 0
 
     for model in get_models:
         if model["subproject"] in list_subprojects:
             models += 1
             if model["status"] != "Incompleto":
+                complete += 1
+                complete_numbers += int(model["numbers"])
                 count_poligons = count_poligons + int(model["polygons"])
+                count_unknown = count_unknown + (int(model["polygons"]) - int(model["numbers"]))
             else:
+                incomplete += 1
+                incomplete_numbers += int(model["numbers"])
                 count_poligons = count_poligons + int(model["numbers"])
-            count_unknown = count_unknown + (int(model["polygons"]) - int(model["numbers"]))
+                count_unknown = count_unknown + 0
 
     if models == 0:
         text_poligons = ft.Text(value=f"0 / {get_info2["predicted_lots"]} ({count_poligons/(int(get_info2["predicted_lots"])/100):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
@@ -2767,6 +2780,15 @@ def create_page_subproject(page, project):
         text_poligons = ft.Text(value=f"Imóveis: {count_poligons} / {get_info2["predicted_lots"]} ({count_poligons/(int(get_info2["predicted_lots"])/100):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
         text_regular = ft.Text(value=f"Regulares e Prefeitura: {count_poligons - count_unknown}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
         text_unknown = ft.Text(value=f"Dúvidas: {count_unknown} ({(count_unknown/(count_poligons/100)):.0f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+
+    for delivery in get_deliveries:
+        if delivery["name_subproject"] in list_subprojects:
+            deliveries += 1
+
+    for delivery in get_files:
+        if delivery["subproject"] in list_subprojects:
+            files += 1
+
 
     preview_image = ft.Container(
         content=ft.Column(
@@ -2795,9 +2817,14 @@ def create_page_subproject(page, project):
                     border_radius=ft.border_radius.all(20),
                     clip_behavior=ft.ClipBehavior.HARD_EDGE,
                 ),
+                ft.Text(value=f"Inicio: {get_info2["start"]}     Etapa 1: {get_info2["final_delivery"]}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
                 text_poligons,
                 text_regular,
                 text_unknown,
+                ft.Text(value=f"{deliveries} entregas de {files} arquivos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
+                ft.Text(value=f"{models} modelos de {deliveries} entregas", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
+                ft.Text(value=f"Completos: {complete} ({complete_numbers})    Incompletos: {incomplete} ({incomplete_numbers})", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
+                ft.Text(value=f"Final: {get_info2["final"]}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
