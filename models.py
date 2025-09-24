@@ -4,7 +4,7 @@ import flet.map as map
 from datetime import datetime
 from collections import defaultdict
 from datetime import datetime
-
+from zoneinfo import ZoneInfo
 
 
 class Poste:
@@ -3295,8 +3295,8 @@ class Objects:
 
         dicio_view_object = {
 
-            "Poligonos (x0,60)": ft.Text(value=f"{polygons}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
-            "Fotos 360 (x0,20)": ft.Text(value=f"{photos}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
+            "Poligonos": ft.Text(value=f"{polygons}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
+            "Fotos 360": ft.Text(value=f"{photos}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
             "Total": ft.Text(value=f"R$ {total}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
         }
 

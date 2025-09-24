@@ -160,9 +160,11 @@ def create_page_user(page):
         date = row["date"]
         name_subproject = row["name_subproject"]
         polygons = row["polygons"]
+        value_polygons = row["value_polygons"]
         errors = row["errors"]
         discount = row["discount"]
         photos = row["photos"]
+        value_photos = row["value_photos"]
         delay = row["delay"]
         dwg = row["dwg"]
 
@@ -180,8 +182,8 @@ def create_page_user(page):
         linha = ft.DataRow(cells=[
                             ft.DataCell(ft.Text(value=date, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=name_subproject, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=polygons, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=photos, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=f"{polygons}__({value_polygons})", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=f"{photos}__({value_photos})", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=errors, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=discount, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=delay, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
@@ -237,8 +239,10 @@ def create_page_user(page):
     current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
     current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
     current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+
     cash_month = (datetime.now(ZoneInfo("America/Sao_Paulo")).month) - 1
-    cash_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+    cash_year = current_year
+
     if current_day > 7:
         current_month += 1
         cash_month = (datetime.now(ZoneInfo("America/Sao_Paulo")).month)
@@ -256,10 +260,11 @@ def create_page_user(page):
     cash_total_errors = 0
     cash_total_photos = 0
     cash_number_total_deliverys = 0
-    delivery_07 = [0, 0]
-    delivery_14 = [0, 0]
-    delivery_21 = [0, 0]
-    delivery_28 = [0, 0]
+    #Respectivamente, Qdt de Poligonos, Qdt de Fotos, Valor poligonos, Valor Fotos
+    delivery_07 = [0, 0, 0, 0]
+    delivery_14 = [0, 0, 0, 0]
+    delivery_21 = [0, 0, 0, 0]
+    delivery_28 = [0, 0, 0, 0]
 
     if dict_profile["current_project"] not in [".", "", None]:
         for row in data_total_deliverys:
@@ -270,6 +275,8 @@ def create_page_user(page):
                 discount = row["discount"]
                 delay = row["delay"]
                 photos = row["photos"]
+                value_polygons = float(row["value_polygons"])
+                value_photos = float(row["value_photos"])
                 username = row["username"]
 
                 data_obj = datetime.strptime(date, "%d/%m/%Y")
@@ -284,8 +291,14 @@ def create_page_user(page):
                     def add_polygons(delivery, polygons):
                         delivery[0] = polygons
 
+                    def add_value_polygons(delivery, value):
+                        delivery[2] = value
+
                     def add_photos(delivery, photos):
                         delivery[1] = photos
+
+                    def add_value_photos(delivery, value):
+                        delivery[3] = value
 
                     dicio1 = {
                         7: lambda: add_polygons(delivery_07, int(polygons)),
@@ -299,9 +312,24 @@ def create_page_user(page):
                         21: lambda: add_photos(delivery_21, int(photos)),
                         28: lambda: add_photos(delivery_28, int(photos)),
                     }
+                    dicio3 = {
+                        7: lambda: add_value_polygons(delivery_07, float(value_polygons)),
+                        14: lambda: add_value_polygons(delivery_14, float(value_polygons)),
+                        21: lambda: add_value_polygons(delivery_21, float(value_polygons)),
+                        28: lambda: add_value_polygons(delivery_28, float(value_polygons)),
+                    }
+                    dicio4 = {
+                        7: lambda: add_value_photos(delivery_07, float(value_photos)),
+                        14: lambda: add_value_photos(delivery_14, float(value_photos)),
+                        21: lambda: add_value_photos(delivery_21, float(value_photos)),
+                        28: lambda: add_value_photos(delivery_28, float(value_photos)),
+                    }
 
                     call_function1 = dicio1.get(data_obj.day, lambda: None)()
                     call_function2 = dicio2.get(data_obj.day, lambda: None)()
+                    call_function3 = dicio3.get(data_obj.day, lambda: None)()
+                    call_function4 = dicio4.get(data_obj.day, lambda: None)()
+
                 else:
                     pass
                 
@@ -343,8 +371,8 @@ def create_page_user(page):
     #....................................................................
     # Atualizando dados financeiros
 
-    total_cash_polygons = float((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]) * 0.60)
-    total_cash_photos = float((delivery_07[1]+delivery_14[1]+delivery_21[1]+delivery_28[1]) * 0.20)
+    total_cash_polygons = float((delivery_07[0] * delivery_07[2]) + (delivery_14[0] * delivery_14[2]) + (delivery_21[0] * delivery_21[2]) + (delivery_28[0] * delivery_28[2]))
+    total_cash_photos = float((delivery_07[1] * delivery_07[3]) + (delivery_14[1] * delivery_14[3]) + (delivery_21[1] * delivery_21[3]) + (delivery_28[1] * delivery_28[3]))
     total_cash = f"{(total_cash_polygons + total_cash_photos):.2f}"
     total_cash_polygons_made = int((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]))
     total_cash_photos_made = int((delivery_07[1]+delivery_14[1]+delivery_21[1]+delivery_28[1]))
@@ -3498,6 +3526,8 @@ def create_page_new_freelancer(page):
     dropdow3 = ft.Dropdown(
         options=[
             ft.dropdown.Option("adm"),
+            ft.dropdown.Option("ldr"),
+            ft.dropdown.Option("est"),
             ft.dropdown.Option("user"),
         ],
         label="Permissão",
@@ -3527,6 +3557,8 @@ def create_page_new_freelancer(page):
         data_subproject["payment"] = view_user["payment"].value
         data_subproject["email"] = view_user["email"].value
         data_subproject["permission"] = view_user["permission"].value
+        data_subproject["value_polygons"] = f"0.60"
+        data_subproject["value_photos"] = f"0.20"
         data_subproject["weekly_deliveries"] = "0"
         data_subproject["total_deliverys"] = "0"
         data_subproject["polygons_made"] = "0"
@@ -3631,21 +3663,26 @@ def create_page_new_delivery(page):
         
         data_subproject = view_deliveries.copy()
 
+        user = ((sp.get_user_data(users=view_deliveries["username"].value)).json())[0]
+
+        print(f"\n {user} \n")
+
         data_subproject["id"] = str(sp.get_delivery_id())
         data_subproject["username"] = view_deliveries["username"].value
         data_subproject["date"] = view_deliveries["date"].value
         data_subproject["name_subproject"] = view_deliveries["name_subproject"].value
         data_subproject["polygons"] = view_deliveries["polygons"].value
+        data_subproject["value_polygons"] = user["value_polygons"]
         data_subproject["errors"] = view_deliveries["errors"].value
         data_subproject["discount"] = view_deliveries["discount"].value
         data_subproject["warning"] = view_deliveries["warning"].value
         data_subproject["delay"] = view_deliveries["delay"].value
         data_subproject["photos"] = view_deliveries["photos"].value
+        data_subproject["value_photos"] = user["value_photos"]
         data_subproject["dwg"] = view_deliveries["dwg"].value
 
         del data_subproject["type"]
         
-
         if any(field == "" or field is None for field in data_subproject.values()):
             snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.YELLOW)
             page.overlay.append(snack_bar)
@@ -4182,7 +4219,9 @@ def create_page_payment(page, month=None):
         date = row["date"]
         name_subproject = row["name_subproject"]
         polygons = row["polygons"]
+        value_polygons = row["value_polygons"]
         photos = row["photos"]
+        value_photos = row["value_photos"]
         errors = row["errors"]
         discount = row["discount"]
         delay = row["delay"]
@@ -4195,7 +4234,9 @@ def create_page_payment(page, month=None):
                                     "date": date,
                                     "name_subproject": name_subproject,
                                     "polygons": polygons,
+                                    "value_polygons": value_polygons,
                                     "photos": photos,
+                                    "value_photos": value_photos,
                                     "errors": errors,
                                     "discount": discount,
                                     "delay": delay,
@@ -4251,7 +4292,6 @@ def create_page_payment(page, month=None):
 
         name = row1["name"]
         username = row1["username"]
-        payment = row1["payment"]
 
         data_total_deliverys = []
 
@@ -4264,19 +4304,21 @@ def create_page_payment(page, month=None):
         total_errors = 0
         total_photos = 0
         number_total_deliverys = 0
-        delivery_07 = [0, 0]
-        delivery_14 = [0, 0]
-        delivery_21 = [0, 0]
-        delivery_28 = [0, 0]
+        delivery_07 = [0, 0, 0, 0]
+        delivery_14 = [0, 0, 0, 0]
+        delivery_21 = [0, 0, 0, 0]
+        delivery_28 = [0, 0, 0, 0]
 
         for row in data_total_deliverys:
 
             date = row["date"]
             polygons = row["polygons"]
+            value_polygons = row["value_polygons"]
             errors = row["errors"]
             discount = row["discount"]
             delay = row["delay"]
             photos = row["photos"]
+            value_photos = row["value_photos"]
 
             data_obj = datetime.strptime(date, "%d/%m/%Y")
 
@@ -4289,10 +4331,16 @@ def create_page_payment(page, month=None):
 
 
                 def add_polygons(delivery, polygons):
-                    delivery[0] = polygons
+                        delivery[0] = polygons
+
+                def add_value_polygons(delivery, value):
+                    delivery[2] = value
 
                 def add_photos(delivery, photos):
                     delivery[1] = photos
+
+                def add_value_photos(delivery, value):
+                    delivery[3] = value
 
                 dicio1 = {
                     7: lambda: add_polygons(delivery_07, int(polygons)),
@@ -4306,24 +4354,38 @@ def create_page_payment(page, month=None):
                     21: lambda: add_photos(delivery_21, int(photos)),
                     28: lambda: add_photos(delivery_28, int(photos)),
                 }
+                dicio3 = {
+                    7: lambda: add_value_polygons(delivery_07, float(value_polygons)),
+                    14: lambda: add_value_polygons(delivery_14, float(value_polygons)),
+                    21: lambda: add_value_polygons(delivery_21, float(value_polygons)),
+                    28: lambda: add_value_polygons(delivery_28, float(value_polygons)),
+                }
+                dicio4 = {
+                    7: lambda: add_value_photos(delivery_07, float(value_photos)),
+                    14: lambda: add_value_photos(delivery_14, float(value_photos)),
+                    21: lambda: add_value_photos(delivery_21, float(value_photos)),
+                    28: lambda: add_value_photos(delivery_28, float(value_photos)),
+                }
 
                 call_function1 = dicio1.get(data_obj.day, lambda: None)()
                 call_function2 = dicio2.get(data_obj.day, lambda: None)()
+                call_function3 = dicio3.get(data_obj.day, lambda: None)()
+                call_function4 = dicio4.get(data_obj.day, lambda: None)()
 
  
-        total = float((delivery_07[0]+delivery_14[0]+delivery_21[0]+delivery_28[0]) * 0.60) + (float((delivery_07[1]+delivery_14[1]+delivery_21[1]+delivery_28[1]) * 0.20))
-        total_format = format(total, ".2f")
+        total_polygons = float((delivery_07[0] * delivery_07[2]) + (delivery_14[0] * delivery_14[2]) + (delivery_21[0] * delivery_21[2]) + (delivery_28[0] * delivery_28[2]))
+        total_photos = float((delivery_07[1] * delivery_07[3]) + (delivery_14[1] * delivery_14[3]) + (delivery_21[1] * delivery_21[3]) + (delivery_28[1] * delivery_28[3]))
+        total_format = format((total_polygons + total_photos), ".2f")
         
 
         if number_total_deliverys > 0:
 
             linha = ft.DataRow(cells=[
                             ft.DataCell(ft.Text(value=name, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=payment, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{delivery_07[0]} / {delivery_07[1]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{delivery_14[0]} / {delivery_14[1]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{delivery_21[0]} / {delivery_21[1]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{delivery_28[0]} / {delivery_28[1]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=f"{delivery_07[0]} / {delivery_07[1]} / {delivery_07[2]} / {delivery_07[3]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=f"{delivery_14[0]} / {delivery_14[1]} / {delivery_14[2]} / {delivery_14[3]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=f"{delivery_21[0]} / {delivery_21[1]} / {delivery_21[2]} / {delivery_21[3]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=f"{delivery_28[0]} / {delivery_28[1]} / {delivery_28[2]} / {delivery_28[3]}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.Text(value=f"R$ {total_format}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                         ])        
 
@@ -4341,7 +4403,6 @@ def create_page_payment(page, month=None):
                     expand=True,  
                     columns=[
                         ft.DataColumn(ft.Text(value="Nome", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
-                        ft.DataColumn(ft.Text(value="Pix", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
                         ft.DataColumn(ft.Text(value="Entrega dia 07", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
                         ft.DataColumn(ft.Text(value="Entrega dia 14", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
                         ft.DataColumn(ft.Text(value="Entrega dia 21", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
@@ -4839,6 +4900,8 @@ def create_page_freelancer_token(page):
         data_project["email"] = view_project["email"].value
         data_project["permission"] = view_project["permission"].value
         data_project["payment"] = view_project["payment"].value
+        data_project["value_polygons"] = view_project["value_polygons"].value
+        data_project["value_photos"] = view_project["value_photos"].value
         data_project["weekly_deliveries"] = view_project["weekly_deliveries"].value
         data_project["total_deliverys"] = view_project["total_deliverys"].value
         data_project["polygons_made"] = view_project["polygons_made"].value
@@ -4953,8 +5016,9 @@ def create_page_freelancer_token(page):
     dropdow3 = ft.Dropdown(
         options=[
             ft.dropdown.Option("adm", content=ft.Text(value="adm", color=ft.Colors.BLACK)),
-            ft.dropdown.Option("est", content=ft.Text(value="est", color=ft.Colors.BLACK)),
             ft.dropdown.Option("ldr", content=ft.Text(value="ldr", color=ft.Colors.BLACK)),
+            ft.dropdown.Option("est", content=ft.Text(value="est", color=ft.Colors.BLACK)),
+            ft.dropdown.Option("user", content=ft.Text(value="user", color=ft.Colors.BLACK)),
         ],
         label="Permissão",
         value=get_info2["permission"],
@@ -4977,6 +5041,8 @@ def create_page_freelancer_token(page):
         "email": ft.TextField(label="Email", value=get_info2["email"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
         "permission": dropdow3,
         "payment": ft.TextField(label="Pagamento", value=get_info2["payment"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
+        "value_polygons": ft.TextField(label="Valor Poligonos", value=get_info2["value_polygons"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
+        "value_photos": ft.TextField(label="Valor Fotos", value=get_info2["value_photos"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
         "total_deliverys": ft.TextField(label="Entregas Totais", value=get_info2["total_deliverys"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1),
         "weekly_deliveries": ft.TextField(label="Entregas Semanais", value=number_total_deliverys, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
         "polygons_made": ft.TextField(label="Poligonos Feitos", value=total_polygons, width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
@@ -4989,6 +5055,8 @@ def create_page_freelancer_token(page):
 
     if est == True:
         view_user.pop("payment")
+        view_user.pop("value_polygons")
+        view_user.pop("value_photos")
         view_user.pop("total_deliverys")
         view_user.pop("weekly_deliveries")
         view_user.pop("polygons_made")
@@ -5801,11 +5869,13 @@ def create_page_delivery_details(page):
         data_subproject["date"] = view_deliveries["date"].value
         data_subproject["name_subproject"] = view_deliveries["name_subproject"].value
         data_subproject["polygons"] = view_deliveries["polygons"].value
+        data_subproject["value_polygons"] = view_deliveries["value_polygons"].value
         data_subproject["errors"] = view_deliveries["errors"].value
         data_subproject["discount"] = view_deliveries["discount"].value
         data_subproject["warning"] = view_deliveries["warning"].value
         data_subproject["delay"] = view_deliveries["delay"].value
         data_subproject["photos"] = view_deliveries["photos"].value
+        data_subproject["value_photos"] = view_deliveries["value_photos"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
 
         del data_subproject["type"]
@@ -6014,16 +6084,19 @@ def create_page_delivery_details(page):
         value=current_extension[delivery['photos'] == "0"]
         )
 
+    
     view_deliveries = {
         "username": dropdow1, 
         "date": dropdow4, 
         "name_subproject":dropdow2, 
         "polygons":ft.TextField(label="Polígonos", value=f"{delivery['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
+        "value_polygons":ft.TextField(label="Valor Polígonos", value=f"{delivery['value_polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "errors":ft.TextField(label="Erros", value=f"{delivery['errors']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "discount":ft.TextField(label="Descontos", value=f"{delivery['discount']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "warning":ft.TextField(label="Advertências", value=f"{delivery['warning']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "delay":dropdow3,
         "photos":ft.TextField(label="Fotos", value=f"{delivery['photos']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
+        "value_photos":ft.TextField(label="Valor Fotos", value=f"{delivery['value_photos']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "type":dropdow5, 
         "dwg":ft.TextField(label="DWG", value=f"{delivery['dwg']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
