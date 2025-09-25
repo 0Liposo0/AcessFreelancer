@@ -2782,11 +2782,11 @@ def create_page_subproject(page, project):
         text_unknown = ft.Text(value=f"Dúvidas: {count_unknown} ({(count_unknown/(count_poligons/100)):.0f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
 
     for delivery in get_deliveries:
-        if delivery["name_subproject"] in list_subprojects:
+        if delivery["name_subproject"] in list_subprojects and (int(delivery["polygons"])) > 0:
             deliveries += 1
 
-    for delivery in get_files:
-        if delivery["subproject"] in list_subprojects:
+    for file in get_files:
+        if file["subproject"] in list_subprojects and file["type"] == "poligonos":
             files += 1
 
 
