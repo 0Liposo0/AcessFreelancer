@@ -624,7 +624,9 @@ def create_page_user(page):
 
                 id = str(sp.get_file_id())
 
-                data_convertida = datetime.strptime(date, "%d/%m/%Y").replace(hour=23, minute=59, second=59)
+                data_convertida = datetime.strptime(date, "%d/%m/%Y").replace(
+                    hour=23, minute=59, second=59, tzinfo=ZoneInfo("America/Sao_Paulo")
+                )
                 data_atual = datetime.now(ZoneInfo("America/Sao_Paulo"))
 
                 if data_convertida < data_atual:
