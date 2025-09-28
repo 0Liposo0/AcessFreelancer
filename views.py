@@ -646,6 +646,7 @@ def create_page_user(page):
                                             url=f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/files//{name_file}"
                                             )
 
+
                 if response2.status_code == 200 or response2.status_code == 201:
 
                     for item in overlay_copy:
@@ -656,7 +657,7 @@ def create_page_user(page):
 
                     snack_bar = ft.SnackBar(
                     content=ft.Text(value="Arquivo enviado", color=ft.Colors.BLACK),
-                    duration=4000,
+                    duration=5000,
                     bgcolor=ft.Colors.GREEN,
                     data="bar",
                     )
@@ -694,6 +695,30 @@ def create_page_user(page):
                         else:
                             page.overlay.remove(item)
                     page.update()
+
+            else:
+
+                for item in overlay_copy:
+                        if item.data != "bar":
+                            pass
+                        else:
+                            page.overlay.remove(item)
+
+                snack_bar = ft.SnackBar(
+                content=ft.Text(value=f"Falha ao enviar arquivo {response.status_code} - {response.text}", color=ft.Colors.BLACK),
+                duration=5000,
+                bgcolor=ft.Colors.RED,
+                data="bar",
+                )
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                overlay_copy = list(page.overlay)
+                for item in overlay_copy:
+                    if item.data == "fp" or item.data == "bar":
+                            pass
+                    else:
+                        page.overlay.remove(item)
+                page.update()
 
     file_selected = []
     file_name = []
@@ -3693,8 +3718,6 @@ def create_page_new_delivery(page):
         data_subproject = view_deliveries.copy()
 
         user = ((sp.get_user_data(users=view_deliveries["username"].value)).json())[0]
-
-        print(f"\n {user} \n")
 
         data_subproject["id"] = str(sp.get_delivery_id())
         data_subproject["username"] = view_deliveries["username"].value
