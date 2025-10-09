@@ -2059,8 +2059,6 @@ def create_page_project_token_user(page):
                                       col=12,
                                       padding=10,)
 
-
-
     btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
                                             text= "Perfil",
                                             color=ft.Colors.GREY,
@@ -2288,6 +2286,90 @@ def create_page_project_token_user(page):
                 ])
             )
 
+
+    get_base = base.get_all_subproject_data(project)
+    get_json = get_base.json()
+
+    list_subprojects = []
+
+    for city in get_json:
+        name_subproject = city["name_subproject"]
+        list_subprojects.append(name_subproject)
+        data = city
+
+    get_models = ((base.get_all_models()).json())
+    get_deliveries = ((base.get_all_deliverys()).json())
+    get_files = ((base.get_all_files()).json())
+
+    count_poligons = 0
+    count_unknown = 0
+    models = 0
+    complete = 0
+    complete_numbers = 0
+    incomplete = 0
+    incomplete_numbers = 0
+    deliveries = 0
+    files = 0
+
+    for model in get_models:
+        if model["subproject"] in list_subprojects:
+            models += 1
+            if model["status"] != "Incompleto":
+                complete += 1
+                complete_numbers += int(model["numbers"])
+                count_poligons = count_poligons + int(model["polygons"])
+                count_unknown = count_unknown + (int(model["polygons"]) - int(model["numbers"]))
+            else:
+                incomplete += 1
+                incomplete_numbers += int(model["numbers"])
+                count_poligons = count_poligons + int(model["numbers"])
+                count_unknown = count_unknown + 0
+
+    if models == 0:
+        text_poligons = ft.Text(value=f"0 / {get_info2["predicted_lots"]} ({count_poligons/(int(get_info2["predicted_lots"])/100):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+        text_regular = ft.Text(value=f"Regulares e Prefeitura: 0", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+        text_unknown = ft.Text(value=f"Dúvidas: 0", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+    else:    
+        text_poligons = ft.Text(value=f"Imóveis: {count_poligons} / {get_info2["predicted_lots"]} ({count_poligons/(int(get_info2["predicted_lots"])/100):.2f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+        text_regular = ft.Text(value=f"Regulares e Prefeitura: {count_poligons - count_unknown}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+        text_unknown = ft.Text(value=f"Dúvidas: {count_unknown} ({(count_unknown/(count_poligons/100)):.0f}%)", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20)
+
+    for delivery in get_deliveries:
+        if delivery["name_subproject"] in list_subprojects and (int(delivery["polygons"])) > 0:
+            deliveries += 1
+
+    for file in get_files:
+        if file["subproject"] in list_subprojects and file["type"] == "poligonos":
+            files += 1
+
+    data = ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.Text(value=f"Inicio: {get_info2["start"]}     Etapa 1: {get_info2["final_delivery"]}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
+                text_poligons,
+                text_regular,
+                text_unknown,
+                ft.Text(value=f"{deliveries} entregas de {files} arquivos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
+                ft.Text(value=f"{models} modelos de {deliveries} entregas", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
+                ft.Text(value=f"Completos: {complete} ({complete_numbers})    Incompletos: {incomplete} ({incomplete_numbers})", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
+                ft.Text(value=f"Final: {get_info2["final"]}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.AUTO,
+            expand=True,
+            spacing=10,
+        ),
+        padding=20,
+        border=ft.border.all(2, ft.Colors.BLUE),
+        border_radius=10,
+        bgcolor=ft.Colors.WHITE,
+        width=min(1000, page.width * 0.9),
+        alignment=ft.alignment.center,  
+        margin=10,
+        expand=True  
+    )
+
     # Layout responsivo
     layout = ft.ResponsiveRow(
         columns=12,
@@ -2309,6 +2391,10 @@ def create_page_project_token_user(page):
                     history_list,
                     alignment=ft.alignment.center
                 ),
+                ft.Container(
+                    data,
+                    alignment=ft.alignment.center
+                ),
             ],
             col={"sm": 12, "md": 6},
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -2320,9 +2406,6 @@ def create_page_project_token_user(page):
         spacing=20,
         expand=True
     )
-
-
-
 
     return layout
 
@@ -5633,6 +5716,7 @@ def create_page_see_deliverys(page):
             mes = ((item.cells[1].content.value).split("/"))[1]  
             ano = ((item.cells[1].content.value).split("/"))[2]  
             usuario = item.cells[0].content.value  
+            project = item.cells[2].content.data 
             subproject = item.cells[2].content.value  
 
             # Verifica se o item atende a TODOS os filtros ativos
@@ -7304,7 +7388,8 @@ def create_page_see_models(page):
     "ano": None,
     "usuario": None,
     "projeto": None,
-    "subprojeto": None
+    "subprojeto": None,
+    "status": None
     }
 
     # Função para filtrar a tabela
@@ -7316,6 +7401,7 @@ def create_page_see_models(page):
             usuario = item.cells[0].content.value
             project = item.cells[2].content.data  
             subproject = item.cells[2].content.value  
+            status = item.cells[5].content.value  
 
             # Verifica se o item atende a TODOS os filtros ativos
             item.visible = (
@@ -7324,7 +7410,8 @@ def create_page_see_models(page):
                 (filtros_ativos["ano"] is None or filtros_ativos["ano"] == ano) and
                 (filtros_ativos["projeto"] is None or filtros_ativos["projeto"] == project) and
                 (filtros_ativos["subprojeto"] is None or filtros_ativos["subprojeto"] == subproject) and
-                (filtros_ativos["usuario"] is None or filtros_ativos["usuario"] == usuario)
+                (filtros_ativos["usuario"] is None or filtros_ativos["usuario"] == usuario) and
+                (filtros_ativos["status"] is None or filtros_ativos["status"] == status)
             )
 
         if update == True:
@@ -7460,6 +7547,22 @@ def create_page_see_models(page):
                 editable=True,
                 width=250,
             ),
+            ft.Dropdown(
+                text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                color=ft.Colors.BLACK,
+                bgcolor=ft.Colors.WHITE,
+                fill_color=ft.Colors.WHITE,
+                filled=True,
+                label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                label="Status",
+                expand=True,
+                options=[
+                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("Completo", content=ft.Text(value=f"Completo", color=ft.Colors.BLACK)),
+                    ft.dropdown.Option("Incompleto", content=ft.Text(value=f"Incompleto", color=ft.Colors.BLACK)),
+                ],
+                on_change=lambda e: on_dropdown_change(e, "status"),
+            ),
         ],
         expand=True,
         alignment=ft.MainAxisAlignment.CENTER,
@@ -7474,6 +7577,7 @@ def create_page_see_models(page):
         list_dropdown.controls[3].value = filtros[0]["usuario"]
         list_dropdown.controls[4].value = filtros[0]["projeto"]
         list_dropdown.controls[5].value = filtros[0]["subprojeto"]
+        list_dropdown.controls[6].value = filtros[0]["status"]
 
         filtros_ativos = filtros[0]
         aplicar_filtros(update=False)
@@ -7528,6 +7632,14 @@ def create_page_see_models(page):
                         list_dropdown.controls[0],
                         list_dropdown.controls[1],
                         list_dropdown.controls[2],
+                    ]
+                ),
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,
+                    controls=[
+                        list_dropdown.controls[6],
                     ]
                 ),
                 history_list,  # Adiciona a lista de entregas
@@ -7942,7 +8054,6 @@ def create_page_models_details(page):
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
                 page.update()
-
 
     def delete_file(view_deliveries):
 
