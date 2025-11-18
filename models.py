@@ -1257,7 +1257,7 @@ class SupaBase:
 
 
         params = {
-                   "permission":  "in.(est,ldr)",
+                   "permission":  "in.(est,ldr,adm)",
                    "select": "*"
         }
 
