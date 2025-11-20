@@ -4718,6 +4718,33 @@ def create_page_see_freelancers(page):
         dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
         dicio_projects[item["name_project"]].append(item["name_project"])
 
+    table = ft.DataTable(
+        data_row_max_height=50,
+        column_spacing=40,
+        expand=True,
+        expand_loose=True,
+        columns=[
+                ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                ft.DataColumn(ft.Text(value="Permissão", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                ft.DataColumn(ft.Text(value="Projeto Atual", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                ft.DataColumn(ft.Text(value="Ficha", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+            ],
+        rows=[]
+    )
+
+    pagination_bar = ft.Row(
+        alignment=ft.MainAxisAlignment.CENTER,
+        controls=[]
+    )
+
+    lbl_total = ft.Text(
+        value="10 itens de 0",
+        size=20,
+        weight=ft.FontWeight.W_600,
+        color=ft.Colors.BLACK
+    )
+
     # Lista para exibir as entregas
     history_list = ft.Column(
         controls=[
@@ -4725,20 +4752,13 @@ def create_page_see_freelancers(page):
                 padding=0,  
                 expand=True,  
                 theme=texttheme1,
-                content=ft.DataTable(
-                    data_row_max_height=50,
-                    column_spacing=40,  
-                    expand=True,  
-                    columns=[
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
-                        ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
-                        ft.DataColumn(ft.Text(value="Permissão", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="Projeto Atual", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="Ficha", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                    ],
-                    rows=[],  
-                ),
-            )
+                content=table,
+            ),
+            ft.Row(
+                controls=[lbl_total],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            pagination_bar,  # Barra com números
         ],
         scroll=ft.ScrollMode.AUTO,  
         alignment=ft.MainAxisAlignment.CENTER,  
@@ -4747,6 +4767,141 @@ def create_page_see_freelancers(page):
     )
 
     list_filtros = [None]
+
+    items_per_page = 10
+    current_page = [1]
+    all_rows = []        # Armazena todos os DataRow
+    visible_rows = []
+
+    def update_pagination_bar(initial=True):
+
+        total_pages = (len(visible_rows) + items_per_page - 1) // items_per_page
+
+        visible_pages = 4
+        many_pages = True
+
+        if total_pages < visible_pages:
+            many_pages = False
+            visible_pages = total_pages 
+
+        pagination_bar.controls.clear()
+
+        if many_pages:
+            pagination_bar.controls.append(
+                ft.IconButton(
+                    icon=ft.Icons.ARROW_BACK,
+                    icon_color=ft.Colors.INDIGO_600,
+                    disabled=current_page[0] == 1,
+                    visible=current_page[0] != 1,
+                    on_click=lambda e: load_page(current_page[0] - 1)
+                )
+            )
+
+        # Números
+        initial_number = current_page[0]
+        last_number = current_page[0] + visible_pages
+
+        def color_button(page):
+            if page == current_page[0]:
+                color = ft.Colors.AMBER
+            else:
+                color = ft.Colors.INDIGO_600
+            
+            return color
+
+        for page in range(initial_number, last_number):
+            pagination_bar.controls.append(
+                ft.ElevatedButton(
+                    text=str(page),
+                    bgcolor = color_button(page),
+                    color = ft.Colors.WHITE,
+                    on_click=lambda e, p=page: load_page(p)
+                )
+            )
+
+        # Limitar a ultima página
+        if current_page[0] + visible_pages > total_pages:
+            pagination_bar.controls.clear()
+            initial_page = 1
+            final = total_pages + 1
+
+            if many_pages:
+                initial_page = total_pages - visible_pages
+                final = total_pages + 1
+                pagination_bar.controls.append(
+                    ft.IconButton(
+                        icon=ft.Icons.ARROW_BACK,
+                        icon_color=ft.Colors.INDIGO_600,
+                        on_click=lambda e: load_page(current_page[0] - 1)
+                    )
+                )
+
+
+            for page in range(initial_page, final):
+                pagination_bar.controls.append(
+                    ft.ElevatedButton(
+                        text=str(page),
+                        bgcolor = color_button(page),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(p)
+                    )
+                )
+            
+
+        if many_pages:
+            # Botão "Próximo"
+            pagination_bar.controls.append(
+                ft.IconButton(
+                    icon=ft.Icons.ARROW_FORWARD,
+                    icon_color=ft.Colors.INDIGO_600,
+                    disabled=current_page[0] == total_pages,
+                    visible=current_page[0] != total_pages,
+                    on_click=lambda e: load_page(current_page[0] + 1)
+                )
+            )
+
+        if current_page[0] <= total_pages - visible_pages and many_pages:
+            pagination_bar.controls.insert(-1,
+                ft.ElevatedButton(
+                        text=str(f"{total_pages}"),
+                        bgcolor = color_button(current_page[0] + 1),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(total_pages)
+                    )
+            ) 
+
+        if current_page[0] != 1 and many_pages:
+            pagination_bar.controls.insert(1,
+                ft.ElevatedButton(
+                        text=str("1"),
+                        bgcolor = color_button(current_page[0] + 1),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(1)
+                    )
+            )
+
+        # Atualiza label "Total de registros"
+        lbl_total.value = f"{len(table.rows)} itens de {len(visible_rows)}"
+        if initial:
+            lbl_total.update()
+            pagination_bar.update()
+
+    def load_page(page, initial=True):
+
+        current_page[0] = page
+
+        start = (page * items_per_page) - items_per_page
+        end = start + items_per_page
+
+        visible_rows.clear()
+        for item in all_rows:
+            if item.visible:
+                visible_rows.append(item)
+    
+        table.rows = visible_rows[start:end]
+        if initial:
+            table.update()
+        update_pagination_bar(initial)
 
     # Preenche a lista com os dados das entregas
     for delev in get_json:
@@ -4788,7 +4943,7 @@ def create_page_see_freelancers(page):
             ]
         )
         
-        history_list.controls[0].content.rows.append(
+        all_rows.append(
             ft.DataRow(cells=[
                             ft.DataCell(perfil),
                             ft.DataCell(ft.Text(
@@ -4821,6 +4976,8 @@ def create_page_see_freelancers(page):
                 )
         )
 
+    load_page(1, initial=False)
+
     filtros_ativos = {
     "permission": None,
     "projeto": None,
@@ -4828,7 +4985,7 @@ def create_page_see_freelancers(page):
 
     # Função para filtrar a tabela
     def aplicar_filtros(update=True):
-        for item in history_list.controls[0].content.rows:
+        for item in all_rows:
             permission = item.cells[2].content.value  
             project = item.cells[3].content.data  
 
@@ -4839,7 +4996,9 @@ def create_page_see_freelancers(page):
             )
 
         if update == True:
-            history_list.update()  
+            load_page(1)
+        else:
+            load_page(1, initial=False)  
 
         list_filtros[0] = filtros_ativos
 
@@ -5581,6 +5740,34 @@ def create_page_see_deliverys(page):
 
         dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
 
+    table = ft.DataTable(
+        data_row_max_height=50,
+        column_spacing=40,
+        expand=True,
+        expand_loose=True,
+        columns=[
+                ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+                ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                ft.DataColumn(ft.Text(value="Poligonos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                ft.DataColumn(ft.Text(value="Fotos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+            ],
+        rows=[]
+    )
+
+    pagination_bar = ft.Row(
+        alignment=ft.MainAxisAlignment.CENTER,
+        controls=[]
+    )
+
+    lbl_total = ft.Text(
+        value="10 itens de 0",
+        size=20,
+        weight=ft.FontWeight.W_600,
+        color=ft.Colors.BLACK
+    )
+
     # Lista para exibir as entregas
     history_list = ft.Column(
         controls=[
@@ -5589,23 +5776,13 @@ def create_page_see_deliverys(page):
                 expand=True,  
                 theme=texttheme1,
                 clip_behavior=ft.ClipBehavior.NONE,  
-                content=ft.DataTable(
-                    data_row_max_height=50,
-                    column_spacing=40,  
-                    expand=True,
-                    expand_loose=True,
-                    columns=[
-                        ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
-                        ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
-                        ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="Poligonos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="Fotos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                    ],
-                    rows=[],
-                    clip_behavior=ft.ClipBehavior.NONE  
-                ),
-            )
+                content=table,
+            ),
+            ft.Row(
+                controls=[lbl_total],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            pagination_bar,  # Barra com números
         ],
         scroll=ft.ScrollMode.AUTO,  
         alignment=ft.MainAxisAlignment.CENTER,  
@@ -5614,6 +5791,141 @@ def create_page_see_deliverys(page):
     )
 
     list_filtros = [None]
+
+    items_per_page = 10
+    current_page = [1]
+    all_rows = []        # Armazena todos os DataRow
+    visible_rows = []
+
+    def update_pagination_bar(initial=True):
+
+        total_pages = (len(visible_rows) + items_per_page - 1) // items_per_page
+
+        visible_pages = 4
+        many_pages = True
+
+        if total_pages < visible_pages:
+            many_pages = False
+            visible_pages = total_pages 
+
+        pagination_bar.controls.clear()
+
+        if many_pages:
+            pagination_bar.controls.append(
+                ft.IconButton(
+                    icon=ft.Icons.ARROW_BACK,
+                    icon_color=ft.Colors.INDIGO_600,
+                    disabled=current_page[0] == 1,
+                    visible=current_page[0] != 1,
+                    on_click=lambda e: load_page(current_page[0] - 1)
+                )
+            )
+
+        # Números
+        initial_number = current_page[0]
+        last_number = current_page[0] + visible_pages
+
+        def color_button(page):
+            if page == current_page[0]:
+                color = ft.Colors.AMBER
+            else:
+                color = ft.Colors.INDIGO_600
+            
+            return color
+
+        for page in range(initial_number, last_number):
+            pagination_bar.controls.append(
+                ft.ElevatedButton(
+                    text=str(page),
+                    bgcolor = color_button(page),
+                    color = ft.Colors.WHITE,
+                    on_click=lambda e, p=page: load_page(p)
+                )
+            )
+
+        # Limitar a ultima página
+        if current_page[0] + visible_pages > total_pages:
+            pagination_bar.controls.clear()
+            initial_page = 1
+            final = total_pages + 1
+
+            if many_pages:
+                initial_page = total_pages - visible_pages
+                final = total_pages + 1
+                pagination_bar.controls.append(
+                    ft.IconButton(
+                        icon=ft.Icons.ARROW_BACK,
+                        icon_color=ft.Colors.INDIGO_600,
+                        on_click=lambda e: load_page(current_page[0] - 1)
+                    )
+                )
+
+
+            for page in range(initial_page, final):
+                pagination_bar.controls.append(
+                    ft.ElevatedButton(
+                        text=str(page),
+                        bgcolor = color_button(page),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(p)
+                    )
+                )
+            
+
+        if many_pages:
+            # Botão "Próximo"
+            pagination_bar.controls.append(
+                ft.IconButton(
+                    icon=ft.Icons.ARROW_FORWARD,
+                    icon_color=ft.Colors.INDIGO_600,
+                    disabled=current_page[0] == total_pages,
+                    visible=current_page[0] != total_pages,
+                    on_click=lambda e: load_page(current_page[0] + 1)
+                )
+            )
+
+        if current_page[0] <= total_pages - visible_pages and many_pages:
+            pagination_bar.controls.insert(-1,
+                ft.ElevatedButton(
+                        text=str(f"{total_pages}"),
+                        bgcolor = color_button(current_page[0] + 1),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(total_pages)
+                    )
+            ) 
+
+        if current_page[0] != 1 and many_pages:
+            pagination_bar.controls.insert(1,
+                ft.ElevatedButton(
+                        text=str("1"),
+                        bgcolor = color_button(current_page[0] + 1),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(1)
+                    )
+            )
+
+        # Atualiza label "Total de registros"
+        lbl_total.value = f"{len(table.rows)} itens de {len(visible_rows)}"
+        if initial:
+            lbl_total.update()
+            pagination_bar.update()
+
+    def load_page(page, initial=True):
+
+        current_page[0] = page
+
+        start = (page * items_per_page) - items_per_page
+        end = start + items_per_page
+
+        visible_rows.clear()
+        for item in all_rows:
+            if item.visible:
+                visible_rows.append(item)
+    
+        table.rows = visible_rows[start:end]
+        if initial:
+            table.update()
+        update_pagination_bar(initial)
 
     # Preenche a lista com os dados das entregas
     for delev in get_json:
@@ -5630,7 +5942,7 @@ def create_page_see_deliverys(page):
             page.go("/deliveries/token")
 
     
-        history_list.controls[0].content.rows.append(
+        all_rows.append(
             ft.DataRow(cells=[
                             ft.DataCell(ft.Text(
                                 value=f"{delev['username']}",
@@ -5692,6 +6004,8 @@ def create_page_see_deliverys(page):
                 )
         )
 
+    load_page(1, initial=False)
+
     # AppBar
     page.appbar = ft.AppBar(
         leading_width=40,
@@ -5711,7 +6025,7 @@ def create_page_see_deliverys(page):
 
     # Função para filtrar a tabela
     def aplicar_filtros(update=True):
-        for item in history_list.controls[0].content.rows:
+        for item in all_rows:
             dia = ((item.cells[1].content.value).split("/"))[0]  
             mes = ((item.cells[1].content.value).split("/"))[1]  
             ano = ((item.cells[1].content.value).split("/"))[2]  
@@ -5730,7 +6044,9 @@ def create_page_see_deliverys(page):
             )
 
         if update == True:
-            history_list.update()
+            load_page(1)
+        else:
+            load_page(1, initial=False)
 
         list_filtros[0] = filtros_ativos  
 
@@ -6633,28 +6949,48 @@ def create_page_files(page, filtros=[None]):
 
         dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
 
+    table = ft.DataTable(
+        data_row_max_height=50,
+        column_spacing=40,
+        expand=True,
+        expand_loose=True,
+        columns=[
+                ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                ft.DataColumn(ft.Text(value="Tipo", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                ft.DataColumn(ft.Text(value="Quantidade", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                ft.DataColumn(ft.Text(value="Meta", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+            ],
+        rows=[]
+    )
+
+    pagination_bar = ft.Row(
+        alignment=ft.MainAxisAlignment.CENTER,
+        controls=[]
+    )
+
+    lbl_total = ft.Text(
+        value="10 itens de 0",
+        size=20,
+        weight=ft.FontWeight.W_600,
+        color=ft.Colors.BLACK
+    )
+
     # Lista para exibir as entregas
     history_list = ft.Column(
         controls=[
             ft.Container(
                 padding=0,  
                 expand=True,  
-                content=ft.DataTable(
-                    data_row_max_height=50,
-                    column_spacing=40,  
-                    expand=True,  
-                    columns=[
-                        ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
-                        ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
-                        ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="Tipo", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="Quantidade", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="Meta", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                    ],
-                    rows=[],  
-                ),
-            )
+                content=table,
+            ),
+            ft.Row(
+                controls=[lbl_total],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            pagination_bar,  # Barra com números
         ],
         scroll=ft.ScrollMode.AUTO,  
         alignment=ft.MainAxisAlignment.CENTER,  
@@ -6663,6 +6999,141 @@ def create_page_files(page, filtros=[None]):
     )
 
     list_filtros = [None]
+
+    items_per_page = 10
+    current_page = [1]
+    all_rows = []        # Armazena todos os DataRow
+    visible_rows = []
+
+    def update_pagination_bar(initial=True):
+
+        total_pages = (len(visible_rows) + items_per_page - 1) // items_per_page
+
+        visible_pages = 4
+        many_pages = True
+
+        if total_pages < visible_pages:
+            many_pages = False
+            visible_pages = total_pages 
+
+        pagination_bar.controls.clear()
+
+        if many_pages:
+            pagination_bar.controls.append(
+                ft.IconButton(
+                    icon=ft.Icons.ARROW_BACK,
+                    icon_color=ft.Colors.INDIGO_600,
+                    disabled=current_page[0] == 1,
+                    visible=current_page[0] != 1,
+                    on_click=lambda e: load_page(current_page[0] - 1)
+                )
+            )
+
+        # Números
+        initial_number = current_page[0]
+        last_number = current_page[0] + visible_pages
+
+        def color_button(page):
+            if page == current_page[0]:
+                color = ft.Colors.AMBER
+            else:
+                color = ft.Colors.INDIGO_600
+            
+            return color
+
+        for page in range(initial_number, last_number):
+            pagination_bar.controls.append(
+                ft.ElevatedButton(
+                    text=str(page),
+                    bgcolor = color_button(page),
+                    color = ft.Colors.WHITE,
+                    on_click=lambda e, p=page: load_page(p)
+                )
+            )
+
+        # Limitar a ultima página
+        if current_page[0] + visible_pages > total_pages:
+            pagination_bar.controls.clear()
+            initial_page = 1
+            final = total_pages + 1
+
+            if many_pages:
+                initial_page = total_pages - visible_pages
+                final = total_pages + 1
+                pagination_bar.controls.append(
+                    ft.IconButton(
+                        icon=ft.Icons.ARROW_BACK,
+                        icon_color=ft.Colors.INDIGO_600,
+                        on_click=lambda e: load_page(current_page[0] - 1)
+                    )
+                )
+
+
+            for page in range(initial_page, final):
+                pagination_bar.controls.append(
+                    ft.ElevatedButton(
+                        text=str(page),
+                        bgcolor = color_button(page),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(p)
+                    )
+                )
+            
+
+        if many_pages:
+            # Botão "Próximo"
+            pagination_bar.controls.append(
+                ft.IconButton(
+                    icon=ft.Icons.ARROW_FORWARD,
+                    icon_color=ft.Colors.INDIGO_600,
+                    disabled=current_page[0] == total_pages,
+                    visible=current_page[0] != total_pages,
+                    on_click=lambda e: load_page(current_page[0] + 1)
+                )
+            )
+
+        if current_page[0] <= total_pages - visible_pages and many_pages:
+            pagination_bar.controls.insert(-1,
+                ft.ElevatedButton(
+                        text=str(f"{total_pages}"),
+                        bgcolor = color_button(current_page[0] + 1),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(total_pages)
+                    )
+            ) 
+
+        if current_page[0] != 1 and many_pages:
+            pagination_bar.controls.insert(1,
+                ft.ElevatedButton(
+                        text=str("1"),
+                        bgcolor = color_button(current_page[0] + 1),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(1)
+                    )
+            )
+
+        # Atualiza label "Total de registros"
+        lbl_total.value = f"{len(table.rows)} itens de {len(visible_rows)}"
+        if initial:
+            lbl_total.update()
+            pagination_bar.update()
+
+    def load_page(page, initial=True):
+
+        current_page[0] = page
+
+        start = (page * items_per_page) - items_per_page
+        end = start + items_per_page
+
+        visible_rows.clear()
+        for item in all_rows:
+            if item.visible:
+                visible_rows.append(item)
+    
+        table.rows = visible_rows[start:end]
+        if initial:
+            table.update()
+        update_pagination_bar(initial)
 
     # Preenche a lista com os dados das entregas
     for delev in get_json:
@@ -6678,7 +7149,7 @@ def create_page_files(page, filtros=[None]):
             page.client_storage.set("profile", profile)
             page.go("/files/token")
 
-        history_list.controls[0].content.rows.append(
+        all_rows.append(
             ft.DataRow(cells=[
                             ft.DataCell(ft.Text(
                                 value=f"{delev['username']}",
@@ -6740,6 +7211,7 @@ def create_page_files(page, filtros=[None]):
                 )
         )
 
+    load_page(1, initial=False)
     
     filtros_ativos = {
     "dia": None,
@@ -6752,7 +7224,7 @@ def create_page_files(page, filtros=[None]):
 
     # Função para filtrar a tabela
     def aplicar_filtros(update=True):
-        for item in history_list.controls[0].content.rows:
+        for item in all_rows:
             dia = ((item.cells[1].content.value).split("/"))[0]  
             mes = ((item.cells[1].content.value).split("/"))[1]  
             ano = ((item.cells[1].content.value).split("/"))[2]  
@@ -6771,7 +7243,9 @@ def create_page_files(page, filtros=[None]):
             )
 
         if update == True:
-            history_list.update()  
+            load_page(1)
+        else:
+            load_page(1, initial=False)  
 
         list_filtros[0] = filtros_ativos
 
@@ -7166,7 +7640,7 @@ def create_page_see_models(page):
                                             color=ft.Colors.GREY,
                                             col=12,
                                             padding=10,)
-    
+
     btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
                                       text= "Projeto",
                                       color=ft.Colors.GREY,
@@ -7232,21 +7706,13 @@ def create_page_see_models(page):
 
         dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
 
-    # Lista para exibir as entregas
-    history_list = ft.Column(
-        controls=[
-            ft.Container(
-                padding=0,  
-                expand=True,  
-                theme=texttheme1,
-                clip_behavior=ft.ClipBehavior.NONE,  
-                content=ft.DataTable(
-                    data_row_max_height=50,
-                    column_spacing=40,  
-                    expand=True,
-                    expand_loose=True,
-                    columns=[
-                        ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
+    table = ft.DataTable(
+        data_row_max_height=50,
+        column_spacing=40,
+        expand=True,
+        expand_loose=True,
+        columns=[
+                ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
                         ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
                         ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="Poligonos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
@@ -7255,11 +7721,37 @@ def create_page_see_models(page):
                         ft.DataColumn(ft.Text(value="Atualização", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="Editor", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                    ],
-                    rows=[],
-                    clip_behavior=ft.ClipBehavior.NONE  
-                ),
-            )
+            ],
+        rows=[]
+    )
+
+    pagination_bar = ft.Row(
+        alignment=ft.MainAxisAlignment.CENTER,
+        controls=[]
+    )
+
+    lbl_total = ft.Text(
+        value="10 itens de 0",
+        size=20,
+        weight=ft.FontWeight.W_600,
+        color=ft.Colors.BLACK
+    )
+
+    # Lista para exibir as entregas
+    history_list = ft.Column(
+        controls=[
+            ft.Container(
+                padding=0,  
+                expand=True,  
+                theme=texttheme1,
+                clip_behavior=ft.ClipBehavior.NONE,  
+                content=table,
+            ),
+            ft.Row(
+                controls=[lbl_total],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            pagination_bar,  # Barra com números
         ],
         scroll=ft.ScrollMode.AUTO,  
         alignment=ft.MainAxisAlignment.CENTER,  
@@ -7268,6 +7760,142 @@ def create_page_see_models(page):
     )
 
     list_filtros = [None]
+
+    items_per_page = 10
+    current_page = [1]
+    all_rows = []        # Armazena todos os DataRow
+    visible_rows = []
+
+    def update_pagination_bar(initial=True):
+
+        total_pages = (len(visible_rows) + items_per_page - 1) // items_per_page
+
+        visible_pages = 4
+        many_pages = True
+
+        if total_pages < visible_pages:
+            many_pages = False
+            visible_pages = total_pages 
+
+        pagination_bar.controls.clear()
+
+        if many_pages:
+            pagination_bar.controls.append(
+                ft.IconButton(
+                    icon=ft.Icons.ARROW_BACK,
+                    icon_color=ft.Colors.INDIGO_600,
+                    disabled=current_page[0] == 1,
+                    visible=current_page[0] != 1,
+                    on_click=lambda e: load_page(current_page[0] - 1)
+                )
+            )
+
+        # Números
+        initial_number = current_page[0]
+        last_number = current_page[0] + visible_pages
+
+        def color_button(page):
+            if page == current_page[0]:
+                color = ft.Colors.AMBER
+            else:
+                color = ft.Colors.INDIGO_600
+            
+            return color
+
+        for page in range(initial_number, last_number):
+            pagination_bar.controls.append(
+                ft.ElevatedButton(
+                    text=str(page),
+                    bgcolor = color_button(page),
+                    color = ft.Colors.WHITE,
+                    on_click=lambda e, p=page: load_page(p)
+                )
+            )
+
+        # Limitar a ultima página
+        if current_page[0] + visible_pages > total_pages:
+            pagination_bar.controls.clear()
+            initial_page = 1
+            final = total_pages + 1
+
+            if many_pages:
+                initial_page = total_pages - visible_pages
+                final = total_pages + 1
+                pagination_bar.controls.append(
+                    ft.IconButton(
+                        icon=ft.Icons.ARROW_BACK,
+                        icon_color=ft.Colors.INDIGO_600,
+                        on_click=lambda e: load_page(current_page[0] - 1)
+                    )
+                )
+
+
+            for page in range(initial_page, final):
+                pagination_bar.controls.append(
+                    ft.ElevatedButton(
+                        text=str(page),
+                        bgcolor = color_button(page),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(p)
+                    )
+                )
+            
+
+        if many_pages:
+            # Botão "Próximo"
+            pagination_bar.controls.append(
+                ft.IconButton(
+                    icon=ft.Icons.ARROW_FORWARD,
+                    icon_color=ft.Colors.INDIGO_600,
+                    disabled=current_page[0] == total_pages,
+                    visible=current_page[0] != total_pages,
+                    on_click=lambda e: load_page(current_page[0] + 1)
+                )
+            )
+
+        if current_page[0] <= total_pages - visible_pages and many_pages:
+            pagination_bar.controls.insert(-1,
+                ft.ElevatedButton(
+                        text=str(f"{total_pages}"),
+                        bgcolor = color_button(current_page[0] + 1),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(total_pages)
+                    )
+            ) 
+
+        if current_page[0] != 1 and many_pages:
+            pagination_bar.controls.insert(1,
+                ft.ElevatedButton(
+                        text=str("1"),
+                        bgcolor = color_button(current_page[0] + 1),
+                        color = ft.Colors.WHITE,
+                        on_click=lambda e, p=page: load_page(1)
+                    )
+            )
+
+        # Atualiza label "Total de registros"
+        lbl_total.value = f"{len(table.rows)} itens de {len(visible_rows)}"
+        if initial:
+            lbl_total.update()
+            pagination_bar.update()
+
+    def load_page(page, initial=True):
+
+        current_page[0] = page
+
+        start = (page * items_per_page) - items_per_page
+        end = start + items_per_page
+
+        visible_rows.clear()
+        for item in all_rows:
+            if item.visible:
+                visible_rows.append(item)
+    
+        table.rows = visible_rows[start:end]
+        if initial:
+            table.update()
+        update_pagination_bar(initial)
+
 
     # Preenche a lista com os dados das entregas
     for delev in get_json:
@@ -7284,7 +7912,7 @@ def create_page_see_models(page):
             page.client_storage.set("profile", profile)
             page.go("/models/token")
 
-        history_list.controls[0].content.rows.append(
+        all_rows.append(
             ft.DataRow(cells=[
                             ft.DataCell(ft.Text(
                                 value=f"{delev['username']}",
@@ -7373,6 +8001,8 @@ def create_page_see_models(page):
                 )
         )
 
+    load_page(1, initial=False)
+
     # AppBar
     page.appbar = ft.AppBar(
         leading_width=40,
@@ -7394,7 +8024,7 @@ def create_page_see_models(page):
 
     # Função para filtrar a tabela
     def aplicar_filtros(update=True):
-        for item in history_list.controls[0].content.rows:
+        for item in all_rows:
             dia = ((item.cells[1].content.value).split("/"))[0]  
             mes = ((item.cells[1].content.value).split("/"))[1]  
             ano = ((item.cells[1].content.value).split("/"))[2]  
@@ -7415,7 +8045,9 @@ def create_page_see_models(page):
             )
 
         if update == True:
-            history_list.update()  
+            load_page(1)
+        else:
+            load_page(1, initial=False)
 
         list_filtros[0] = filtros_ativos
 
@@ -8944,11 +9576,11 @@ def create_page_see_logs(page):
         # Limitar a ultima página
         if current_page[0] + visible_pages > total_pages:
             pagination_bar.controls.clear()
-            initial = 1
+            initial_page = 1
             final = total_pages + 1
 
             if many_pages:
-                initial = total_pages - visible_pages
+                initial_page = total_pages - visible_pages
                 final = total_pages + 1
                 pagination_bar.controls.append(
                     ft.IconButton(
@@ -8959,7 +9591,7 @@ def create_page_see_logs(page):
                 )
 
 
-            for page in range(initial, final):
+            for page in range(initial_page, final):
                 pagination_bar.controls.append(
                     ft.ElevatedButton(
                         text=str(page),
@@ -9026,8 +9658,6 @@ def create_page_see_logs(page):
         update_pagination_bar(initial)
 
     # Preenche a lista com os dados das entregas
-
-    
     for delev in get_json:
 
         project = next((k for k, v in dicio_projects.items() if delev['subproject'] in v), None)
