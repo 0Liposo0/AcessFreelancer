@@ -1,0 +1,204 @@
+from models import *
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+
+def get_menu(ft, page):
+
+    buttons = Buttons(page)
+    dict_profile = page.client_storage.get("profile")
+
+    def go_url(url):
+        profile = page.client_storage.get("profile")
+        profile.update({
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
+        })
+        page.client_storage.set("profile", profile)
+        page.go(url)
+
+    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
+                                      text="Logout",
+                                      color=ft.Colors.RED,
+                                      col=12,
+                                      padding=10,)
+    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
+                                      text= "Projetos",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,) 
+    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
+                                            text= "Arquivos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
+                                            text= "Entregas",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
+                                            text= "Freelancers",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
+                                            text= "Modelos",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
+                                            text= "Logs",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
+                                            text= "Financeiro",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    
+    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
+                                      text= "Projeto",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)
+
+
+    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
+                                            text= "Perfil",
+                                            color=ft.Colors.GREY,
+                                            col=12,
+                                            padding=10,)
+    
+    btn_dashboard = buttons.create_button(on_click=lambda e: page.go("/dashboard"),
+                                      text= "Dashboard",
+                                      color=ft.Colors.GREY,
+                                      col=12,
+                                      padding=10,)
+
+    drawer = ft.NavigationDrawer(
+    controls=[
+        btn_dashboard,
+        btn_projeto,
+        btn_see_freelancers,
+        btn_payment,
+        btn_see_file,
+        btn_see_deliverys,
+        btn_see_models,
+        btn_see_logs,
+        btn_exit,
+        ]
+    )
+    
+    if dict_profile["permission"] != "adm":
+        drawer.controls.remove(btn_dashboard) 
+        drawer.controls.remove(btn_projeto) 
+        drawer.controls.remove(btn_see_freelancers) 
+        drawer.controls.remove(btn_payment)
+        drawer.controls.remove(btn_see_logs)
+        drawer.controls.insert(0, btn_profile)
+        drawer.controls.insert(1, btn_projeto_user)
+
+    return drawer
+
+def return_line_chart(ft, data):
+
+    def get_min_y_and_max_y(data):
+        data_points = data[0].data_points
+        if not data_points:
+            return [0, 0]
+
+        min_y = min(point.y for point in data_points)
+        max_y = max(point.y for point in data_points)
+
+
+        return [min_y, max_y]
+    
+    
+    def build_left_axis_from_data(data, divisions=6):
+        min_y, max_y = get_min_y_and_max_y(data)
+
+        # Evita problema de min == max
+        if max_y == min_y:
+            min_y = 0
+            max_y = max_y if max_y > 0 else 1
+
+        # Garante sempre começar do zero (opcional, mas recomendado)
+        min_y = 0
+
+        step = (max_y - min_y) / divisions
+
+        labels = []
+        for i in range(1, divisions + 1):
+            value = min_y + i * step
+            value_int = int(round(value))
+
+            labels.append(
+                ft.ChartAxisLabel(
+                    value=value_int,
+                    label=ft.Text(
+                        str(value_int),
+                        size=14,
+                        weight=ft.FontWeight.BOLD,
+                        color=ft.Colors.BLACK,
+                    ),
+                )
+            )
+
+        for lbl in labels:
+            print("value:", lbl.value)
+
+        return ft.ChartAxis(labels=labels, labels_size=40)
+
+
+    def get_last_7_weekdays():
+        dias = []
+        hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
+
+        nomes = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
+
+        for i in range(6, -1, -1):   # 6 dias atrás até hoje
+            dia = hoje - timedelta(days=i)
+            dia_semana = nomes[dia.weekday()]
+            dias.append((dia.day, dia_semana))
+
+        return dias
+
+    weekdays = get_last_7_weekdays()
+
+    chart = ft.LineChart (
+        data_series=data,
+        border=ft.Border(
+            bottom=ft.BorderSide(4, ft.Colors.with_opacity(0.5, ft.Colors.ON_SURFACE))
+        ),
+        left_axis=[], #build_left_axis_from_data(data, divisions=6),
+        bottom_axis = ft.ChartAxis(
+            labels=[
+                ft.ChartAxisLabel(
+                    value=day_number,
+                    label=ft.Container(
+                        ft.Text(
+                            weekday_name,  # ← aqui entra "Seg", "Ter", etc.
+                            size=16,
+                            weight=ft.FontWeight.BOLD,
+                            color=ft.Colors.BLACK,
+                        ),
+                        margin=ft.margin.only(top=10),
+                    ),
+                )
+                for day_number, weekday_name in weekdays
+            ],
+            labels_size=32,
+        ),
+        tooltip_bgcolor=ft.Colors.with_opacity(0.8, ft.Colors.BLUE_GREY),
+        min_y=get_min_y_and_max_y(data)[0],
+        max_y=((get_min_y_and_max_y(data)[1]) * 1.10),
+        min_x=int(datetime.now(ZoneInfo("America/Sao_Paulo")).day)-7,
+        max_x=int(datetime.now(ZoneInfo("America/Sao_Paulo")).day)+1,
+        expand=True,
+    )
+
+    return chart

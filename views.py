@@ -3,6 +3,8 @@ from models import *
 import flet.map as map
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+import pandas as pd
+import numpy as np
 
 
 def create_page_login(page):
@@ -101,7 +103,437 @@ def create_page_login(page):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 #Página de Login  
+
+def create_page_data(page):
+
+    loading = LoadingPages(page)
+    textthemes = TextTheme()
+    texttheme1 = textthemes.create_text_theme1()
+
+    from functions import get_menu, return_line_chart
+    page.drawer = get_menu(ft, page)
+
+    # AppBar
+    page.appbar = ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
+        bgcolor=ft.Colors.WHITE70,
+        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
+    )
+
+    data_1 = [
+        ft.LineChartData(
+            data_points=[
+                ft.LineChartDataPoint(0, 0),
+                ft.LineChartDataPoint(0, 0),
+                ft.LineChartDataPoint(0, 0),
+                ft.LineChartDataPoint(0, 0),
+                ft.LineChartDataPoint(0, 0),
+                ft.LineChartDataPoint(0, 0),
+                ft.LineChartDataPoint(0, 0),
+            ],
+            stroke_width=8,
+            color=ft.Colors.LIGHT_GREEN,
+            curved=True,
+            stroke_cap_round=True,
+        ),
+    ]
+
+    container_form1 = ft.Container(content=None,
+                                    alignment=ft.alignment.top_center,
+                                    bgcolor=ft.Colors.WHITE,
+                                    border_radius=20,
+                                    padding=10,
+                                    height=((page.height) / 1.3),
+                                    col={"xs" : 12, "lg" : 4},
+                                    )
+    
+    container_form2 = ft.Container(content=None,
+                                    alignment=ft.alignment.top_center,
+                                    bgcolor=ft.Colors.WHITE,
+                                    border_radius=20,
+                                    padding=10,
+                                    height=((page.height) / 1.3),
+                                    col={"xs" : 12, "lg" : 8},
+                                    )
+    
+    container_form3 = ft.Container(content=None,
+                                    alignment=ft.alignment.top_center,
+                                    bgcolor=ft.Colors.WHITE,
+                                    border_radius=20,
+                                    padding=10,
+                                    height=((page.height) / 1.3),
+                                    col={"xs" : 12, "lg" : 4},
+                                    )
+    
+    container_form4 = ft.Container(content=None,
+                                    alignment=ft.alignment.top_center,
+                                    bgcolor=ft.Colors.WHITE,
+                                    border_radius=20,
+                                    padding=10,
+                                    height=((page.height) / 1.3),
+                                    col={"xs" : 12, "lg" : 8},
+                                    )
+    
+    
+    #....................................................................
+    # Requisição de Projetos
+
+    base = SupaBase(page=None)
+    get_projects = ((base.get_projects_data()).json())
+    get_users = ((base.get_all_user_data_filter_est()).json())
+    get_models = ((base.get_all_models()).json())
+    get_logs = ((base.get_all_logs()).json())
+
+
+    list_projects = []
+
+    for project in get_projects:
+
+        def get_name_project(project):
+            return project["name_project"]
+    
+        def get_subprojects(project):
+            return project["current_subprojects"].split(',')
+
+        def get_codes(project):
+
+            count_poligons = 0
+            count_unknown = 0
+
+            for model in get_models:
+                if model["subproject"] in get_subprojects(project):
+                    if model["status"] != "Incompleto":
+                        count_poligons = count_poligons + int(model["polygons"])
+                        count_unknown = count_unknown + (int(model["polygons"]) - int(model["numbers"]))
+                    else:
+                        count_poligons = count_poligons + int(model["numbers"])
+                        count_unknown = count_unknown + 0
+
+            return count_poligons - count_unknown
+        
+        def get_data_project(project):
+
+            dicio_logs = {
+
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=1))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=2))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=3))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=4))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=5))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=6))).strftime("%d/%m/%Y"): {},
+
+            }
+
+            for log in get_logs:
+
+                if log["subproject"] in get_subprojects(project):
+
+                    if log["date"].split()[0][:-1] in dicio_logs.keys():
+
+                        if log["action"] == "Inserção":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"])))]
+
+                        else:
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]) - int(log["old_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"]) - int(log["old_numbers"])))]
+            
+
+            dicio_final = {}
+
+            for data, subprojetos in dicio_logs.items():
+
+                total = 0
+
+                for lista_valores in subprojetos.values():
+                    if lista_valores:                    # evita erro com listas vazias
+                        total += max(lista_valores)      # pega o maior da lista
+
+                dicio_final[data] = total
+
+
+            return dicio_final
+        
+        def get_line_chart_project(data):
+
+            # Ordena as datas em ordem crescente
+            datas_ordenadas = sorted(
+                data.keys(),
+                key=lambda d: datetime.strptime(d, "%d/%m/%Y")
+            )
+
+            # Monta os pontos do gráfico
+            pontos = [
+                ft.LineChartDataPoint(
+                    int(d[:2]),     # pega o dia da data --> "19/11/2025"[:2] = 19
+                    data[d],         # valor correspondente
+                    point=True,
+                )
+                for d in datas_ordenadas
+            ]
+
+            data_line = [
+                ft.LineChartData(
+                    data_points=pontos,
+                    stroke_width=8,
+                    color=ft.Colors.LIGHT_GREEN,
+                    stroke_cap_round=True,
+                )
+            ]
+
+            return data_line
+        
+        def update_chart1(data):
+
+            container_form2.content = return_line_chart(ft, data)
+            container_form2.update()
+            
+        def handle_click(project):
+            def _click(e):
+                dados = get_data_project(project)
+                pontos = get_line_chart_project(dados)
+                update_chart1(pontos)
+            return _click
+
+
+        list_projects.append(
+            ft.DataRow(cells=[
+                            ft.DataCell(ft.Text(value=f"{get_name_project(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=f"{get_codes(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                on_click=handle_click(project),
+                                bgcolor=ft.Colors.BLUE,
+                                icon_color=ft.Colors.WHITE,
+                                )),
+                        ]
+                )
+        )
+
+
+   
+    # Requisição de Projetos
+    #....................................................................
+
+    #....................................................................
+    # Requisição de Usuarios
+
+    list_users = []
+
+    for user in get_users:
+
+        def get_name(user):
+            return user["username"]
+    
+        def get_data_user(user):
+
+            dicio_logs = {
+
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=1))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=2))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=3))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=4))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=5))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=6))).strftime("%d/%m/%Y"): {},
+
+            }
+
+            for log in get_logs:
+
+                if log["user"] == user["username"]:
+
+                    if log["date"].split()[0][:-1] in dicio_logs.keys():
+
+                        if log["action"] == "Inserção":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"])))]
+
+                        else:
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]) - int(log["old_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"]) - int(log["old_numbers"])))]
+            
+            
+
+            dicio_final = {}
+
+            for data, subprojetos in dicio_logs.items():
+
+                total = 0
+
+                for lista_valores in subprojetos.values():
+                    if lista_valores:                    # evita erro com listas vazias
+                        total += max(lista_valores)      # pega o maior da lista
+
+                dicio_final[data] = total
+
+
+            return dicio_final
+        
+        def get_line_chart_user(data):
+
+            # Ordena as datas em ordem crescente
+            datas_ordenadas = sorted(
+                data.keys(),
+                key=lambda d: datetime.strptime(d, "%d/%m/%Y")
+            )
+
+            # Monta os pontos do gráfico
+            pontos = [
+                ft.LineChartDataPoint(
+                    int(d[:2]),     # pega o dia da data --> "19/11/2025"[:2] = 19
+                    data[d],        # valor correspondente
+                    point=True,                 
+                )
+                for d in datas_ordenadas
+            ]
+
+            data_line = [
+                ft.LineChartData(
+                    data_points=pontos,
+                    stroke_width=8,
+                    color=ft.Colors.LIGHT_GREEN,
+                    stroke_cap_round=True,
+                )
+            ]
+
+            return data_line
+        
+        def update_chart2(data):
+
+            container_form4.content = return_line_chart(ft, data)
+            container_form4.update()
+
+        def handle_click(user):
+            def _click(e):
+                dados = get_data_user(user)
+                pontos = get_line_chart_user(dados)
+                update_chart2(pontos)
+            return _click
+
+
+        list_users.append(
+            ft.DataRow(cells=[
+                            ft.DataCell(ft.Text(value=f"{get_name(user)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                on_click=handle_click(user),
+                                bgcolor=ft.Colors.BLUE,
+                                icon_color=ft.Colors.WHITE,
+                                )),
+                        ]
+                )
+        )
+
+
+   
+    # Requisição de Usuarios
+    #....................................................................
+
+    history_list = ft.Column(
+        controls=[
+            ft.Container(
+                padding=0,  
+                expand=True,  
+                theme=texttheme1,
+                content=ft.DataTable(
+                    data_row_max_height=50,
+                    column_spacing=40,  
+                    expand=True,  
+                    columns=[
+                        ft.DataColumn(ft.Text(value="Projeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                        ft.DataColumn(ft.Text(value="Códigos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+
+                    ],
+                    rows=list_projects,  
+                ),
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,  
+        alignment=ft.MainAxisAlignment.CENTER,  
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        expand=True,  
+    )
+    history_list2 = ft.Column(
+        controls=[
+            ft.Container(
+                padding=0,  
+                expand=True,  
+                theme=texttheme1,
+                content=ft.DataTable(
+                    data_row_max_height=50,
+                    column_spacing=40,  
  
+                    columns=[
+                        ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+
+                    ],
+                    rows=list_users,  
+                ),
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,  
+        alignment=ft.MainAxisAlignment.CENTER,  
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        expand=True,  
+    )
+   
+
+    container_form1.content = history_list
+    container_form2.content = return_line_chart(ft, data_1)
+    container_form3.content = history_list2
+    container_form4.content = return_line_chart(ft, data_1)
+
+
+                                    
+    container2 = ft.Container(content=ft.ResponsiveRow(controls=[container_form1, container_form2],
+                                                 alignment=ft.MainAxisAlignment.CENTER,
+                                                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                 spacing=10,
+                                                 ),
+                                                 
+                              alignment=ft.alignment.center,
+                              col=12,
+                              )
+    
+
+    container3 = ft.Container(content=ft.ResponsiveRow(controls=[container_form3, container_form4],
+                                                 alignment=ft.MainAxisAlignment.CENTER,
+                                                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                 spacing=10,
+                                                 ),
+                                                 
+                              alignment=ft.alignment.center,
+                              col=12,
+                              )
+
+    
+    return ft.ResponsiveRow(
+        col=12,
+        expand=True,
+        controls=[container2, container3],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+
+
 def create_page_user(page):
 
     loading = LoadingPages(page)
@@ -1448,94 +1880,8 @@ def create_page_project(page):
     dict_profile = page.client_storage.get("profile")
     buttons = Buttons(page)
 
-    def go_url(url):
-        profile = page.client_storage.get("profile")
-        profile.update({
-            "deliveries_filter": [None],
-            "models_filter": [None],
-            "freelancers_filter": [None],
-            "files_filter": [None],
-        })
-        page.client_storage.set("profile", profile)
-        page.go(url)
-
-    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
-                                      text="Logout",
-                                      color=ft.Colors.RED,
-                                      col=12,
-                                      padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
-                                      text= "Projetos",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,) 
-    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
-                                            text= "Arquivos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
-                                            text= "Entregas",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
-                                            text= "Freelancers",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
-                                            text= "Modelos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
-                                            text= "Logs",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
-                                            text= "Financeiro",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    
-    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
-                                      text= "Projeto",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,)
-
-
-
-    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
-                                            text= "Perfil",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-
-    drawer = ft.NavigationDrawer(
-    controls=[
-        btn_projeto,
-        btn_see_freelancers,
-        btn_payment,
-        btn_see_file,
-        btn_see_deliverys,
-        btn_see_models,
-        btn_see_logs,
-        btn_exit,
-        ]
-    )
-    
-    if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment)
-        drawer.controls.remove(btn_see_logs)
-        drawer.controls.insert(0, btn_profile)
-        drawer.controls.insert(1, btn_projeto_user)
-
-    page.drawer = drawer
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -4234,94 +4580,8 @@ def create_page_payment(page, month=None):
     dict_profile = page.client_storage.get("profile")
     buttons = Buttons(page)
     
-    def go_url(url):
-        profile = page.client_storage.get("profile")
-        profile.update({
-            "deliveries_filter": [None],
-            "models_filter": [None],
-            "freelancers_filter": [None],
-            "files_filter": [None],
-        })
-        page.client_storage.set("profile", profile)
-        page.go(url)
-
-    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
-                                      text="Logout",
-                                      color=ft.Colors.RED,
-                                      col=12,
-                                      padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
-                                      text= "Projetos",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,) 
-    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
-                                            text= "Arquivos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
-                                            text= "Entregas",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
-                                            text= "Freelancers",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
-                                            text= "Modelos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
-                                            text= "Logs",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
-                                            text= "Financeiro",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    
-    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
-                                      text= "Projeto",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,)
-
-
-
-    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
-                                            text= "Perfil",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-
-    drawer = ft.NavigationDrawer(
-    controls=[
-        btn_projeto,
-        btn_see_freelancers,
-        btn_payment,
-        btn_see_file,
-        btn_see_deliverys,
-        btn_see_models,
-        btn_see_logs,
-        btn_exit,
-        ]
-    )
-    
-    if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment)
-        drawer.controls.remove(btn_see_logs)
-        drawer.controls.insert(0, btn_profile)
-        drawer.controls.insert(1, btn_projeto_user)
-
-    page.drawer = drawer
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -4612,91 +4872,8 @@ def create_page_see_freelancers(page):
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1()
 
-    def go_url(url):
-        profile = page.client_storage.get("profile")
-        profile.update({
-            "deliveries_filter": [None],
-            "models_filter": [None],
-            "freelancers_filter": [None],
-            "files_filter": [None],
-        })
-        page.client_storage.set("profile", profile)
-        page.go(url)
-
-    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
-                                      text="Logout",
-                                      color=ft.Colors.RED,
-                                      col=12,
-                                      padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
-                                      text= "Projetos",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,) 
-    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
-                                            text= "Arquivos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
-                                            text= "Entregas",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
-                                            text= "Freelancers",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
-                                            text= "Modelos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
-                                            text= "Logs",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
-                                            text= "Financeiro",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_profile = buttons.create_button(on_click=lambda e: page.go("/freelancers/token"),
-                                            text= "Perfil",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
-                                      text= "Projeto",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,)
-    
-    drawer = ft.NavigationDrawer(
-    controls=[
-        btn_projeto,
-        btn_see_freelancers,
-        btn_payment,
-        btn_see_file,
-        btn_see_deliverys,
-        btn_see_models,
-        btn_see_logs,
-        btn_exit,
-        ]
-    )
-    
-    if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment)
-        drawer.controls.remove(btn_see_logs)
-        drawer.controls.insert(0, btn_profile)
-        drawer.controls.insert(1, btn_projeto_user)
-
-
-    page.drawer = drawer
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -5623,94 +5800,9 @@ def create_page_see_deliverys(page):
     filtros = dict_profile["deliveries_filter"]
 
     buttons = Buttons(page)
-    def go_url(url):
-        profile = page.client_storage.get("profile")
-        profile.update({
-            "deliveries_filter": [None],
-            "models_filter": [None],
-            "freelancers_filter": [None],
-            "files_filter": [None],
-        })
-        page.client_storage.set("profile", profile)
-        page.go(url)
 
-    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
-                                      text="Logout",
-                                      color=ft.Colors.RED,
-                                      col=12,
-                                      padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
-                                      text= "Projetos",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,) 
-    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
-                                            text= "Arquivos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
-                                            text= "Entregas",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
-                                            text= "Freelancers",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
-                                            text= "Modelos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
-                                            text= "Logs",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
-                                            text= "Financeiro",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    
-    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
-                                      text= "Projeto",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,)
-
-
-
-    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
-                                            text= "Perfil",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-
-    drawer = ft.NavigationDrawer(
-    controls=[
-        btn_projeto,
-        btn_see_freelancers,
-        btn_payment,
-        btn_see_file,
-        btn_see_deliverys,
-        btn_see_models,
-        btn_see_logs,
-        btn_exit,
-        ]
-    )
-    
-    if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment)
-        drawer.controls.remove(btn_see_logs)
-        drawer.controls.insert(0, btn_profile)
-        drawer.controls.insert(1, btn_projeto_user)
-
-    page.drawer = drawer
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -6836,90 +6928,8 @@ def create_page_files(page, filtros=[None]):
     filtros = dict_profile["files_filter"]
 
 
-    def go_url(url):
-        profile = page.client_storage.get("profile")
-        profile.update({
-            "deliveries_filter": [None],
-            "models_filter": [None],
-            "freelancers_filter": [None],
-            "files_filter": [None],
-        })
-        page.client_storage.set("profile", profile)
-        page.go(url)
-
-    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
-                                      text="Logout",
-                                      color=ft.Colors.RED,
-                                      col=12,
-                                      padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
-                                      text= "Projetos",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,) 
-    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
-                                            text= "Arquivos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
-                                            text= "Entregas",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
-                                            text= "Freelancers",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
-                                            text= "Modelos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
-                                            text= "Logs",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
-                                            text= "Financeiro",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)    
-    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
-                                      text= "Projeto",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,)
-    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
-                                            text= "Perfil",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-
-    drawer = ft.NavigationDrawer(
-    controls=[
-        btn_projeto,
-        btn_see_freelancers,
-        btn_payment,
-        btn_see_file,
-        btn_see_deliverys,
-        btn_see_models,
-        btn_see_logs,
-        btn_exit,
-        ]
-    )
-    
-    if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment)
-        drawer.controls.remove(btn_see_logs)
-        drawer.controls.insert(0, btn_profile)
-        drawer.controls.insert(1, btn_projeto_user)
-
-    page.drawer = drawer
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -7589,94 +7599,9 @@ def create_page_see_models(page):
     texttheme1 = textthemes.create_text_theme1()
 
     buttons = Buttons(page)
-    def go_url(url):
-        profile = page.client_storage.get("profile")
-        profile.update({
-            "deliveries_filter": [None],
-            "models_filter": [None],
-            "freelancers_filter": [None],
-            "files_filter": [None],
-        })
-        page.client_storage.set("profile", profile)
-        page.go(url)
 
-    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
-                                      text="Logout",
-                                      color=ft.Colors.RED,
-                                      col=12,
-                                      padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
-                                      text= "Projetos",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,) 
-    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
-                                            text= "Arquivos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
-                                            text= "Entregas",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
-                                            text= "Freelancers",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
-                                            text= "Modelos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
-                                            text= "Logs",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
-                                            text= "Financeiro",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-
-    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
-                                      text= "Projeto",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,)
-
-
-
-    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
-                                            text= "Perfil",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-
-    drawer = ft.NavigationDrawer(
-    controls=[
-        btn_projeto,
-        btn_see_freelancers,
-        btn_payment,
-        btn_see_file,
-        btn_see_deliverys,
-        btn_see_models,
-        btn_see_logs,
-        btn_exit,
-        ]
-    )
-    
-    if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment)
-        drawer.controls.remove(btn_see_logs)
-        drawer.controls.insert(0, btn_profile)
-        drawer.controls.insert(1, btn_projeto_user)
-
-    page.drawer = drawer
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
 
     # AppBar
     page.appbar = ft.AppBar(
@@ -9352,93 +9277,9 @@ def create_page_see_logs(page):
     texttheme1 = textthemes.create_text_theme1()
 
     buttons = Buttons(page)
-    def go_url(url):
-        profile = page.client_storage.get("profile")
-        profile.update({
-            "deliveries_filter": [None],
-            "models_filter": [None],
-            "freelancers_filter": [None],
-            "files_filter": [None],
-        })
-        page.client_storage.set("profile", profile)
-        page.go(url)
 
-    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
-                                      text="Logout",
-                                      color=ft.Colors.RED,
-                                      col=12,
-                                      padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
-                                      text= "Projetos",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,) 
-    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
-                                            text= "Arquivos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
-                                            text= "Entregas",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
-                                            text= "Freelancers",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
-                                            text= "Modelos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
-                                            text= "Logs",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
-                                            text= "Financeiro",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    
-    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
-                                      text= "Projeto",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,)
-
-
-    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
-                                            text= "Perfil",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-
-    drawer = ft.NavigationDrawer(
-    controls=[
-        btn_projeto,
-        btn_see_freelancers,
-        btn_payment,
-        btn_see_file,
-        btn_see_deliverys,
-        btn_see_models,
-        btn_see_logs,
-        btn_exit,
-        ]
-    )
-    
-    if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment)
-        drawer.controls.remove(btn_see_logs)
-        drawer.controls.insert(0, btn_profile)
-        drawer.controls.insert(1, btn_projeto_user)
-
-    page.drawer = drawer
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
 
     # AppBar
     page.appbar = ft.AppBar(

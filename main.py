@@ -15,6 +15,7 @@ def main(page: ft.Page):
     url = {
             "/": lambda: loading.new_loading_page(page=page, call_layout=lambda: create_page_login(page)),
             "/freelancers": lambda: loading.new_loading_page(page, lambda: create_page_see_freelancers(page)),
+            "/dashboard": lambda: loading.new_loading_page(page, lambda: create_page_data(page)),
             "/projects": lambda: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page)),
             "/files": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
             "/files/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_files_details(page)),
