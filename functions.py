@@ -148,7 +148,7 @@ def return_line_chart(ft, data, title):
 
         nomes = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
-        for i in range(6, -1, -1):   # 6 dias atrás até hoje
+        for i in range(7, -1, -1):   # 6 dias atrás até hoje
             dia = hoje - timedelta(days=i)
             dia_semana = nomes[dia.weekday()]
             dias.append((dia.day, dia_semana))
@@ -187,7 +187,7 @@ def return_line_chart(ft, data, title):
         tooltip_bgcolor=ft.Colors.with_opacity(0.8, ft.Colors.BLUE_GREY),
         min_y=get_min_y_and_max_y(data)[0],
         max_y=((get_min_y_and_max_y(data)[1]) * 1.1),
-        min_x=int(datetime.now(ZoneInfo("America/Sao_Paulo")).day)-7,
+        min_x=int(datetime.now(ZoneInfo("America/Sao_Paulo")).day)-8,
         max_x=int(datetime.now(ZoneInfo("America/Sao_Paulo")).day)+1,
         expand=True,
     )

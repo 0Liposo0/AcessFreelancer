@@ -232,6 +232,7 @@ def create_page_data(page):
                 ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=4))).strftime("%d/%m/%Y"): {},
                 ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=5))).strftime("%d/%m/%Y"): {},
                 ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=6))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=7))).strftime("%d/%m/%Y"): {},
 
             }
 
@@ -346,7 +347,13 @@ def create_page_data(page):
     for user in get_users:
 
         def get_name(user):
-            return user["username"]
+
+            name = f"{user["name"].split(" ")[0]} {user["name"].split(" ")[1]}"
+
+            if user["name"].split(" ")[1] == "de":
+                 name = f"{user["name"].split(" ")[0]} {user["name"].split(" ")[2]}"  
+
+            return name
     
         def get_data_user(user):
 
@@ -359,6 +366,7 @@ def create_page_data(page):
                 ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=4))).strftime("%d/%m/%Y"): {},
                 ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=5))).strftime("%d/%m/%Y"): {},
                 ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=6))).strftime("%d/%m/%Y"): {},
+                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=7))).strftime("%d/%m/%Y"): {},
 
             }
 
