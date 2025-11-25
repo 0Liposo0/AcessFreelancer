@@ -146,7 +146,7 @@ def create_page_data(page):
                                     border_radius=20,
                                     padding=10,
                                     height=((page.height) / 1.3),
-                                    col={"xs" : 12, "lg" : 4},
+                                    col={"xs" : 12, "lg" : 5},
                                     )
     
     container_form2 = ft.Container(content=None,
@@ -155,7 +155,7 @@ def create_page_data(page):
                                     border_radius=20,
                                     padding=10,
                                     height=((page.height) / 1.3),
-                                    col={"xs" : 12, "lg" : 8},
+                                    col={"xs" : 12, "lg" : 7},
                                     )
     
     container_form3 = ft.Container(content=None,
@@ -212,6 +212,14 @@ def create_page_data(page):
                         count_unknown = count_unknown + 0
 
             return count_poligons - count_unknown
+
+        def get_predicted_codes(project):
+
+            return project["predicted_lots"]
+        
+        def get_final(project):
+
+            return project["final_delivery"]
         
         def get_data_project(project):
 
@@ -263,6 +271,10 @@ def create_page_data(page):
 
             return dicio_final
         
+        def get_sum_data_project(dicio):
+
+            return sum(v for v in dicio.values() if isinstance(v, (int, float)))
+
         def get_line_chart_project(data):
 
             # Ordena as datas em ordem crescente
@@ -292,23 +304,25 @@ def create_page_data(page):
 
             return data_line
         
-        def update_chart1(data):
+        def update_chart1(data, title):
 
-            container_form2.content = return_line_chart(ft, data)
+            container_form2.content = return_line_chart(ft, data, title)
             container_form2.update()
             
         def handle_click(project):
             def _click(e):
+                name = get_name_project(project)
                 dados = get_data_project(project)
+                soma = get_sum_data_project(dados)
                 pontos = get_line_chart_project(dados)
-                update_chart1(pontos)
+                update_chart1(pontos, f"{name} - {soma}")
             return _click
 
 
         list_projects.append(
             ft.DataRow(cells=[
-                            ft.DataCell(ft.Text(value=f"{get_name_project(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{get_codes(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=f"{get_name_project(project)}  {get_final(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=f"{get_codes(project)} / {get_predicted_codes(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
                                 on_click=handle_click(project),
@@ -384,7 +398,11 @@ def create_page_data(page):
 
 
             return dicio_final
-        
+
+        def get_sum_data_user(dicio):
+
+            return sum(v for v in dicio.values() if isinstance(v, (int, float)))
+
         def get_line_chart_user(data):
 
             # Ordena as datas em ordem crescente
@@ -414,16 +432,18 @@ def create_page_data(page):
 
             return data_line
         
-        def update_chart2(data):
+        def update_chart2(data, title):
 
-            container_form4.content = return_line_chart(ft, data)
+            container_form4.content = return_line_chart(ft, data, title)
             container_form4.update()
 
         def handle_click(user):
             def _click(e):
+                name = get_name(user)
                 dados = get_data_user(user)
+                soma = get_sum_data_user(dados)
                 pontos = get_line_chart_user(dados)
-                update_chart2(pontos)
+                update_chart2(pontos, f"{name} - {soma}")
             return _click
 
 
@@ -497,9 +517,9 @@ def create_page_data(page):
    
 
     container_form1.content = history_list
-    container_form2.content = return_line_chart(ft, data_1)
+    container_form2.content = return_line_chart(ft, data_1, None)
     container_form3.content = history_list2
-    container_form4.content = return_line_chart(ft, data_1)
+    container_form4.content = return_line_chart(ft, data_1, None)
 
 
                                     

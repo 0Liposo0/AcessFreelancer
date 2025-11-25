@@ -104,7 +104,8 @@ def get_menu(ft, page):
 
     return drawer
 
-def return_line_chart(ft, data):
+def return_line_chart(ft, data, title):
+
 
     def get_min_y_and_max_y(data):
         data_points = data[0].data_points
@@ -114,45 +115,32 @@ def return_line_chart(ft, data):
         min_y = min(point.y for point in data_points)
         max_y = max(point.y for point in data_points)
 
-
         return [min_y, max_y]
     
     
-    def build_left_axis_from_data(data, divisions=6):
-        min_y, max_y = get_min_y_and_max_y(data)
+    def build_left_axis_from_data(tips, divisions=3):
+        min_y, max_y = get_min_y_and_max_y(tips)
 
-        # Evita problema de min == max
-        if max_y == min_y:
-            min_y = 0
-            max_y = max_y if max_y > 0 else 1
-
-        # Garante sempre começar do zero (opcional, mas recomendado)
         min_y = 0
-
-        step = (max_y - min_y) / divisions
+        step = int((max_y - min_y) / divisions)
+        step = int(round(step / 10) * 10)
 
         labels = []
         for i in range(1, divisions + 1):
-            value = min_y + i * step
-            value_int = int(round(value))
+            value = int(min_y + i * step)
 
             labels.append(
                 ft.ChartAxisLabel(
-                    value=value_int,
+                    value=value,
                     label=ft.Text(
-                        str(value_int),
-                        size=14,
+                        str(value),
                         weight=ft.FontWeight.BOLD,
                         color=ft.Colors.BLACK,
                     ),
                 )
             )
 
-        for lbl in labels:
-            print("value:", lbl.value)
-
-        return ft.ChartAxis(labels=labels, labels_size=40)
-
+        return ft.ChartAxis(labels=labels, labels_size=30, labels_interval=step)
 
     def get_last_7_weekdays():
         dias = []
@@ -174,7 +162,7 @@ def return_line_chart(ft, data):
         border=ft.Border(
             bottom=ft.BorderSide(4, ft.Colors.with_opacity(0.5, ft.Colors.ON_SURFACE))
         ),
-        left_axis=[], #build_left_axis_from_data(data, divisions=6),
+        left_axis= build_left_axis_from_data(data, divisions=3),
         bottom_axis = ft.ChartAxis(
             labels=[
                 ft.ChartAxisLabel(
@@ -192,13 +180,17 @@ def return_line_chart(ft, data):
                 for day_number, weekday_name in weekdays
             ],
             labels_size=32,
+            title=ft.Text(str(title),color=ft.Colors.BLACK),
+            title_size = 50
+
         ),
         tooltip_bgcolor=ft.Colors.with_opacity(0.8, ft.Colors.BLUE_GREY),
         min_y=get_min_y_and_max_y(data)[0],
-        max_y=((get_min_y_and_max_y(data)[1]) * 1.10),
+        max_y=((get_min_y_and_max_y(data)[1]) * 1.1),
         min_x=int(datetime.now(ZoneInfo("America/Sao_Paulo")).day)-7,
         max_x=int(datetime.now(ZoneInfo("America/Sao_Paulo")).day)+1,
         expand=True,
     )
+
 
     return chart
