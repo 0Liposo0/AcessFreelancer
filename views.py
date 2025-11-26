@@ -203,7 +203,7 @@ def create_page_data(page):
             count_unknown = 0
 
             for model in get_models:
-                if model["subproject"] in get_subprojects(project):
+                if any(model["subproject"].startswith(item) for item in get_subprojects(project)):
                     if model["status"] != "Incompleto":
                         count_poligons = count_poligons + int(model["polygons"])
                         count_unknown = count_unknown + (int(model["polygons"]) - int(model["numbers"]))
@@ -238,7 +238,7 @@ def create_page_data(page):
 
             for log in get_logs:
 
-                if log["subproject"] in get_subprojects(project):
+                if any(log["subproject"].startswith(item) for item in get_subprojects(project)):
 
                     if log["date"].split()[0][:-1] in dicio_logs.keys():
 
@@ -248,6 +248,13 @@ def create_page_data(page):
                                 dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]))) 
                             else:
                                 dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"])))]
+
+                        elif log["action"] == "Exclusão":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append(-(int(log["new_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [(-(int(log["new_numbers"])))]
 
                         else:
 
@@ -264,11 +271,14 @@ def create_page_data(page):
                 total = 0
 
                 for lista_valores in subprojetos.values():
-                    if lista_valores:                    # evita erro com listas vazias
-                        total += max(lista_valores)      # pega o maior da lista
+                    if lista_valores:
+
+                        maximo = max(lista_valores)
+                        negativos = sum(v for v in lista_valores if v < 0)
+
+                        total += maximo - abs(negativos)  # subtrai os negativos
 
                 dicio_final[data] = total
-
 
             return dicio_final
         
@@ -383,6 +393,13 @@ def create_page_data(page):
                             else:
                                 dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"])))]
 
+                        elif log["action"] == "Exclusão":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append(-(int(log["new_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [(-(int(log["new_numbers"])))]
+
                         else:
 
                             if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
@@ -399,11 +416,14 @@ def create_page_data(page):
                 total = 0
 
                 for lista_valores in subprojetos.values():
-                    if lista_valores:                    # evita erro com listas vazias
-                        total += max(lista_valores)      # pega o maior da lista
+                    if lista_valores:
+
+                        maximo = max(lista_valores)
+                        negativos = sum(v for v in lista_valores if v < 0)
+
+                        total += maximo - abs(negativos)  # subtrai os negativos
 
                 dicio_final[data] = total
-
 
             return dicio_final
 
@@ -7853,7 +7873,13 @@ def create_page_see_models(page):
     # Preenche a lista com os dados das entregas
     for delev in get_json:
 
-        project = next((k for k, v in dicio_projects.items() if delev['subproject'] in v), None)
+        project = next(
+            (
+                k for k, v in dicio_projects.items()
+                if any(delev['subproject'].startswith(item) for item in v)
+            ),
+            None
+        )
         
         def go_token(delev):
             profile = page.client_storage.get("profile")
@@ -7992,7 +8018,7 @@ def create_page_see_models(page):
                 (filtros_ativos["mes"] is None or filtros_ativos["mes"] == mes) and
                 (filtros_ativos["ano"] is None or filtros_ativos["ano"] == ano) and
                 (filtros_ativos["projeto"] is None or filtros_ativos["projeto"] == project) and
-                (filtros_ativos["subprojeto"] is None or filtros_ativos["subprojeto"] == subproject) and
+                (filtros_ativos["subprojeto"] is None or subproject.startswith(filtros_ativos["subprojeto"])) and
                 (filtros_ativos["usuario"] is None or filtros_ativos["usuario"] == usuario) and
                 (filtros_ativos["status"] is None or filtros_ativos["status"] == status)
             )
@@ -8875,6 +8901,49 @@ def create_page_new_model(page):
     file_old_name = []
     add_file = [False]
 
+    def checkbox_changed(view_deliveries):
+
+        if view_deliveries["share"].controls[0].value:
+
+            data_subproject = view_deliveries.copy()
+
+            data_subproject["username"] = view_deliveries["username"].value
+            data_subproject["date"] = view_deliveries["date"].value
+            data_subproject["subproject"] = view_deliveries["subproject"].value
+            data_subproject["polygons"] = view_deliveries["polygons"].value
+            data_subproject["numbers"] = view_deliveries["numbers"].value
+            data_subproject["status"] = view_deliveries["status"].value
+
+
+            if any(field == "" or field is None for field in data_subproject.values()):
+                snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.YELLOW)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                view_deliveries["share"].controls[0].value = False
+                page.update()
+
+                return
+            
+            else:
+                check = (sp.get_one_model_data(data_subproject["date"], data_subproject["subproject"])).json()
+                view_deliveries["name_share"].value = f"{view_deliveries["subproject"].value}C{len(check) + 1}"
+                view_deliveries["dwg"].value = f"."
+                page.update()
+        else:
+            view_deliveries["name_share"].value = f"."
+            view_deliveries["dwg"].value = f"."
+            file_selected.clear()
+            file_name.clear()
+            file_type.clear()
+            file_old_name.clear()
+            add_file[0] = False
+
+            dropdow1.disabled = False
+            dropdow2.disabled = False
+            dropdow4.disabled = False
+            page.update()
+            
+
 
     def editar_dados(view_deliveries):
         
@@ -8889,7 +8958,9 @@ def create_page_new_model(page):
         data_subproject["numbers"] = view_deliveries["numbers"].value
         data_subproject["status"] = view_deliveries["status"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
-
+        data_subproject["share"] = view_deliveries["share"].controls[0].value
+        data_subproject["name_share"] = view_deliveries["name_share"].value
+     
         current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
         current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
         current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
@@ -8929,16 +9000,18 @@ def create_page_new_model(page):
 
             return
         
-        check = (sp.get_one_model_data(data_subproject["date"], data_subproject["subproject"])).json()
+        if not data_subproject["share"]:
+            check = (sp.get_one_model_data(data_subproject["date"], data_subproject["subproject"])).json()
+            
+            if len (check) > 0:
+                snack_bar = ft.SnackBar(content=ft.Text("Modelo especificado já cadastrado !!!"), bgcolor=ft.Colors.YELLOW)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
 
-        if len (check) > 0:
-            snack_bar = ft.SnackBar(content=ft.Text("Modelo especificado já cadastrado !!!"), bgcolor=ft.Colors.YELLOW)
-            page.overlay.append(snack_bar)
-            snack_bar.open = True
-            page.update()
-
-            return
+                return
         
+
         check2 = (sp.get_one_delivery_data(data_subproject["date"], data_subproject["subproject"])).json()
 
         if len (check2) < 1:
@@ -8949,12 +9022,16 @@ def create_page_new_model(page):
 
             return
         
-
         if add_file[0] == True:
 
             response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "models")
 
             if response1.status_code == 200 or response1.status_code == 201:
+                if data_subproject["share"]:
+                    data_subproject["subproject"] = data_subproject["name_share"]
+                    logs_data["subproject"] = data_subproject["name_share"]
+                    del data_subproject["share"]
+                    del data_subproject["name_share"]
                 data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/models//{file_name[0]}"
                 response2 = sp.post_to_models_data(data_subproject)
 
@@ -9121,8 +9198,14 @@ def create_page_new_model(page):
         "polygons":ft.TextField(label="Polígonos", value=dict_profile["model_polygons"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), keyboard_type=ft.KeyboardType.NUMBER), 
         "numbers":ft.TextField(label="Numeros", value=dict_profile["model_numbers"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), keyboard_type=ft.KeyboardType.NUMBER), 
         "status":dropdow5,
-        "dwg":ft.TextField(label="DWG", value=f".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
+        "dwg":ft.TextField(label="DWG", value=f".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
+        "share": ft.Row(alignment=ft.MainAxisAlignment.CENTER, vertical_alignment=ft.CrossAxisAlignment.CENTER), 
+        "name_share":ft.TextField(label="Compartilhado", value=f".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
     }
+
+    checkbox1 = ft.Checkbox(label="Compartilhado", label_style=ft.TextStyle(color=ft.Colors.BLACK), on_change=lambda e:checkbox_changed(view_deliveries))
+
+    view_deliveries["share"].controls.append(checkbox1)
 
     def on_keyboard(e: ft.KeyboardEvent):
         profile = page.client_storage.get("profile")
@@ -9142,9 +9225,14 @@ def create_page_new_model(page):
 
         date = (view_deliveries["date"].value).split("/")
 
-        name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.{file_type[0]}'
+        if view_deliveries["share"].controls[0].value:
+            name_file = f'{view_deliveries["username"].value}_{view_deliveries["name_share"].value}_{date[0]}{date[1]}{date[2]}.{file_type[0]}'
+        else:
+            name_file = f'{view_deliveries["username"].value}_{view_deliveries["subproject"].value}_{date[0]}{date[1]}{date[2]}.{file_type[0]}'
+
         file_name.clear()
         file_name.append(name_file)
+
 
         view_deliveries["dwg"].value = file_old_name[0]
 
@@ -9157,6 +9245,7 @@ def create_page_new_model(page):
         dropdow1.disabled = True
         dropdow2.disabled = True
         dropdow4.disabled = True
+        checkbox1.disabled = True
 
         file_path = f"uploads/{file_old_name[0]}"    
 
@@ -9198,7 +9287,10 @@ def create_page_new_model(page):
 
         copy = view_deliveries.copy()
 
+
         del copy["dwg"]
+        del copy["share"]
+
 
         if any(field.value == "" or field.value is None for field in copy.values()):
             snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
@@ -9217,7 +9309,9 @@ def create_page_new_model(page):
 
     def remove_dwg(e):
 
-        view_deliveries["dwg"].value=""
+        view_deliveries["dwg"].value="."
+        view_deliveries["name_share"].value="."
+        view_deliveries["share"].controls[0].value = False
 
         file_selected.clear()
         file_name.clear()
@@ -9228,6 +9322,7 @@ def create_page_new_model(page):
         dropdow1.disabled = False
         dropdow2.disabled = False
         dropdow4.disabled = False
+        checkbox1.disabled = False
 
 
         page.update()

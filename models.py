@@ -1789,7 +1789,7 @@ class SupaBase:
         }
 
         params = { 
-                   "subproject": f"eq.{subproject}",
+                   "subproject": f"ilike.{subproject}%",
                    "date": f"eq.{date}",
                    "select": "*"
         }
@@ -1801,8 +1801,7 @@ class SupaBase:
         )   
 
         return response  
-
-    
+     
 
     def get_user_by_subproject(self, subproject, permission):
 
@@ -1866,7 +1865,7 @@ class SupaBase:
         return response
     
     def post_to_models_data(self, data):
-            
+   
         headers= {
             "apikey": self.supabase_key,
             "Authorization": f"Bearer {self.supabase_key}",
