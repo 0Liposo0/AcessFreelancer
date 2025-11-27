@@ -26,56 +26,56 @@ def get_menu(ft, page):
                                       padding=10,)
     btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
                                       text= "Projetos",
-                                      color=ft.Colors.GREY,
+                                      color=ft.Colors.INDIGO_600,
                                       col=12,
                                       padding=10,) 
     btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
                                             text= "Arquivos",
-                                            color=ft.Colors.GREY,
+                                            color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
     btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
                                             text= "Entregas",
-                                            color=ft.Colors.GREY,
+                                            color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
     btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
                                             text= "Freelancers",
-                                            color=ft.Colors.GREY,
+                                            color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
     btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
                                             text= "Modelos",
-                                            color=ft.Colors.GREY,
+                                            color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
     btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
                                             text= "Logs",
-                                            color=ft.Colors.GREY,
+                                            color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
-                                            color=ft.Colors.GREY,
+                                            color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
     
     btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
                                       text= "Projeto",
-                                      color=ft.Colors.GREY,
+                                      color=ft.Colors.INDIGO_600,
                                       col=12,
                                       padding=10,)
 
 
     btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
                                             text= "Perfil",
-                                            color=ft.Colors.GREY,
+                                            color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
     
     btn_dashboard = buttons.create_button(on_click=lambda e: page.go("/dashboard"),
                                       text= "Dashboard",
-                                      color=ft.Colors.GREY,
+                                      color=ft.Colors.INDIGO_600,
                                       col=12,
                                       padding=10,)
 
@@ -90,7 +90,8 @@ def get_menu(ft, page):
         btn_see_models,
         btn_see_logs,
         btn_exit,
-        ]
+        ],
+    bgcolor=ft.Colors.WHITE,
     )
     
     if dict_profile["permission"] != "adm":
@@ -103,6 +104,15 @@ def get_menu(ft, page):
         drawer.controls.insert(1, btn_projeto_user)
 
     return drawer
+
+def get_app_bar(ft, page):
+
+    return ft.AppBar(
+        leading_width=40,
+        center_title=True,
+        bgcolor=ft.Colors.WHITE,
+        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
+    )
 
 def return_line_chart(ft, data, title):
 

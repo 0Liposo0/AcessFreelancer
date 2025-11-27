@@ -1,5 +1,6 @@
 import flet as ft
 from models import *
+from functions import *
 import flet.map as map
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -114,13 +115,7 @@ def create_page_data(page):
     page.drawer = get_menu(ft, page)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
-    )
+    page.appbar = get_app_bar(ft, page)
 
     data_1 = [
         ft.LineChartData(
@@ -1567,15 +1562,7 @@ def create_page_initial_adm(page):
     
     page.drawer = drawer
 
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(drawer), icon_color=ft.Colors.BLACK),
-        
-        
-    )
+    page.appbar = get_app_bar(ft, page)
 
     request_all_subprojects = sp.get_all_subprojects()
     request_all_subprojects_json = request_all_subprojects.json()
@@ -1932,13 +1919,7 @@ def create_page_project(page):
     page.drawer = get_menu(ft, page)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
-    )
+    page.appbar = get_app_bar(ft, page)
 
     base = SupaBase(page=None)
     get_base = base.get_projects_data()
@@ -2092,15 +2073,7 @@ def create_page_project_token(page, project):
         loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
     file_selected = []
     file_name = []
@@ -2483,13 +2456,7 @@ def create_page_project_token_user(page):
     page.drawer = drawer
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
-    )
+    page.appbar = get_app_bar(ft, page)
 
     get_base_Project = base.get_one_project_data(project)
     get_info1 = get_base_Project.json()
@@ -2514,12 +2481,7 @@ def create_page_project_token_user(page):
         get_info3 = get_base.json()
    
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-    )
+    page.appbar = get_app_bar(ft, page)
 
    
     def get_preview_image():
@@ -2813,15 +2775,7 @@ def create_page_new_project(page):
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
 
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
     containers_list = []
 
@@ -3185,15 +3139,7 @@ def create_page_subproject(page, project):
         loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
 
 
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
    
 
@@ -3468,15 +3414,7 @@ def create_page_subproject_token(page, subproject, back_project=None):
                     page.update()
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
     def go_download(view_deliveries, object):
         if view_deliveries[object].value != "." and view_deliveries[object].value != "":
@@ -3920,15 +3858,7 @@ def create_page_new_subproject(page, project):
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
 
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
     def send_to_data(view_subproject):
 
@@ -4044,15 +3974,7 @@ def create_page_new_freelancer(page):
     def go_back():
         loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
 
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
     dropdow3 = ft.Dropdown(
         options=[
@@ -4173,15 +4095,7 @@ def create_page_new_delivery(page):
 
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
     file_selected = []
     file_name = []
@@ -4632,13 +4546,7 @@ def create_page_payment(page, month=None):
     page.drawer = get_menu(ft, page)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
-    )
+    page.appbar = get_app_bar(ft, page)
 
     meses_pt_1 = {
     1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio", 6: "Junho",
@@ -4924,13 +4832,7 @@ def create_page_see_freelancers(page):
     page.drawer = get_menu(ft, page)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
-    )
+    page.appbar = get_app_bar(ft, page)
 
     get_base = base.get_all_user_data()
     get_json = get_base.json()
@@ -5391,15 +5293,7 @@ def create_page_freelancer_token(page):
             page.go("/freelancers")
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK)
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
 
     file_selected = []
@@ -5853,13 +5747,7 @@ def create_page_see_deliverys(page):
     page.drawer = get_menu(ft, page)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
-    )
+    page.appbar = get_app_bar(ft, page)
 
     if dict_profile["permission"] != "adm":
         project = ((base.get_one_project_data(dict_profile["current_project"])).json())[0]
@@ -6147,12 +6035,7 @@ def create_page_see_deliverys(page):
     load_page(1, initial=False)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-    )
+    page.appbar = get_app_bar(ft, page)
 
     filtros_ativos = {
     "dia": None,
@@ -6435,15 +6318,7 @@ def create_page_delivery_details(page):
 
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
 
     file_selected = []
@@ -6980,13 +6855,7 @@ def create_page_files(page, filtros=[None]):
     page.drawer = get_menu(ft, page)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
-    )
+    page.appbar = get_app_bar(ft, page)
 
     if dict_profile["permission"] != "adm":
         project = ((base.get_one_project_data(dict_profile["current_project"])).json())[0]
@@ -7513,15 +7382,7 @@ def create_page_files_details(page):
         page.go("/files")
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
     is_editable1 = dict_profile["permission"] != "adm"
 
@@ -7652,13 +7513,7 @@ def create_page_see_models(page):
     page.drawer = get_menu(ft, page)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
-    )
+    page.appbar = get_app_bar(ft, page)
 
     if dict_profile["permission"] != "adm":
         project = ((base.get_one_project_data(dict_profile["current_project"])).json())[0]
@@ -7983,12 +7838,7 @@ def create_page_see_models(page):
     load_page(1, initial=False)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-    )
+    page.appbar = get_app_bar(ft, page)
 
 
     filtros_ativos = {
@@ -8291,15 +8141,7 @@ def create_page_models_details(page):
         page.go("/models")
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
     file_selected = []
     file_name = []
@@ -8884,15 +8726,7 @@ def create_page_new_model(page):
         page.go("/models")
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        actions=[
-            ft.IconButton(ft.Icons.KEYBOARD_RETURN, on_click=lambda e: go_back(), icon_color=ft.Colors.BLACK),
-        ],
-    )
+    page.appbar = get_app_bar(ft, page)
 
 
     file_selected = []
@@ -9405,13 +9239,7 @@ def create_page_see_logs(page):
     page.drawer = get_menu(ft, page)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-        leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
-    )
+    page.appbar = get_app_bar(ft, page)
 
 
     get_json = (base.get_all_logs()).json()
@@ -9729,12 +9557,7 @@ def create_page_see_logs(page):
     load_page(1, initial=False)
 
     # AppBar
-    page.appbar = ft.AppBar(
-        leading_width=40,
-        center_title=True,
-        title=ft.Text("Atta'm Engenharia e Aerolevantamento"),
-        bgcolor=ft.Colors.WHITE70,
-    )
+    page.appbar = get_app_bar(ft, page)
 
 
     filtros_ativos = {
