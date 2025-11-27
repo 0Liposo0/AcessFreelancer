@@ -310,6 +310,51 @@ def create_page_data(page):
 
             return data_line
         
+        def calcular_producao_semanal(projeto):
+
+            quantidade_total = float(projeto["predicted_lots"])
+            data_inicial = projeto["start"]
+            data_final = projeto["final_delivery"]
+
+            # Converte strings para datetime
+            dt_inicio = datetime.strptime(data_inicial, "%d/%m/%Y")
+            dt_fim = datetime.strptime(data_final, "%d/%m/%Y")
+            hoje = datetime.now()
+
+            # 1. Total de semanas entre as datas
+            total_dias = (dt_fim - dt_inicio).days
+            dias_ficticios = total_dias * (28 / 30)
+            total_semanas = int(dias_ficticios / 7)
+            print(f"\n {total_semanas}")
+
+            # 2. Subtrai 1 semana
+            semanas_validas = total_semanas - 1
+            if semanas_validas <= 0:
+                semanas_validas = 0
+            print(f"\n {semanas_validas}")    
+            # 3. Quantidade por semana
+            quantidade_por_semana = quantidade_total / semanas_validas
+            print(f"\n {quantidade_por_semana}")
+
+            # 4. Semana atual do período
+            if hoje < dt_inicio:
+                semana_atual = 0
+            elif hoje > dt_fim:
+                semana_atual = semanas_validas
+            else:
+                dias_passados = (hoje - dt_inicio).days
+                semana_atual = dias_passados / 7
+                # ignora a primeira semana conforme pedido
+                semana_atual -= 1
+                semana_atual = int(max(0, semana_atual))
+
+            print(f"\n {semana_atual}")
+
+            # 5. Quantidade esperada até agora
+            quantidade_prevista = quantidade_por_semana * semana_atual
+
+            return f" / {int(quantidade_por_semana)}   Semana {int(semana_atual)} / {int(quantidade_prevista)}"
+
         def update_chart1(data, title):
 
             container_form2.content = return_line_chart(ft, data, title)
@@ -322,8 +367,9 @@ def create_page_data(page):
                 dados = get_data_project(project)
                 soma = get_sum_data_project(dados)
                 pontos = get_line_chart_project(dados)
+                producao = calcular_producao_semanal(project)
                 aplicar_filtros(name)
-                update_chart1(pontos, f"{name} - {soma}")
+                update_chart1(pontos, f"{name} - {soma}{producao}")
             return _click
 
 
@@ -7748,7 +7794,7 @@ def create_page_see_models(page):
             table.update()
         update_pagination_bar(initial)
 
-
+    print(f"\n {get_json}")
     # Preenche a lista com os dados das entregas
     for delev in get_json:
 

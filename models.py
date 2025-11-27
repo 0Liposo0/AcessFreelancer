@@ -1596,13 +1596,21 @@ class SupaBase:
             "Content-Type": "application/json",
         }
 
-        subprojects_str = ",".join([f'"{item}"' for item in subprojects_list])
-        filter_value = f"in.({subprojects_str})"
+        # cria os filtros: subproject.ilike.Ipero_01%
+        like_filters = ",".join([f"subproject.ilike.{item}%" for item in subprojects_list])
 
-        params = { 
-                   "subproject": filter_value, 
-                   "select": "*"
+        params = {
+            "or": f"({like_filters})",
+            "select": "*"
         }
+
+        response = requests.get(
+            f"{self.supabase_url}/rest/v1/models",
+            headers=headers,
+            params=params,
+        )
+
+        return response
 
         response = requests.get(
             f'{self.supabase_url}/rest/v1/models',
