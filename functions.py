@@ -150,7 +150,7 @@ def return_line_chart(ft, data, title):
                 )
             )
 
-        return ft.ChartAxis(labels=labels, labels_size=30, labels_interval=step)
+        return ft.ChartAxis(labels=labels, labels_size=40, labels_interval=step)
 
     def get_last_7_weekdays():
         dias = []

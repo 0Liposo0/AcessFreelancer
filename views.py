@@ -314,6 +314,7 @@ def create_page_data(page):
 
             container_form2.content = return_line_chart(ft, data, title)
             container_form2.update()
+            container_form3.update()
             
         def handle_click(project):
             def _click(e):
@@ -321,6 +322,7 @@ def create_page_data(page):
                 dados = get_data_project(project)
                 soma = get_sum_data_project(dados)
                 pontos = get_line_chart_project(dados)
+                aplicar_filtros(name)
                 update_chart1(pontos, f"{name} - {soma}")
             return _click
 
@@ -359,6 +361,10 @@ def create_page_data(page):
                  name = f"{user["name"].split(" ")[0]} {user["name"].split(" ")[2]}"  
 
             return name
+        
+        def get_current_project(user):
+ 
+            return user["current_project"]
     
         def get_data_user(user):
 
@@ -479,7 +485,8 @@ def create_page_data(page):
                                 bgcolor=ft.Colors.BLUE,
                                 icon_color=ft.Colors.WHITE,
                                 )),
-                        ]
+                        ],
+                        data=get_current_project(user)
                 )
         )
 
@@ -487,6 +494,18 @@ def create_page_data(page):
    
     # Requisição de Usuarios
     #....................................................................
+
+    def aplicar_filtros(user_project):
+        for item in list_users:
+
+            project = item.data 
+
+            item.visible = user_project is None or user_project == project 
+
+    def clean_filter():
+        aplicar_filtros(None)
+        container_form3.update()
+
 
     history_list = ft.Column(
         controls=[
@@ -525,7 +544,12 @@ def create_page_data(page):
  
                     columns=[
                         ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                        ft.DataColumn(ft.IconButton(
+                                icon=ft.Icons.LIGHTBULB,
+                                on_click=lambda e: clean_filter(),
+                                bgcolor=ft.Colors.BLUE,
+                                icon_color=ft.Colors.WHITE,
+                                )),
 
                     ],
                     rows=list_users,  
