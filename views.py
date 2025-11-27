@@ -325,16 +325,16 @@ def create_page_data(page):
             total_dias = (dt_fim - dt_inicio).days
             dias_ficticios = total_dias * (28 / 30)
             total_semanas = int(dias_ficticios / 7)
-            print(f"\n {total_semanas}")
+
 
             # 2. Subtrai 1 semana
             semanas_validas = total_semanas - 1
             if semanas_validas <= 0:
                 semanas_validas = 0
-            print(f"\n {semanas_validas}")    
+         
             # 3. Quantidade por semana
             quantidade_por_semana = quantidade_total / semanas_validas
-            print(f"\n {quantidade_por_semana}")
+   
 
             # 4. Semana atual do período
             if hoje < dt_inicio:
@@ -348,7 +348,7 @@ def create_page_data(page):
                 semana_atual -= 1
                 semana_atual = int(max(0, semana_atual))
 
-            print(f"\n {semana_atual}")
+ 
 
             # 5. Quantidade esperada até agora
             quantidade_prevista = quantidade_por_semana * semana_atual
@@ -7794,7 +7794,7 @@ def create_page_see_models(page):
             table.update()
         update_pagination_bar(initial)
 
-    print(f"\n {get_json}")
+
     # Preenche a lista com os dados das entregas
     for delev in get_json:
 
@@ -8934,8 +8934,8 @@ def create_page_new_model(page):
                 if data_subproject["share"]:
                     data_subproject["subproject"] = data_subproject["name_share"]
                     logs_data["subproject"] = data_subproject["name_share"]
-                    del data_subproject["share"]
-                    del data_subproject["name_share"]
+                del data_subproject["share"]
+                del data_subproject["name_share"]
                 data_subproject[file_type[0]] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/models//{file_name[0]}"
                 response2 = sp.post_to_models_data(data_subproject)
 
