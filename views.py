@@ -1288,10 +1288,16 @@ def create_page_user(page):
                     )
         
         next_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month + 1
-        year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+        year1 = datetime.now(ZoneInfo("America/Sao_Paulo")).year
         if next_month == 13:
             next_month = 1
-            year += 1
+            year1 += 1
+
+        before_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month - 1
+        year2 = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+        if before_month == 0:
+            before_month = 12
+            year2 -= 1
 
 
         container = ft.Row(
@@ -1310,6 +1316,9 @@ def create_page_user(page):
                                     ft.Dropdown(
                                         value="",
                                         options=[
+                                            ft.dropdown.Option(f"28/{before_month:02d}/{year2:02d}",
+                                                               content=ft.Text(value=f"28/{before_month:02d}/{year2:02d}",
+                                                                                color=ft.Colors.BLACK)),
                                             ft.dropdown.Option(f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                                 content=ft.Text(value=f"07/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                                                 color=ft.Colors.BLACK)),
@@ -1322,8 +1331,8 @@ def create_page_user(page):
                                             ft.dropdown.Option(f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                                content=ft.Text(value=f"28/{datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%m")}/{datetime.now(ZoneInfo("America/Sao_Paulo")).year}",
                                                                                 color=ft.Colors.BLACK)),
-                                            ft.dropdown.Option(f"07/{next_month:02d}/{year:02d}",
-                                                               content=ft.Text(value=f"07/{next_month:02d}/{year:02d}",
+                                            ft.dropdown.Option(f"07/{next_month:02d}/{year1:02d}",
+                                                               content=ft.Text(value=f"07/{next_month:02d}/{year1:02d}",
                                                                                 color=ft.Colors.BLACK)),
                                         ],
                                         color=ft.Colors.BLACK,
