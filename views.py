@@ -117,24 +117,7 @@ def create_page_data(page):
     # AppBar
     page.appbar = get_app_bar(ft, page)
 
-    data_1 = [
-        ft.LineChartData(
-            data_points=[
-                ft.LineChartDataPoint(0, 0),
-                ft.LineChartDataPoint(0, 0),
-                ft.LineChartDataPoint(0, 0),
-                ft.LineChartDataPoint(0, 0),
-                ft.LineChartDataPoint(0, 0),
-                ft.LineChartDataPoint(0, 0),
-                ft.LineChartDataPoint(0, 0),
-            ],
-            stroke_width=8,
-            color=ft.Colors.LIGHT_GREEN,
-            curved=True,
-            stroke_cap_round=True,
-        ),
-    ]
-
+    
     container_form1 = ft.Container(content=None,
                                     alignment=ft.alignment.top_center,
                                     bgcolor=ft.Colors.WHITE,
@@ -282,22 +265,26 @@ def create_page_data(page):
             return sum(v for v in dicio.values() if isinstance(v, (int, float)))
 
         def get_line_chart_project(data):
-
             # Ordena as datas em ordem crescente
             datas_ordenadas = sorted(
                 data.keys(),
                 key=lambda d: datetime.strptime(d, "%d/%m/%Y")
             )
 
-            # Monta os pontos do gráfico
-            pontos = [
-                ft.LineChartDataPoint(
-                    int(d[:2]),     # pega o dia da data --> "19/11/2025"[:2] = 19
-                    data[d],         # valor correspondente
-                    point=True,
+            pontos = []
+            x_map = {}  # mapa do novo eixo X
+            x_counter = 1
+
+            for d in datas_ordenadas:
+                x_map[d] = x_counter  # novo X (1,2,3,...)
+                pontos.append(
+                    ft.LineChartDataPoint(
+                        x_counter,
+                        data[d],
+                        point=True
+                    )
                 )
-                for d in datas_ordenadas
-            ]
+                x_counter += 1
 
             data_line = [
                 ft.LineChartData(
@@ -308,7 +295,7 @@ def create_page_data(page):
                 )
             ]
 
-            return data_line
+            return [data_line, x_map]
         
         def calcular_producao_semanal(projeto):
 
@@ -365,6 +352,7 @@ def create_page_data(page):
             def _click(e):
                 name = get_name_project(project)
                 dados = get_data_project(project)
+                print(f"\n {dados}\n")
                 soma = get_sum_data_project(dados)
                 pontos = get_line_chart_project(dados)
                 producao = calcular_producao_semanal(project)
@@ -486,15 +474,20 @@ def create_page_data(page):
                 key=lambda d: datetime.strptime(d, "%d/%m/%Y")
             )
 
-            # Monta os pontos do gráfico
-            pontos = [
-                ft.LineChartDataPoint(
-                    int(d[:2]),     # pega o dia da data --> "19/11/2025"[:2] = 19
-                    data[d],        # valor correspondente
-                    point=True,                 
+            pontos = []
+            x_map = {}  # mapa do novo eixo X
+            x_counter = 1
+
+            for d in datas_ordenadas:
+                x_map[d] = x_counter  # novo X (1,2,3,...)
+                pontos.append(
+                    ft.LineChartDataPoint(
+                        x_counter,
+                        data[d],
+                        point=True
+                    )
                 )
-                for d in datas_ordenadas
-            ]
+                x_counter += 1
 
             data_line = [
                 ft.LineChartData(
@@ -505,7 +498,7 @@ def create_page_data(page):
                 )
             ]
 
-            return data_line
+            return [data_line, x_map]
         
         def update_chart2(data, title):
 
@@ -610,9 +603,9 @@ def create_page_data(page):
    
 
     container_form1.content = history_list
-    container_form2.content = return_line_chart(ft, data_1, None)
+    container_form2.content = None
     container_form3.content = history_list2
-    container_form4.content = return_line_chart(ft, data_1, None)
+    container_form4.content = None
 
 
                                     

@@ -118,7 +118,7 @@ def return_line_chart(ft, data, title):
 
 
     def get_min_y_and_max_y(data):
-        data_points = data[0].data_points
+        data_points = data[0][0].data_points
         if not data_points:
             return [0, 0]
 
@@ -152,53 +152,50 @@ def return_line_chart(ft, data, title):
 
         return ft.ChartAxis(labels=labels, labels_size=40, labels_interval=step)
 
-    def get_last_7_weekdays():
+    def get_last_7_weekdays(x_map):
+     
         dias = []
         hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
 
         nomes = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
-        for i in range(7, -1, -1):   # 6 dias atrás até hoje
+        for i in range(7, -1, -1):
             dia = hoje - timedelta(days=i)
-            dia_semana = nomes[dia.weekday()]
-            dias.append((dia.day, dia_semana))
+            data_str = dia.strftime("%d/%m/%Y")
+
+            novo_x = x_map[data_str]  # usa novo X (1 a 8)
+            nome_semana = nomes[dia.weekday()]
+
+            dias.append(ft.ChartAxisLabel(
+                value=novo_x,
+                label=ft.Text(nome_semana, color=ft.Colors.BLACK)
+            ))
+
+        for item in dias:
+            print(item.value)
+            print(item.label.value)
 
         return dias
-
-    weekdays = get_last_7_weekdays()
+        
+    weekdays = get_last_7_weekdays(data[1])
 
     chart = ft.LineChart (
-        data_series=data,
+        data_series=data[0],
         border=ft.Border(
             bottom=ft.BorderSide(4, ft.Colors.with_opacity(0.5, ft.Colors.ON_SURFACE))
         ),
         left_axis= build_left_axis_from_data(data, divisions=3),
         bottom_axis = ft.ChartAxis(
-            labels=[
-                ft.ChartAxisLabel(
-                    value=day_number,
-                    label=ft.Container(
-                        ft.Text(
-                            weekday_name,  # ← aqui entra "Seg", "Ter", etc.
-                            size=16,
-                            weight=ft.FontWeight.BOLD,
-                            color=ft.Colors.BLACK,
-                        ),
-                        margin=ft.margin.only(top=10),
-                    ),
-                )
-                for day_number, weekday_name in weekdays
-            ],
+            labels=weekdays,
             labels_size=32,
             title=ft.Text(str(title),color=ft.Colors.BLACK),
             title_size = 50
-
         ),
         tooltip_bgcolor=ft.Colors.with_opacity(0.8, ft.Colors.BLUE_GREY),
         min_y=get_min_y_and_max_y(data)[0],
         max_y=((get_min_y_and_max_y(data)[1]) * 1.1),
-        min_x=int(datetime.now(ZoneInfo("America/Sao_Paulo")).day)-8,
-        max_x=int(datetime.now(ZoneInfo("America/Sao_Paulo")).day)+1,
+        min_x=0,
+        max_x=9,
         expand=True,
     )
 
