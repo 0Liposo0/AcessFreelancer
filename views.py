@@ -3277,6 +3277,7 @@ def create_page_subproject(page, project):
     incomplete = 0
     incomplete_numbers = 0
     deliveries = 0
+    count_drawings = 0
     files = 0
 
     for model in get_models:
@@ -3309,6 +3310,8 @@ def create_page_subproject(page, project):
     for file in get_files:
         if file["subproject"] in list_subprojects and file["type"] == "poligonos":
             files += 1
+            if file["type"] == "poligonos":
+                count_drawings += int(file["amount"])
 
 
     preview_image = ft.Container(
@@ -3339,6 +3342,7 @@ def create_page_subproject(page, project):
                     clip_behavior=ft.ClipBehavior.HARD_EDGE,
                 ),
                 ft.Text(value=f"Inicio: {get_info2["start"]}     Etapa 1: {get_info2["final_delivery"]}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
+                ft.Text(value=f"Vetorizados: {count_drawings}", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, size=20),
                 text_poligons,
                 text_regular,
                 text_unknown,
