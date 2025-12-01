@@ -9047,6 +9047,12 @@ def create_page_new_model(page):
         label="Data",
         label_style=ft.TextStyle(color=ft.Colors.BLACK),
         options=[
+            ft.dropdown.Option(f"07/{before_month:02d}/{year2:02d}",
+                                content=ft.Text(value=f"07/{before_month:02d}/{year2:02d}",
+                                                color=ft.Colors.BLACK)),
+            ft.dropdown.Option(f"14/{before_month:02d}/{year2:02d}",
+                                content=ft.Text(value=f"14/{before_month:02d}/{year2:02d}",
+                                                color=ft.Colors.BLACK)),
             ft.dropdown.Option(f"21/{before_month:02d}/{year2:02d}",
                                 content=ft.Text(value=f"21/{before_month:02d}/{year2:02d}",
                                                 color=ft.Colors.BLACK)),
