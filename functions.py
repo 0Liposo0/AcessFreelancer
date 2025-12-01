@@ -171,9 +171,6 @@ def return_line_chart(ft, data, title):
                 label=ft.Text(nome_semana, color=ft.Colors.BLACK)
             ))
 
-        for item in dias:
-            print(item.value)
-            print(item.label.value)
 
         return dias
         

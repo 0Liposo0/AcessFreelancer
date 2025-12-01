@@ -352,7 +352,6 @@ def create_page_data(page):
             def _click(e):
                 name = get_name_project(project)
                 dados = get_data_project(project)
-                print(f"\n {dados}\n")
                 soma = get_sum_data_project(dados)
                 pontos = get_line_chart_project(dados)
                 producao = calcular_producao_semanal(project)
