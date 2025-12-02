@@ -199,20 +199,21 @@ def create_page_data(page):
 
             return project["final_delivery"]
         
-        def get_data_project(project):
+        def get_data_project(project, type):
 
-            dicio_logs = {
-
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=1))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=2))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=3))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=4))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=5))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=6))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=7))).strftime("%d/%m/%Y"): {},
-
+            time = {
+                "week":8,
+                "month":28
             }
+
+            def get_last_days_dict(time):
+                hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
+                return {
+                    (hoje - timedelta(days=i)).strftime("%d/%m/%Y"): {}
+                    for i in range(0, time)
+                }
+
+            dicio_logs = get_last_days_dict(time[type])
 
             for log in get_logs:
 
@@ -264,23 +265,38 @@ def create_page_data(page):
 
             return sum(v for v in dicio.values() if isinstance(v, (int, float)))
 
-        def get_line_chart_project(data):
-            # Ordena as datas em ordem crescente
-            datas_ordenadas = sorted(
-                data.keys(),
-                key=lambda d: datetime.strptime(d, "%d/%m/%Y")
-            )
+        def get_line_chart_project(data, type):
+            # Converte todas as chaves para objetos datetime
+            datas_convertidas = {
+                datetime.strptime(d, "%d/%m/%Y"): data[d]
+                for d in data
+            }
 
+            # Se for mês → filtra para os últimos 28 dias
+            if type == "month":
+                hoje = datetime.now()  # <-- sem timezone
+                limite = hoje - timedelta(days=27)
+
+                datas_convertidas = {
+                    d: datas_convertidas[d]
+                    for d in datas_convertidas
+                    if d >= limite
+                }
+
+            # Ordena as datas em ordem crescente
+            datas_ordenadas = sorted(datas_convertidas.keys())
+
+            # Monta os pontos do gráfico com X progressivo (1..N)
             pontos = []
-            x_map = {}  # mapa do novo eixo X
+            x_map = {}
             x_counter = 1
 
             for d in datas_ordenadas:
-                x_map[d] = x_counter  # novo X (1,2,3,...)
+                x_map[d.strftime("%d/%m/%Y")] = x_counter
                 pontos.append(
                     ft.LineChartDataPoint(
                         x_counter,
-                        data[d],
+                        datas_convertidas[d],
                         point=True
                     )
                 )
@@ -344,19 +360,19 @@ def create_page_data(page):
 
         def update_chart1(data, title):
 
-            container_form2.content = return_line_chart(ft, data, title)
+            container_form2.content = return_line_chart(ft, data[0], title, data[1])
             container_form2.update()
             container_form3.update()
             
-        def handle_click(project):
+        def handle_click(project, type):
             def _click(e):
                 name = get_name_project(project)
-                dados = get_data_project(project)
+                dados = get_data_project(project, type)
                 soma = get_sum_data_project(dados)
-                pontos = get_line_chart_project(dados)
+                pontos = get_line_chart_project(dados, type)
                 producao = calcular_producao_semanal(project)
                 aplicar_filtros(name)
-                update_chart1(pontos, f"{name} - {soma}{producao}")
+                update_chart1([pontos, type], f"{name} - {soma}{producao}")
             return _click
 
 
@@ -366,8 +382,14 @@ def create_page_data(page):
                             ft.DataCell(ft.Text(value=f"{get_codes(project)} / {get_predicted_codes(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
-                                on_click=handle_click(project),
+                                on_click=handle_click(project, "week"),
                                 bgcolor=ft.Colors.BLUE,
+                                icon_color=ft.Colors.WHITE,
+                                )),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                on_click=handle_click(project, "month"),
+                                bgcolor=ft.Colors.AMBER,
                                 icon_color=ft.Colors.WHITE,
                                 )),
                         ]
@@ -399,20 +421,21 @@ def create_page_data(page):
  
             return user["current_project"]
     
-        def get_data_user(user):
+        def get_data_user(user, type):
 
-            dicio_logs = {
-
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=1))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=2))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=3))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=4))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=5))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=6))).strftime("%d/%m/%Y"): {},
-                ((datetime.now(ZoneInfo("America/Sao_Paulo")) - timedelta(days=7))).strftime("%d/%m/%Y"): {},
-
+            time = {
+                "week":8,
+                "month":28
             }
+
+            def get_last_days_dict(time):
+                hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
+                return {
+                    (hoje - timedelta(days=i)).strftime("%d/%m/%Y"): {}
+                    for i in range(0, time)
+                }
+
+            dicio_logs = get_last_days_dict(time[type])
 
             for log in get_logs:
 
@@ -465,24 +488,39 @@ def create_page_data(page):
 
             return sum(v for v in dicio.values() if isinstance(v, (int, float)))
 
-        def get_line_chart_user(data):
+        def get_line_chart_user(data, type):
+
+            # Converte todas as chaves para objetos datetime
+            datas_convertidas = {
+                datetime.strptime(d, "%d/%m/%Y"): data[d]
+                for d in data
+            }
+
+            # Se for mês → filtra para os últimos 28 dias
+            if type == "month":
+                hoje = datetime.now()  # <-- sem timezone
+                limite = hoje - timedelta(days=27)
+
+                datas_convertidas = {
+                    d: datas_convertidas[d]
+                    for d in datas_convertidas
+                    if d >= limite
+                }
 
             # Ordena as datas em ordem crescente
-            datas_ordenadas = sorted(
-                data.keys(),
-                key=lambda d: datetime.strptime(d, "%d/%m/%Y")
-            )
+            datas_ordenadas = sorted(datas_convertidas.keys())
 
+            # Monta os pontos do gráfico com X progressivo (1..N)
             pontos = []
-            x_map = {}  # mapa do novo eixo X
+            x_map = {}
             x_counter = 1
 
             for d in datas_ordenadas:
-                x_map[d] = x_counter  # novo X (1,2,3,...)
+                x_map[d.strftime("%d/%m/%Y")] = x_counter
                 pontos.append(
                     ft.LineChartDataPoint(
                         x_counter,
-                        data[d],
+                        datas_convertidas[d],
                         point=True
                     )
                 )
@@ -501,16 +539,16 @@ def create_page_data(page):
         
         def update_chart2(data, title):
 
-            container_form4.content = return_line_chart(ft, data, title)
+            container_form4.content = return_line_chart(ft, data[0], title, data[1])
             container_form4.update()
 
-        def handle_click(user):
+        def handle_click(user, type):
             def _click(e):
                 name = get_name(user)
-                dados = get_data_user(user)
+                dados = get_data_user(user, type)
                 soma = get_sum_data_user(dados)
-                pontos = get_line_chart_user(dados)
-                update_chart2(pontos, f"{name} - {soma}")
+                pontos = get_line_chart_user(dados, type)
+                update_chart2([pontos, type], f"{name} - {soma}")
             return _click
 
 
@@ -519,8 +557,14 @@ def create_page_data(page):
                             ft.DataCell(ft.Text(value=f"{get_name(user)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
-                                on_click=handle_click(user),
+                                on_click=handle_click(user, "week"),
                                 bgcolor=ft.Colors.BLUE,
+                                icon_color=ft.Colors.WHITE,
+                                )),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                on_click=handle_click(user, "month"),
+                                bgcolor=ft.Colors.AMBER,
                                 icon_color=ft.Colors.WHITE,
                                 )),
                         ],
@@ -559,6 +603,7 @@ def create_page_data(page):
                         ft.DataColumn(ft.Text(value="Projeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
                         ft.DataColumn(ft.Text(value="Códigos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
                         ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
 
                     ],
                     rows=list_projects,  
@@ -582,6 +627,7 @@ def create_page_data(page):
  
                     columns=[
                         ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                         ft.DataColumn(ft.IconButton(
                                 icon=ft.Icons.LIGHTBULB,
                                 on_click=lambda e: clean_filter(),

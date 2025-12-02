@@ -114,7 +114,7 @@ def get_app_bar(ft, page):
         leading=ft.IconButton(ft.Icons.MENU, on_click=lambda e:page.open(page.drawer), icon_color=ft.Colors.BLACK),
     )
 
-def return_line_chart(ft, data, title):
+def return_line_chart(ft, data, title, type):
 
 
     def get_min_y_and_max_y(data):
@@ -152,29 +152,41 @@ def return_line_chart(ft, data, title):
 
         return ft.ChartAxis(labels=labels, labels_size=40, labels_interval=step)
 
-    def get_last_7_weekdays(x_map):
-     
+    def get_last_7_weekdays(x_map, type):
         dias = []
+
         hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
 
         nomes = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
-        for i in range(7, -1, -1):
+        # RANGE DE DIAS
+        dias_range = 7 if type == "week" else 28
+
+        for i in range(dias_range, -1, -1):
             dia = hoje - timedelta(days=i)
             data_str = dia.strftime("%d/%m/%Y")
 
-            novo_x = x_map[data_str]  # usa novo X (1 a 8)
-            nome_semana = nomes[dia.weekday()]
+            if data_str not in x_map:
+                continue
 
-            dias.append(ft.ChartAxisLabel(
-                value=novo_x,
-                label=ft.Text(nome_semana, color=ft.Colors.BLACK)
-            ))
+            novo_x = x_map[data_str]
 
+            # --- DIFERENÇA ENTRE WEEK E MONTH ---
+            if type == "week":
+                label_text = nomes[dia.weekday()]       # Seg, Ter, ...
+            else:  # month
+                label_text = str(dia.day)              # 1, 2, 3, ... 31
+
+            dias.append(
+                ft.ChartAxisLabel(
+                    value=novo_x,
+                    label=ft.Text(label_text, color=ft.Colors.BLACK)
+                )
+            )
 
         return dias
         
-    weekdays = get_last_7_weekdays(data[1])
+    weekdays = get_last_7_weekdays(data[1], type)
 
     chart = ft.LineChart (
         data_series=data[0],
@@ -192,7 +204,7 @@ def return_line_chart(ft, data, title):
         min_y=get_min_y_and_max_y(data)[0],
         max_y=((get_min_y_and_max_y(data)[1]) * 1.1),
         min_x=0,
-        max_x=9,
+        max_x=len(data[0][0].data_points) + 1,
         expand=True,
     )
 
