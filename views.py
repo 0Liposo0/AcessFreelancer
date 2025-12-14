@@ -9169,7 +9169,12 @@ def create_page_new_model(page):
         "name_share":ft.TextField(label="Compartilhado", value=f".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
     }
 
-    checkbox1 = ft.Checkbox(label="Compartilhado", label_style=ft.TextStyle(color=ft.Colors.BLACK), on_change=lambda e:checkbox_changed(view_deliveries))
+    checkbox1 = ft.Checkbox(label="Compartilhado",
+                            label_style=ft.TextStyle(color=ft.Colors.BLACK),
+                            on_change=lambda e:checkbox_changed(view_deliveries),
+                            disabled=dict_profile["permission"] != "adm",
+                            visible=dict_profile["permission"] == "adm"
+                            )
 
     view_deliveries["share"].controls.append(checkbox1)
 
