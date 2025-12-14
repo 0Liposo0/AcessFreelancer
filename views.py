@@ -235,6 +235,13 @@ def create_page_data(page):
                             else:
                                 dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [(-(int(log["new_numbers"])))]
 
+                        elif log["action"] == "Redução":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(0))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(0)))]
+
                         else:
 
                             if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
@@ -251,11 +258,9 @@ def create_page_data(page):
 
                 for lista_valores in subprojetos.values():
                     if lista_valores:
-                        lista_valores = list(set(lista_valores))
                         total += sum(v for v in lista_valores) 
                 dicio_final[data] = total
 
-            print(dicio_final)
 
             return dicio_final
         
@@ -455,6 +460,13 @@ def create_page_data(page):
                             else:
                                 dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [(-(int(log["new_numbers"])))]
 
+                        elif log["action"] == "Redução":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(0))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(0)))]
+
                         else:
 
                             if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
@@ -471,11 +483,9 @@ def create_page_data(page):
 
                 for lista_valores in subprojetos.values():
                     if lista_valores:
-                        lista_valores = list(set(lista_valores))
                         total += sum(v for v in lista_valores) 
                 dicio_final[data] = total
 
-            print(dicio_final)
 
             return dicio_final
 
@@ -9574,7 +9584,13 @@ def create_page_see_logs(page):
     # Preenche a lista com os dados das entregas
     for delev in get_json:
 
-        project = next((k for k, v in dicio_projects.items() if delev['subproject'] in v), None)
+        project = next(
+            (
+                k for k, v in dicio_projects.items()
+                if any(delev['subproject'].startswith(item) for item in v)
+            ),
+            None
+        )
         
 
         all_rows.append(
@@ -9707,12 +9723,14 @@ def create_page_see_logs(page):
                 (filtros_ativos["mes"] is None or filtros_ativos["mes"] == mes) and
                 (filtros_ativos["ano"] is None or filtros_ativos["ano"] == ano) and
                 (filtros_ativos["projeto"] is None or filtros_ativos["projeto"] == project) and
-                (filtros_ativos["subprojeto"] is None or filtros_ativos["subprojeto"] == subproject) and
+                (filtros_ativos["subprojeto"] is None or subproject.startswith(filtros_ativos["subprojeto"])) and
                 (filtros_ativos["usuario"] is None or filtros_ativos["usuario"] == usuario)
             )
 
         if update == True:
-            load_page(1)  
+            load_page(1)
+        else:
+            load_page(1, initial=False)  
 
         list_filtros[0] = filtros_ativos
 
