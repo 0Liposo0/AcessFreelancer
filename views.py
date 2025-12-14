@@ -2012,7 +2012,7 @@ def verificar(username, password, page):
 
         elif permission != "adm":
 
-            page.go("/files")
+            page.go("/models")
 
         else:
             page.go("/freelancers")
