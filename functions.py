@@ -125,6 +125,9 @@ def return_line_chart(ft, data, title, type):
         min_y = min(point.y for point in data_points)
         max_y = max(point.y for point in data_points)
 
+        if min_y < 0:
+            min_y = 0
+
         return [min_y, max_y]
     
     
@@ -160,7 +163,7 @@ def return_line_chart(ft, data, title, type):
         nomes = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
         # RANGE DE DIAS
-        dias_range = 7 if type == "week" else 28
+        dias_range = 7 if type == "week" else 31
 
         for i in range(dias_range, -1, -1):
             dia = hoje - timedelta(days=i)

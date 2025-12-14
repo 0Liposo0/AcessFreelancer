@@ -203,7 +203,7 @@ def create_page_data(page):
 
             time = {
                 "week":8,
-                "month":28
+                "month":32
             }
 
             def get_last_days_dict(time):
@@ -251,13 +251,11 @@ def create_page_data(page):
 
                 for lista_valores in subprojetos.values():
                     if lista_valores:
-
-                        maximo = max(lista_valores)
-                        negativos = sum(v for v in lista_valores if v < 0)
-
-                        total += maximo - abs(negativos)  # subtrai os negativos
-
+                        lista_valores = list(set(lista_valores))
+                        total += sum(v for v in lista_valores) 
                 dicio_final[data] = total
+
+            print(dicio_final)
 
             return dicio_final
         
@@ -272,10 +270,10 @@ def create_page_data(page):
                 for d in data
             }
 
-            # Se for mês → filtra para os últimos 28 dias
+            # Se for mês → filtra para os últimos 31 dias
             if type == "month":
                 hoje = datetime.now()  # <-- sem timezone
-                limite = hoje - timedelta(days=27)
+                limite = hoje - timedelta(days=31)
 
                 datas_convertidas = {
                     d: datas_convertidas[d]
@@ -425,7 +423,7 @@ def create_page_data(page):
 
             time = {
                 "week":8,
-                "month":28
+                "month":31
             }
 
             def get_last_days_dict(time):
@@ -469,18 +467,15 @@ def create_page_data(page):
             dicio_final = {}
 
             for data, subprojetos in dicio_logs.items():
-
                 total = 0
 
                 for lista_valores in subprojetos.values():
                     if lista_valores:
-
-                        maximo = max(lista_valores)
-                        negativos = sum(v for v in lista_valores if v < 0)
-
-                        total += maximo - abs(negativos)  # subtrai os negativos
-
+                        lista_valores = list(set(lista_valores))
+                        total += sum(v for v in lista_valores) 
                 dicio_final[data] = total
+
+            print(dicio_final)
 
             return dicio_final
 
@@ -496,10 +491,10 @@ def create_page_data(page):
                 for d in data
             }
 
-            # Se for mês → filtra para os últimos 28 dias
+            # Se for mês → filtra para os últimos 31 dias
             if type == "month":
                 hoje = datetime.now()  # <-- sem timezone
-                limite = hoje - timedelta(days=27)
+                limite = hoje - timedelta(days=31)
 
                 datas_convertidas = {
                     d: datas_convertidas[d]
