@@ -1568,7 +1568,7 @@ class SupaBase:
 
         return response
     
-    def get_all_logs(self):
+    def get_all_logs(self, offset=0, limit=1000):
 
         headers = {
             "apikey": self.supabase_key,
@@ -1577,7 +1577,9 @@ class SupaBase:
         }
 
         params = { 
-                   "select": "*"
+                   "select": "*",
+                   "offset": offset,  
+                   "limit": limit, 
         }
 
         response = requests.get(

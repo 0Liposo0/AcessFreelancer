@@ -162,7 +162,27 @@ def create_page_data(page):
     get_projects = ((base.get_projects_data()).json())
     get_users = ((base.get_all_user_data_filter_est()).json())
     get_models = ((base.get_all_models()).json())
-    get_logs = ((base.get_all_logs()).json())
+
+    get_logs = []
+
+    offset = 0
+    limit = 1000
+
+    while True:
+        response = base.get_all_logs(offset=offset, limit=limit)
+
+        if response.status_code != 200:
+            print("Erro ao buscar dados:", response.text)
+            break
+
+        data = response.json()
+        get_logs.extend(data)
+
+        # Se o número de registros retornados for menor que o limite, terminamos
+        if len(data) < limit:
+            break
+
+        offset += limit
 
 
     list_projects = []
@@ -258,7 +278,7 @@ def create_page_data(page):
 
                 for lista_valores in subprojetos.values():
                     if lista_valores:
-                        total += sum(v for v in lista_valores) 
+                        total += sum(v for v in lista_valores)
                 dicio_final[data] = total
 
 
@@ -9379,7 +9399,28 @@ def create_page_see_logs(page):
     page.appbar = get_app_bar(ft, page)
 
 
-    get_json = (base.get_all_logs()).json()
+    get_json = []
+
+    offset = 0
+    limit = 1000
+
+    while True:
+        response = base.get_all_logs(offset=offset, limit=limit)
+
+        if response.status_code != 200:
+            print("Erro ao buscar dados:", response.text)
+            break
+
+        data = response.json()
+        get_json.extend(data)
+
+        # Se o número de registros retornados for menor que o limite, terminamos
+        if len(data) < limit:
+            break
+
+        offset += limit
+
+
     subprojects_list = (base.get_all_subprojects()).json()
 
     dicio_projects = {}
