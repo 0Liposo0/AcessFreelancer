@@ -2810,7 +2810,7 @@ def create_page_project_token_user(page):
     files = 0
 
     for model in get_models:
-        if model["subproject"] in list_subprojects:
+        if any(model["subproject"].startswith(item) for item in list_subprojects):
             models += 1
             if model["status"] != "Incompleto":
                 complete += 1
