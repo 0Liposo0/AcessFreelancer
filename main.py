@@ -14,9 +14,17 @@ def main(page: ft.Page):
 
     url = {
             "/": lambda: loading.new_loading_page(page=page, call_layout=lambda: create_page_login(page)),
+            "/user": lambda: loading.new_loading_page(page=page, call_layout=lambda: create_page_user(page)),
             "/freelancers": lambda: loading.new_loading_page(page, lambda: create_page_see_freelancers(page)),
+            "/freelancers/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page)),
+            "/freelancers/add": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_new_freelancer(page)),
             "/dashboard": lambda: loading.new_loading_page(page, lambda: create_page_data(page)),
             "/projects": lambda: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page)),
+            "/projects/add": lambda: loading.new_loading_page(page=page, call_layout=lambda:create_page_new_project(page)),
+            "/projects/token": lambda: loading.new_loading_page(page=page, call_layout=lambda:create_page_subproject(page)),
+            "/projects/edit": lambda: loading.new_loading_page(page=page, call_layout=lambda:create_page_project_token(page)),
+            "/projects/token/subproject": lambda: loading.new_loading_page(page=page, call_layout=lambda:create_page_subproject_token(page)),
+            "/projects/token/add": lambda: loading.new_loading_page(page=page, call_layout=lambda:create_page_new_subproject(page)),
             "/files": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
             "/files/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_files_details(page)),
             "/deliveries": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
@@ -27,7 +35,6 @@ def main(page: ft.Page):
             "/models/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_models_details(page)),
             "/models/insert": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_new_model(page)),
             "/payment": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
-            "/freelancers/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_freelancer_token(page)),
             "/project/user": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_project_token_user(page)),
         }
 

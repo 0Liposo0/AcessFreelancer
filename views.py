@@ -105,610 +105,54 @@ def create_page_login(page):
     )
 #Página de Login  
 
-def create_page_data(page):
+def verificar(username, password, page):
 
     loading = LoadingPages(page)
-    textthemes = TextTheme()
-    texttheme1 = textthemes.create_text_theme1()
+    sp = SupaBase(page)
 
-    from functions import get_menu, return_line_chart
-    page.drawer = get_menu(ft, page)
+    response = sp.check_login(username=username, password=password, page=page)
 
-    # AppBar
-    page.appbar = get_app_bar(ft, page)
-
-    
-    container_form1 = ft.Container(content=None,
-                                    alignment=ft.alignment.top_center,
-                                    bgcolor=ft.Colors.WHITE,
-                                    border_radius=20,
-                                    padding=10,
-                                    height=((page.height) / 1.3),
-                                    col={"xs" : 12, "lg" : 5},
-                                    )
-    
-    container_form2 = ft.Container(content=None,
-                                    alignment=ft.alignment.top_center,
-                                    bgcolor=ft.Colors.WHITE,
-                                    border_radius=20,
-                                    padding=10,
-                                    height=((page.height) / 1.3),
-                                    col={"xs" : 12, "lg" : 7},
-                                    )
-    
-    container_form3 = ft.Container(content=None,
-                                    alignment=ft.alignment.top_center,
-                                    bgcolor=ft.Colors.WHITE,
-                                    border_radius=20,
-                                    padding=10,
-                                    height=((page.height) / 1.3),
-                                    col={"xs" : 12, "lg" : 4},
-                                    )
-    
-    container_form4 = ft.Container(content=None,
-                                    alignment=ft.alignment.top_center,
-                                    bgcolor=ft.Colors.WHITE,
-                                    border_radius=20,
-                                    padding=10,
-                                    height=((page.height) / 1.3),
-                                    col={"xs" : 12, "lg" : 8},
-                                    )
-    
-    
-    #....................................................................
-    # Requisição de Projetos
-
-    base = SupaBase(page=None)
-    get_projects = ((base.get_projects_data()).json())
-    get_users = ((base.get_all_user_data_filter_est()).json())
-    get_models = ((base.get_all_models()).json())
-
-    get_logs = []
-
-    offset = 0
-    limit = 1000
-
-    while True:
-        response = base.get_all_logs(offset=offset, limit=limit)
-
-        if response.status_code != 200:
-            print("Erro ao buscar dados:", response.text)
-            break
+    if response.status_code == 200 and len(response.json()) > 0:
 
         data = response.json()
-        get_logs.extend(data)
+        row = data[0]
+        name = row["name"]
+        username = row["username"]
+        permission = row["permission"]
+        current_project = row["current_project"]
 
-        # Se o número de registros retornados for menor que o limite, terminamos
-        if len(data) < limit:
-            break
-
-        offset += limit
-
-
-    list_projects = []
-
-    for project in get_projects:
-
-        def get_name_project(project):
-            return project["name_project"]
-    
-        def get_subprojects(project):
-            return project["current_subprojects"].split(',')
-
-        def get_codes(project):
-
-            count_poligons = 0
-            count_unknown = 0
-
-            for model in get_models:
-                if any(model["subproject"].startswith(item) for item in get_subprojects(project)):
-                    if model["status"] != "Incompleto":
-                        count_poligons = count_poligons + int(model["polygons"])
-                        count_unknown = count_unknown + (int(model["polygons"]) - int(model["numbers"]))
-                    else:
-                        count_poligons = count_poligons + int(model["numbers"])
-                        count_unknown = count_unknown + 0
-
-            return count_poligons - count_unknown
-
-        def get_predicted_codes(project):
-
-            return project["predicted_lots"]
+        page.client_storage.set("profile", {
+            "username": username,
+            "name": name,
+            "permission": permission,
+            "current_project": current_project,
+            "deliveries_filter": [None],
+            "models_filter": [None],
+            "freelancers_filter": [None],
+            "files_filter": [None],
+        })
         
-        def get_final(project):
+        if permission == "user":
 
-            return project["final_delivery"]
+            page.go("/user")
+
+        elif permission != "adm":
+
+            page.go("/models")
+
+        else:
+            page.go("/freelancers")
         
-        def get_data_project(project, type):
-
-            time = {
-                "week":8,
-                "month":32
-            }
-
-            def get_last_days_dict(time):
-                hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
-                return {
-                    (hoje - timedelta(days=i)).strftime("%d/%m/%Y"): {}
-                    for i in range(0, time)
-                }
-
-            dicio_logs = get_last_days_dict(time[type])
-
-            for log in get_logs:
-
-                if any(log["subproject"].startswith(item) for item in get_subprojects(project)):
-
-                    if log["date"].split()[0][:-1] in dicio_logs.keys():
-
-                        if log["action"] == "Inserção":
-
-                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]))) 
-                            else:
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"])))]
-
-                        elif log["action"] == "Exclusão":
-
-                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append(-(int(log["new_numbers"]))) 
-                            else:
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [(-(int(log["new_numbers"])))]
-
-                        elif log["action"] == "Redução":
-
-                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(0))) 
-                            else:
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(0)))]
-
-                        else:
-
-                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]) - int(log["old_numbers"]))) 
-                            else:
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"]) - int(log["old_numbers"])))]
-            
-
-            dicio_final = {}
-
-            for data, subprojetos in dicio_logs.items():
-
-                total = 0
-
-                for lista_valores in subprojetos.values():
-                    if lista_valores:
-                        total += sum(v for v in lista_valores)
-                dicio_final[data] = total
-
-
-            return dicio_final
-        
-        def get_sum_data_project(dicio):
-
-            return sum(v for v in dicio.values() if isinstance(v, (int, float)))
-
-        def get_line_chart_project(data, type):
-            # Converte todas as chaves para objetos datetime
-            datas_convertidas = {
-                datetime.strptime(d, "%d/%m/%Y"): data[d]
-                for d in data
-            }
-
-            # Se for mês → filtra para os últimos 31 dias
-            if type == "month":
-                hoje = datetime.now()  # <-- sem timezone
-                limite = hoje - timedelta(days=31)
-
-                datas_convertidas = {
-                    d: datas_convertidas[d]
-                    for d in datas_convertidas
-                    if d >= limite
-                }
-
-            # Ordena as datas em ordem crescente
-            datas_ordenadas = sorted(datas_convertidas.keys())
-
-            # Monta os pontos do gráfico com X progressivo (1..N)
-            pontos = []
-            x_map = {}
-            x_counter = 1
-
-            for d in datas_ordenadas:
-                x_map[d.strftime("%d/%m/%Y")] = x_counter
-                pontos.append(
-                    ft.LineChartDataPoint(
-                        x_counter,
-                        datas_convertidas[d],
-                        point=True
-                    )
-                )
-                x_counter += 1
-
-            data_line = [
-                ft.LineChartData(
-                    data_points=pontos,
-                    stroke_width=8,
-                    color=ft.Colors.LIGHT_GREEN,
-                    stroke_cap_round=True,
-                )
-            ]
-
-            return [data_line, x_map]
-        
-        def calcular_producao_semanal(projeto):
-
-            quantidade_total = float(projeto["predicted_lots"])
-            data_inicial = projeto["start"]
-            data_final = projeto["final_delivery"]
-
-            # Converte strings para datetime
-            dt_inicio = datetime.strptime(data_inicial, "%d/%m/%Y")
-            dt_fim = datetime.strptime(data_final, "%d/%m/%Y")
-            hoje = datetime.now()
-
-            # 1. Total de semanas entre as datas
-            total_dias = (dt_fim - dt_inicio).days
-            dias_ficticios = total_dias * (28 / 30)
-            total_semanas = int(dias_ficticios / 7)
-
-
-            # 2. Subtrai 1 semana
-            semanas_validas = total_semanas - 1
-            if semanas_validas <= 0:
-                semanas_validas = 0
-         
-            # 3. Quantidade por semana
-            quantidade_por_semana = quantidade_total / semanas_validas
-   
-
-            # 4. Semana atual do período
-            if hoje < dt_inicio:
-                semana_atual = 0
-            elif hoje > dt_fim:
-                semana_atual = semanas_validas
-            else:
-                dias_passados = (hoje - dt_inicio).days
-                semana_atual = dias_passados / 7
-                # ignora a primeira semana conforme pedido
-                semana_atual -= 1
-                semana_atual = int(max(0, semana_atual))
-
- 
-
-            # 5. Quantidade esperada até agora
-            quantidade_prevista = quantidade_por_semana * semana_atual
-
-            return f" / {int(quantidade_por_semana)}   Semana {int(semana_atual)} / {int(quantidade_prevista)}"
-
-        def update_chart1(data, title):
-
-            container_form2.content = return_line_chart(ft, data[0], title, data[1])
-            container_form2.update()
-            container_form3.update()
-            
-        def handle_click(project, type):
-            def _click(e):
-                name = get_name_project(project)
-                dados = get_data_project(project, type)
-                soma = get_sum_data_project(dados)
-                pontos = get_line_chart_project(dados, type)
-                producao = calcular_producao_semanal(project)
-                aplicar_filtros(name)
-                update_chart1([pontos, type], f"{name} - {soma}{producao}")
-            return _click
-
-
-        list_projects.append(
-            ft.DataRow(cells=[
-                            ft.DataCell(ft.Text(value=f"{get_name_project(project)}  {get_final(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.Text(value=f"{get_codes(project)} / {get_predicted_codes(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.IconButton(
-                                icon=ft.Icons.SEARCH,
-                                on_click=handle_click(project, "week"),
-                                bgcolor=ft.Colors.BLUE,
-                                icon_color=ft.Colors.WHITE,
-                                )),
-                            ft.DataCell(ft.IconButton(
-                                icon=ft.Icons.SEARCH,
-                                on_click=handle_click(project, "month"),
-                                bgcolor=ft.Colors.AMBER,
-                                icon_color=ft.Colors.WHITE,
-                                )),
-                        ]
-                )
+    else:
+        # Exibe mensagem de erro se as credenciais não forem encontradas
+        snack_bar = ft.SnackBar(
+            content=ft.Text("Login ou senha incorretos"),
+            bgcolor=ft.Colors.RED
         )
-
-
-   
-    # Requisição de Projetos
-    #....................................................................
-
-    #....................................................................
-    # Requisição de Usuarios
-
-    list_users = []
-
-    for user in get_users:
-
-        def get_name(user):
-
-            name = f"{user["name"].split(" ")[0]} {user["name"].split(" ")[1]}"
-
-            if user["name"].split(" ")[1] == "de":
-                 name = f"{user["name"].split(" ")[0]} {user["name"].split(" ")[2]}"  
-
-            return name
-        
-        def get_current_project(user):
- 
-            return user["current_project"]
-    
-        def get_data_user(user, type):
-
-            time = {
-                "week":8,
-                "month":31
-            }
-
-            def get_last_days_dict(time):
-                hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
-                return {
-                    (hoje - timedelta(days=i)).strftime("%d/%m/%Y"): {}
-                    for i in range(0, time)
-                }
-
-            dicio_logs = get_last_days_dict(time[type])
-
-            for log in get_logs:
-
-                if log["user"] == user["username"]:
-
-                    if log["date"].split()[0][:-1] in dicio_logs.keys():
-
-                        if log["action"] == "Inserção":
-
-                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]))) 
-                            else:
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"])))]
-
-                        elif log["action"] == "Exclusão":
-
-                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append(-(int(log["new_numbers"]))) 
-                            else:
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [(-(int(log["new_numbers"])))]
-
-                        elif log["action"] == "Redução":
-
-                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(0))) 
-                            else:
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(0)))]
-
-                        else:
-
-                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]) - int(log["old_numbers"]))) 
-                            else:
-                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"]) - int(log["old_numbers"])))]
-            
-            
-
-            dicio_final = {}
-
-            for data, subprojetos in dicio_logs.items():
-                total = 0
-
-                for lista_valores in subprojetos.values():
-                    if lista_valores:
-                        total += sum(v for v in lista_valores) 
-                dicio_final[data] = total
-
-
-            return dicio_final
-
-        def get_sum_data_user(dicio):
-
-            return sum(v for v in dicio.values() if isinstance(v, (int, float)))
-
-        def get_line_chart_user(data, type):
-
-            # Converte todas as chaves para objetos datetime
-            datas_convertidas = {
-                datetime.strptime(d, "%d/%m/%Y"): data[d]
-                for d in data
-            }
-
-            # Se for mês → filtra para os últimos 31 dias
-            if type == "month":
-                hoje = datetime.now()  # <-- sem timezone
-                limite = hoje - timedelta(days=31)
-
-                datas_convertidas = {
-                    d: datas_convertidas[d]
-                    for d in datas_convertidas
-                    if d >= limite
-                }
-
-            # Ordena as datas em ordem crescente
-            datas_ordenadas = sorted(datas_convertidas.keys())
-
-            # Monta os pontos do gráfico com X progressivo (1..N)
-            pontos = []
-            x_map = {}
-            x_counter = 1
-
-            for d in datas_ordenadas:
-                x_map[d.strftime("%d/%m/%Y")] = x_counter
-                pontos.append(
-                    ft.LineChartDataPoint(
-                        x_counter,
-                        datas_convertidas[d],
-                        point=True
-                    )
-                )
-                x_counter += 1
-
-            data_line = [
-                ft.LineChartData(
-                    data_points=pontos,
-                    stroke_width=8,
-                    color=ft.Colors.LIGHT_GREEN,
-                    stroke_cap_round=True,
-                )
-            ]
-
-            return [data_line, x_map]
-        
-        def update_chart2(data, title):
-
-            container_form4.content = return_line_chart(ft, data[0], title, data[1])
-            container_form4.update()
-
-        def handle_click(user, type):
-            def _click(e):
-                name = get_name(user)
-                dados = get_data_user(user, type)
-                soma = get_sum_data_user(dados)
-                pontos = get_line_chart_user(dados, type)
-                update_chart2([pontos, type], f"{name} - {soma}")
-            return _click
-
-
-        list_users.append(
-            ft.DataRow(cells=[
-                            ft.DataCell(ft.Text(value=f"{get_name(user)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
-                            ft.DataCell(ft.IconButton(
-                                icon=ft.Icons.SEARCH,
-                                on_click=handle_click(user, "week"),
-                                bgcolor=ft.Colors.BLUE,
-                                icon_color=ft.Colors.WHITE,
-                                )),
-                            ft.DataCell(ft.IconButton(
-                                icon=ft.Icons.SEARCH,
-                                on_click=handle_click(user, "month"),
-                                bgcolor=ft.Colors.AMBER,
-                                icon_color=ft.Colors.WHITE,
-                                )),
-                        ],
-                        data=get_current_project(user)
-                )
-        )
-
-
-   
-    # Requisição de Usuarios
-    #....................................................................
-
-    def aplicar_filtros(user_project):
-        for item in list_users:
-
-            project = item.data 
-
-            item.visible = user_project is None or user_project == project 
-
-    def clean_filter():
-        aplicar_filtros(None)
-        container_form3.update()
-
-
-    history_list = ft.Column(
-        controls=[
-            ft.Container(
-                padding=0,  
-                expand=True,  
-                theme=texttheme1,
-                content=ft.DataTable(
-                    data_row_max_height=50,
-                    column_spacing=40,  
-                    expand=True,  
-                    columns=[
-                        ft.DataColumn(ft.Text(value="Projeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
-                        ft.DataColumn(ft.Text(value="Códigos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-
-                    ],
-                    rows=list_projects,  
-                ),
-            )
-        ],
-        scroll=ft.ScrollMode.AUTO,  
-        alignment=ft.MainAxisAlignment.CENTER,  
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        expand=True,  
-    )
-    history_list2 = ft.Column(
-        controls=[
-            ft.Container(
-                padding=0,  
-                expand=True,  
-                theme=texttheme1,
-                content=ft.DataTable(
-                    data_row_max_height=50,
-                    column_spacing=40,  
- 
-                    columns=[
-                        ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
-                        ft.DataColumn(ft.IconButton(
-                                icon=ft.Icons.LIGHTBULB,
-                                on_click=lambda e: clean_filter(),
-                                bgcolor=ft.Colors.BLUE,
-                                icon_color=ft.Colors.WHITE,
-                                )),
-
-                    ],
-                    rows=list_users,  
-                ),
-            )
-        ],
-        scroll=ft.ScrollMode.AUTO,  
-        alignment=ft.MainAxisAlignment.CENTER,  
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        expand=True,  
-    )
-   
-
-    container_form1.content = history_list
-    container_form2.content = None
-    container_form3.content = history_list2
-    container_form4.content = None
-
-
-                                    
-    container2 = ft.Container(content=ft.ResponsiveRow(controls=[container_form1, container_form2],
-                                                 alignment=ft.MainAxisAlignment.CENTER,
-                                                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                                 spacing=10,
-                                                 ),
-                                                 
-                              alignment=ft.alignment.center,
-                              col=12,
-                              )
-    
-
-    container3 = ft.Container(content=ft.ResponsiveRow(controls=[container_form3, container_form4],
-                                                 alignment=ft.MainAxisAlignment.CENTER,
-                                                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                                 spacing=10,
-                                                 ),
-                                                 
-                              alignment=ft.alignment.center,
-                              col=12,
-                              )
-
-    
-    return ft.ResponsiveRow(
-        col=12,
-        expand=True,
-        controls=[container2, container3],
-        alignment=ft.MainAxisAlignment.CENTER,
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-    )
-
+        page.overlay.append(snack_bar)
+        snack_bar.open = True
+        page.update()
+# Model de verificação de entrada - IF ADM DO/ IF USER DO;
 
 def create_page_user(page):
 
@@ -1501,7 +945,7 @@ def create_page_user(page):
                                       col=7,
                                       padding=5,)
     
-    btn_exit = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)),
+    btn_exit = buttons.create_button(on_click= lambda e: page.go("/"),
                                       text="Sair",
                                       color=ft.Colors.RED,
                                       col=7,
@@ -1642,411 +1086,615 @@ def create_page_user(page):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 # Pagina de Usuario
-def create_page_initial_adm(page):
 
-    sp = SupaBase(page)
-    buttons = Buttons(page)
+
+
+
+def create_page_data(page):
+
     loading = LoadingPages(page)
-    dict_profile = page.client_storage.get("profile")
-    
-    btn_exit = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_login(page)),
-                                      text="Logout",
-                                      color=ft.Colors.RED,
-                                      col=12,
-                                      padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_project(page)),
-                                      text= "Projetos",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,)         
-    btn_see_file = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_files(page)),
-                                            text= "Arquivos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_deliverys(page)),
-                                            text= "Entregas",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_freelancers(page)),
-                                            text= "Freelancers",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page)),
-                                            text= "Modelos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
-                                            text= "Financeiro",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
+    textthemes = TextTheme()
+    texttheme1 = textthemes.create_text_theme1()
 
-    drawer = ft.NavigationDrawer(
-        controls=[
-            btn_projeto,
-            btn_see_freelancers,
-            btn_payment,
-            btn_see_file,
-            btn_see_deliverys,
-            btn_see_models,
-            btn_exit,
-            ]
-        )
+    from functions import get_menu, return_line_chart
+    page.drawer = get_menu(ft, page)
 
-    if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto)  
-        drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment) 
-    
-    page.drawer = drawer
-
+    # AppBar
     page.appbar = get_app_bar(ft, page)
 
-    request_all_subprojects = sp.get_all_subprojects()
-    request_all_subprojects_json = request_all_subprojects.json()
-    dicio_all_subprojects = {}
-
-    for row in request_all_subprojects_json:
-
-        name_subproject = row["name_subproject"]
-        predicted_lots = row["predicted_lots"]
-        lots_done = row["lots_done"]
-        deliverys = row["deliverys"]
-        recommended_medium = row["recommended_medium"]  
-        percent = row["percent"]
-        ortofoto = row["ortofoto"]
-        project = row["project"]
-        final_delivery = row["final_delivery"]
-        current_average = row["current_average"]
-
-        dicio_all_subprojects[name_subproject] = {
-                                                "name_subproject": name_subproject,
-                                                "predicted_lots": predicted_lots,
-                                                "lots_done": lots_done,
-                                                "deliverys": deliverys,
-                                                "recommended_medium": recommended_medium,
-                                                "percent": percent, "ortofoto": ortofoto,
-                                                "project": project,
-                                                "final_delivery": final_delivery,
-                                                "current_average": current_average
-                                                }
-
-
-    request_all_deliverys = sp.get_all_deliverys()
-    request_all_deliverys_json = request_all_deliverys.json()
-    dicio_all_deliverys = {}
-
-    for row in request_all_deliverys_json:
-        
-        id = row["id"]
-        username = row["username"]
-        date = row["date"]
-        name_subproject = row["name_subproject"]
-        polygons = row["polygons"]
-        photos = row["photos"]
-        errors = row["errors"]
-        discount = row["discount"]
-        delay = row["delay"]
-        warning = row["warning"]
-
-        dicio_all_deliverys[id] = {
-                                    "id": id,
-                                    "username": username,
-                                    "date": date,
-                                    "name_subproject": name_subproject,
-                                    "polygons": polygons,
-                                    "photos": photos,
-                                    "errors": errors,
-                                    "discount": discount,
-                                    "delay": delay,
-                                    "warning": warning,
-                                    }
-
-
-    freelancer_data = []
-
-    request_user = sp.get_all_user_data()
-    data_users = request_user.json()
-
-
-    for row in data_users:
-
-        permission = row["permission"]
-        name_freelancer = row["name"]
-        all_names = name_freelancer.split(" ")
-        first_name = all_names[0]
-        current_subproject = row["current_project"]
-
-        if permission == "adm":
-            continue
-
-        if current_subproject == ".":
-
-            linha = ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value=first_name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),
-                        ft.DataCell(ft.Text(value=".", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),
-                        ft.DataCell(ft.Text(value=".", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),
-                        ft.DataCell(ft.Text(value=".", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),    
-                    ])
-
-            freelancer_data.append(linha)
-
-            continue
-
-
-        subproject = dicio_all_subprojects[current_subproject]
-        
-        total_deliverys_subproject = subproject["deliverys"]
-        recommended_medium_subproject = subproject["recommended_medium"]
-
-        polygons_made = 0
-        delay_made  = 0
-        current_deliverys_made = 0
-
-        data_current_deliverys = []
-
-        for item in dicio_all_deliverys.items():
-            
-            if item[1]["name_subproject"] == current_subproject:
-                data_current_deliverys.append(item[1])
-
-       
-
-        if data_current_deliverys == []:
-            polygons_made = 1
-            current_deliverys_made = 1
-        else:
-            for row in data_current_deliverys:
-
-                polygons = row["polygons"]
-                delay = row["delay"]
-                photos = row["photos"]
-                polygons_made += int(polygons)
-                if delay =="Sim":
-                    delay_made += 1
-                if int(photos) == 0:
-                    current_deliverys_made += 1
-
-        average_deliverys = polygons_made / current_deliverys_made
-        polygons_recommended = current_deliverys_made * int(recommended_medium_subproject)
-        missing_lots = (current_deliverys_made * int(recommended_medium_subproject)) - polygons_made
-        if missing_lots < 0:
-            missing_lots = 0
-
-
-        linha = ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value=first_name, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),
-                        ft.DataCell(ft.Text(value=current_subproject, theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),
-                        ft.DataCell(ft.Text(value=f"{int(polygons_made)} / {polygons_recommended} / {missing_lots}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),
-                        ft.DataCell(ft.Text(value=f"{current_deliverys_made} / {total_deliverys_subproject} / {recommended_medium_subproject}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),    
-                    ])
-
-        if average_deliverys < int(recommended_medium_subproject):
-            linha.cells[2].content.color = ft.Colors.RED
-
-
-        freelancer_data.append(linha)
-
-
-    form4 = ft.Column(
-        controls=[
-            ft.Container(
-                padding=0,  
-                expand=True,  
-                content=ft.DataTable(
-                    data_row_max_height=50,
-                    column_spacing=30,  
-                    expand=True,  
-                    columns=[
-                        ft.DataColumn(ft.Text(value="Nome", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),  
-                        ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),  
-                        #ft.DataColumn(ft.Text(value="Média", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=10)),  
-                        ft.DataColumn(ft.Text(value="Poligonos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),  
-                        #ft.DataColumn(ft.Text(value="Faltantes", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=10)),  
-                        ft.DataColumn(ft.Text(value="Entregas", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),  
-                    ],
-                    rows=freelancer_data,  
-                ),
-            )
-        ],
-        scroll=ft.ScrollMode.AUTO,  
-        alignment=ft.MainAxisAlignment.CENTER,  
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        height=300,  
-        expand=True,  
-    )
-
-
-    request_projects = sp.get_all_project_data()
-    data_projects = request_projects.json()
-
-    projects_data = []
-
-    for row in data_projects:
-
-        name_project = row["name_project"]
-        current_subprojects2 = row["current_subprojects"]
-        predicted_lots = row["predicted_lots"]
-        final_delivery = row["final_delivery"]
-
-        list_current_subprojects = current_subprojects2.split(",")
-
-        project_polygons = 0
-
-        for item in list_current_subprojects:
-
-            data_current_deliverys2 = []
-
-            for item2 in dicio_all_deliverys.items():
-                
-                if item2[1]["name_subproject"] == item:
-                    data_current_deliverys2.append(item2[1])
-
-
-            if len(data_current_deliverys2) == 0:
-                polygons2 = 0
-            else:
-                for item3 in data_current_deliverys2:
-                    polygons2 = item3["polygons"]
-                    project_polygons += int(polygons2)
-
-        percent_project = (int(project_polygons) * 100) / int(predicted_lots)
-
-        linha2 = ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(value=name_project, theme_style=ft.TextThemeStyle.TITLE_LARGE, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),
-                        ft.DataCell(ft.Text(value=f"{project_polygons} / {predicted_lots} ... {int(percent_project)}%", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),
-                        ft.DataCell(ft.Text(value=f"{len(list_current_subprojects)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),
-                        ft.DataCell(ft.Text(value=f"{final_delivery}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),    
-                    ])
-
-        projects_data.append(linha2)
-
-
-    form5 = ft.Column(
-        controls=[
-            ft.Container(
-                padding=0,  
-                expand=True,  
-                content=ft.DataTable(
-                    data_row_max_height=50,
-                    column_spacing=30,  
-                    expand=True,  
-                    columns=[
-                        ft.DataColumn(ft.Text(value="Projeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),  
-                        ft.DataColumn(ft.Text(value="Lotes", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),   
-                        ft.DataColumn(ft.Text(value="N°", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),   
-                        ft.DataColumn(ft.Text(value="Entrega", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, size=20)),  
-                    ],
-                    rows=projects_data,  
-                ),
-            )
-        ],
-        scroll=ft.ScrollMode.AUTO,  
-        alignment=ft.MainAxisAlignment.CENTER,  
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        height=300,  
-        expand=True,  
-    )
-
     
+    container_form1 = ft.Container(content=None,
+                                    alignment=ft.alignment.top_center,
+                                    bgcolor=ft.Colors.WHITE,
+                                    border_radius=20,
+                                    padding=10,
+                                    height=((page.height) / 1.3),
+                                    col={"xs" : 12, "lg" : 5},
+                                    )
+    
+    container_form2 = ft.Container(content=None,
+                                    alignment=ft.alignment.top_center,
+                                    bgcolor=ft.Colors.WHITE,
+                                    border_radius=20,
+                                    padding=10,
+                                    height=((page.height) / 1.3),
+                                    col={"xs" : 12, "lg" : 7},
+                                    )
+    
+    container_form3 = ft.Container(content=None,
+                                    alignment=ft.alignment.top_center,
+                                    bgcolor=ft.Colors.WHITE,
+                                    border_radius=20,
+                                    padding=10,
+                                    height=((page.height) / 1.3),
+                                    col={"xs" : 12, "lg" : 4},
+                                    )
+    
+    container_form4 = ft.Container(content=None,
+                                    alignment=ft.alignment.top_center,
+                                    bgcolor=ft.Colors.WHITE,
+                                    border_radius=20,
+                                    padding=10,
+                                    height=((page.height) / 1.3),
+                                    col={"xs" : 12, "lg" : 8},
+                                    )
+    
+    
+    #....................................................................
+    # Requisição de Projetos
 
+    base = SupaBase(page=None)
+    get_projects = ((base.get_projects_data()).json())
+    get_users = ((base.get_all_user_data_filter_est()).json())
+    get_models = ((base.get_all_models()).json())
 
-    container_height = ((page.height) / 1.3)
+    get_logs = []
 
-    container1 = ft.Container(
-        content=form4,
-        bgcolor=ft.Colors.WHITE,
-        padding=30,
-        alignment=ft.alignment.top_center,
-        expand=True,
-        height=container_height,
-        border_radius=20,
-        col={"xs" : 12, "lg" : 6},
-    )
+    offset = 0
+    limit = 1000
 
-    container2 = ft.Container(
-        content=form5,
-        bgcolor=ft.Colors.WHITE,
-        padding=30,
-        alignment=ft.alignment.top_center,
-        expand=True,
-        height=container_height,
-        border_radius=20,
-        col={"xs" : 12, "lg" : 6},
-    )
+    while True:
+        response = base.get_all_logs(offset=offset, limit=limit)
 
-
-    layout = ft.ResponsiveRow(
-        columns=12,
-        controls=[
-           
-            container1,
-            container2
-        ],
-        alignment=ft.MainAxisAlignment.START,
-        vertical_alignment=ft.CrossAxisAlignment.START,
-        expand=True,
-        spacing=20,
-    )
-
-    return layout
-# Página de Administrador
-
-
-def verificar(username, password, page):
-
-    loading = LoadingPages(page)
-    sp = SupaBase(page)
-
-    response = sp.check_login(username=username, password=password, page=page)
-
-    if response.status_code == 200 and len(response.json()) > 0:
+        if response.status_code != 200:
+            print("Erro ao buscar dados:", response.text)
+            break
 
         data = response.json()
-        row = data[0]
-        name = row["name"]
-        username = row["username"]
-        permission = row["permission"]
-        current_project = row["current_project"]
+        get_logs.extend(data)
 
-        page.client_storage.set("profile", {
-            "username": username,
-            "name": name,
-            "permission": permission,
-            "current_project": current_project,
-            "deliveries_filter": [None],
-            "models_filter": [None],
-            "freelancers_filter": [None],
-            "files_filter": [None],
-        })
+        # Se o número de registros retornados for menor que o limite, terminamos
+        if len(data) < limit:
+            break
+
+        offset += limit
+
+
+    list_projects = []
+
+    for project in get_projects:
+
+        def get_name_project(project):
+            return project["name_project"]
+    
+        def get_subprojects(project):
+            return project["current_subprojects"].split(',')
+
+        def get_codes(project):
+
+            count_poligons = 0
+            count_unknown = 0
+
+            for model in get_models:
+                if any(model["subproject"].startswith(item) for item in get_subprojects(project)):
+                    if model["status"] != "Incompleto":
+                        count_poligons = count_poligons + int(model["polygons"])
+                        count_unknown = count_unknown + (int(model["polygons"]) - int(model["numbers"]))
+                    else:
+                        count_poligons = count_poligons + int(model["numbers"])
+                        count_unknown = count_unknown + 0
+
+            return count_poligons - count_unknown
+
+        def get_predicted_codes(project):
+
+            return project["predicted_lots"]
         
-        if permission == "user":
+        def get_final(project):
 
-            loading.new_loading_page(page=page,
-            call_layout=lambda:create_page_user(page),
-            )
-
-        elif permission != "adm":
-
-            page.go("/models")
-
-        else:
-            page.go("/freelancers")
+            return project["final_delivery"]
         
-    else:
-        # Exibe mensagem de erro se as credenciais não forem encontradas
-        snack_bar = ft.SnackBar(
-            content=ft.Text("Login ou senha incorretos"),
-            bgcolor=ft.Colors.RED
+        def get_data_project(project, type):
+
+            time = {
+                "week":8,
+                "month":32
+            }
+
+            def get_last_days_dict(time):
+                hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
+                return {
+                    (hoje - timedelta(days=i)).strftime("%d/%m/%Y"): {}
+                    for i in range(0, time)
+                }
+
+            dicio_logs = get_last_days_dict(time[type])
+
+            for log in get_logs:
+
+                if any(log["subproject"].startswith(item) for item in get_subprojects(project)):
+
+                    if log["date"].split()[0][:-1] in dicio_logs.keys():
+
+                        if log["action"] == "Inserção":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"])))]
+
+                        elif log["action"] == "Exclusão":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append(-(int(log["new_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [(-(int(log["new_numbers"])))]
+
+                        elif log["action"] == "Redução":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(0))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(0)))]
+
+                        else:
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]) - int(log["old_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"]) - int(log["old_numbers"])))]
+            
+
+            dicio_final = {}
+
+            for data, subprojetos in dicio_logs.items():
+
+                total = 0
+
+                for lista_valores in subprojetos.values():
+                    if lista_valores:
+                        total += sum(v for v in lista_valores)
+                dicio_final[data] = total
+
+
+            return dicio_final
+        
+        def get_sum_data_project(dicio):
+
+            return sum(v for v in dicio.values() if isinstance(v, (int, float)))
+
+        def get_line_chart_project(data, type):
+            # Converte todas as chaves para objetos datetime
+            datas_convertidas = {
+                datetime.strptime(d, "%d/%m/%Y"): data[d]
+                for d in data
+            }
+
+            # Se for mês → filtra para os últimos 31 dias
+            if type == "month":
+                hoje = datetime.now()  # <-- sem timezone
+                limite = hoje - timedelta(days=31)
+
+                datas_convertidas = {
+                    d: datas_convertidas[d]
+                    for d in datas_convertidas
+                    if d >= limite
+                }
+
+            # Ordena as datas em ordem crescente
+            datas_ordenadas = sorted(datas_convertidas.keys())
+
+            # Monta os pontos do gráfico com X progressivo (1..N)
+            pontos = []
+            x_map = {}
+            x_counter = 1
+
+            for d in datas_ordenadas:
+                x_map[d.strftime("%d/%m/%Y")] = x_counter
+                pontos.append(
+                    ft.LineChartDataPoint(
+                        x_counter,
+                        datas_convertidas[d],
+                        point=True
+                    )
+                )
+                x_counter += 1
+
+            data_line = [
+                ft.LineChartData(
+                    data_points=pontos,
+                    stroke_width=8,
+                    color=ft.Colors.LIGHT_GREEN,
+                    stroke_cap_round=True,
+                )
+            ]
+
+            return [data_line, x_map]
+        
+        def calcular_producao_semanal(projeto):
+
+            quantidade_total = float(projeto["predicted_lots"])
+            data_inicial = projeto["start"]
+            data_final = projeto["final_delivery"]
+
+            # Converte strings para datetime
+            dt_inicio = datetime.strptime(data_inicial, "%d/%m/%Y")
+            dt_fim = datetime.strptime(data_final, "%d/%m/%Y")
+            hoje = datetime.now()
+
+            # 1. Total de semanas entre as datas
+            total_dias = (dt_fim - dt_inicio).days
+            dias_ficticios = total_dias * (28 / 30)
+            total_semanas = int(dias_ficticios / 7)
+
+
+            # 2. Subtrai 1 semana
+            semanas_validas = total_semanas - 1
+            if semanas_validas <= 0:
+                semanas_validas = 0
+         
+            # 3. Quantidade por semana
+            quantidade_por_semana = quantidade_total / semanas_validas
+   
+
+            # 4. Semana atual do período
+            if hoje < dt_inicio:
+                semana_atual = 0
+            elif hoje > dt_fim:
+                semana_atual = semanas_validas
+            else:
+                dias_passados = (hoje - dt_inicio).days
+                semana_atual = dias_passados / 7
+                # ignora a primeira semana conforme pedido
+                semana_atual -= 1
+                semana_atual = int(max(0, semana_atual))
+
+ 
+
+            # 5. Quantidade esperada até agora
+            quantidade_prevista = quantidade_por_semana * semana_atual
+
+            return f" / {int(quantidade_por_semana)}   Semana {int(semana_atual)} / {int(quantidade_prevista)}"
+
+        def update_chart1(data, title):
+
+            container_form2.content = return_line_chart(ft, data[0], title, data[1])
+            container_form2.update()
+            container_form3.update()
+            
+        def handle_click(project, type):
+            def _click(e):
+                name = get_name_project(project)
+                dados = get_data_project(project, type)
+                soma = get_sum_data_project(dados)
+                pontos = get_line_chart_project(dados, type)
+                producao = calcular_producao_semanal(project)
+                aplicar_filtros(name)
+                update_chart1([pontos, type], f"{name} - {soma}{producao}")
+            return _click
+
+
+        list_projects.append(
+            ft.DataRow(cells=[
+                            ft.DataCell(ft.Text(value=f"{get_name_project(project)}  {get_final(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.Text(value=f"{get_codes(project)} / {get_predicted_codes(project)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                on_click=handle_click(project, "week"),
+                                bgcolor=ft.Colors.BLUE,
+                                icon_color=ft.Colors.WHITE,
+                                )),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                on_click=handle_click(project, "month"),
+                                bgcolor=ft.Colors.AMBER,
+                                icon_color=ft.Colors.WHITE,
+                                )),
+                        ]
+                )
         )
-        page.overlay.append(snack_bar)
-        snack_bar.open = True
-        page.update()
-# Model de verificação de entrada - IF ADM DO/ IF USER DO;
+
+
+   
+    # Requisição de Projetos
+    #....................................................................
+
+    #....................................................................
+    # Requisição de Usuarios
+
+    list_users = []
+
+    for user in get_users:
+
+        def get_name(user):
+
+            name = f"{user["name"].split(" ")[0]} {user["name"].split(" ")[1]}"
+
+            if user["name"].split(" ")[1] == "de":
+                 name = f"{user["name"].split(" ")[0]} {user["name"].split(" ")[2]}"  
+
+            return name
+        
+        def get_current_project(user):
+ 
+            return user["current_project"]
+    
+        def get_data_user(user, type):
+
+            time = {
+                "week":8,
+                "month":31
+            }
+
+            def get_last_days_dict(time):
+                hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
+                return {
+                    (hoje - timedelta(days=i)).strftime("%d/%m/%Y"): {}
+                    for i in range(0, time)
+                }
+
+            dicio_logs = get_last_days_dict(time[type])
+
+            for log in get_logs:
+
+                if log["user"] == user["username"]:
+
+                    if log["date"].split()[0][:-1] in dicio_logs.keys():
+
+                        if log["action"] == "Inserção":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"])))]
+
+                        elif log["action"] == "Exclusão":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append(-(int(log["new_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [(-(int(log["new_numbers"])))]
+
+                        elif log["action"] == "Redução":
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(0))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(0)))]
+
+                        else:
+
+                            if f"{log["subproject"]}_{log["name"]}" in dicio_logs[log["date"].split()[0][:-1]].keys():
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"].append((int(log["new_numbers"]) - int(log["old_numbers"]))) 
+                            else:
+                                dicio_logs[log["date"].split()[0][:-1]][f"{log["subproject"]}_{log["name"]}"] = [((int(log["new_numbers"]) - int(log["old_numbers"])))]
+            
+            
+
+            dicio_final = {}
+
+            for data, subprojetos in dicio_logs.items():
+                total = 0
+
+                for lista_valores in subprojetos.values():
+                    if lista_valores:
+                        total += sum(v for v in lista_valores) 
+                dicio_final[data] = total
+
+
+            return dicio_final
+
+        def get_sum_data_user(dicio):
+
+            return sum(v for v in dicio.values() if isinstance(v, (int, float)))
+
+        def get_line_chart_user(data, type):
+
+            # Converte todas as chaves para objetos datetime
+            datas_convertidas = {
+                datetime.strptime(d, "%d/%m/%Y"): data[d]
+                for d in data
+            }
+
+            # Se for mês → filtra para os últimos 31 dias
+            if type == "month":
+                hoje = datetime.now()  # <-- sem timezone
+                limite = hoje - timedelta(days=31)
+
+                datas_convertidas = {
+                    d: datas_convertidas[d]
+                    for d in datas_convertidas
+                    if d >= limite
+                }
+
+            # Ordena as datas em ordem crescente
+            datas_ordenadas = sorted(datas_convertidas.keys())
+
+            # Monta os pontos do gráfico com X progressivo (1..N)
+            pontos = []
+            x_map = {}
+            x_counter = 1
+
+            for d in datas_ordenadas:
+                x_map[d.strftime("%d/%m/%Y")] = x_counter
+                pontos.append(
+                    ft.LineChartDataPoint(
+                        x_counter,
+                        datas_convertidas[d],
+                        point=True
+                    )
+                )
+                x_counter += 1
+
+            data_line = [
+                ft.LineChartData(
+                    data_points=pontos,
+                    stroke_width=8,
+                    color=ft.Colors.LIGHT_GREEN,
+                    stroke_cap_round=True,
+                )
+            ]
+
+            return [data_line, x_map]
+        
+        def update_chart2(data, title):
+
+            container_form4.content = return_line_chart(ft, data[0], title, data[1])
+            container_form4.update()
+
+        def handle_click(user, type):
+            def _click(e):
+                name = get_name(user)
+                dados = get_data_user(user, type)
+                soma = get_sum_data_user(dados)
+                pontos = get_line_chart_user(dados, type)
+                update_chart2([pontos, type], f"{name} - {soma}")
+            return _click
+
+
+        list_users.append(
+            ft.DataRow(cells=[
+                            ft.DataCell(ft.Text(value=f"{get_name(user)}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                on_click=handle_click(user, "week"),
+                                bgcolor=ft.Colors.BLUE,
+                                icon_color=ft.Colors.WHITE,
+                                )),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                on_click=handle_click(user, "month"),
+                                bgcolor=ft.Colors.AMBER,
+                                icon_color=ft.Colors.WHITE,
+                                )),
+                        ],
+                        data=get_current_project(user)
+                )
+        )
+
+
+   
+    # Requisição de Usuarios
+    #....................................................................
+
+    def aplicar_filtros(user_project):
+        for item in list_users:
+
+            project = item.data 
+
+            item.visible = user_project is None or user_project == project 
+
+    def clean_filter():
+        aplicar_filtros(None)
+        container_form3.update()
+
+
+    history_list = ft.Column(
+        controls=[
+            ft.Container(
+                padding=0,  
+                expand=True,  
+                theme=texttheme1,
+                content=ft.DataTable(
+                    data_row_max_height=50,
+                    column_spacing=40,  
+                    expand=True,  
+                    columns=[
+                        ft.DataColumn(ft.Text(value="Projeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                        ft.DataColumn(ft.Text(value="Códigos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+
+                    ],
+                    rows=list_projects,  
+                ),
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,  
+        alignment=ft.MainAxisAlignment.CENTER,  
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        expand=True,  
+    )
+    history_list2 = ft.Column(
+        controls=[
+            ft.Container(
+                padding=0,  
+                expand=True,  
+                theme=texttheme1,
+                content=ft.DataTable(
+                    data_row_max_height=50,
+                    column_spacing=40,  
+ 
+                    columns=[
+                        ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                        ft.DataColumn(ft.IconButton(
+                                icon=ft.Icons.LIGHTBULB,
+                                on_click=lambda e: clean_filter(),
+                                bgcolor=ft.Colors.BLUE,
+                                icon_color=ft.Colors.WHITE,
+                                )),
+
+                    ],
+                    rows=list_users,  
+                ),
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,  
+        alignment=ft.MainAxisAlignment.CENTER,  
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        expand=True,  
+    )
+   
+
+    container_form1.content = history_list
+    container_form2.content = None
+    container_form3.content = history_list2
+    container_form4.content = None
+
+
+                                    
+    container2 = ft.Container(content=ft.ResponsiveRow(controls=[container_form1, container_form2],
+                                                 alignment=ft.MainAxisAlignment.CENTER,
+                                                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                 spacing=10,
+                                                 ),
+                                                 
+                              alignment=ft.alignment.center,
+                              col=12,
+                              )
+    
+
+    container3 = ft.Container(content=ft.ResponsiveRow(controls=[container_form3, container_form4],
+                                                 alignment=ft.MainAxisAlignment.CENTER,
+                                                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                 spacing=10,
+                                                 ),
+                                                 
+                              alignment=ft.alignment.center,
+                              col=12,
+                              )
+
+    
+    return ft.ResponsiveRow(
+        col=12,
+        expand=True,
+        controls=[container2, container3],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+# Pagina Dashboard
+
 
 
 def create_page_project(page):
@@ -2098,17 +1746,24 @@ def create_page_project(page):
     )
 
     for city in get_json: 
+
         name_project = city["name_project"]
 
-        def create_on_click(name):
-            return lambda e: loading.new_loading_page(page=page,
-                                                    call_layout= lambda:create_page_subproject(page=page, project=name),
-                                                    )
-        
-        def call_edit(name):
-            return lambda e: loading.new_loading_page(page=page,
-                                                    call_layout= lambda:create_page_project_token(page=page, project=name),
-                                                    )
+        def go_token(name_city):
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "project": name_city,
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/projects/token")
+
+        def go_edit(name_city):
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "project": name_city,
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/projects/edit")
 
 
         history_list.controls[0].content.rows.append(
@@ -2116,13 +1771,13 @@ def create_page_project(page):
                             ft.DataCell(ft.Text(value=f"{name_project}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
-                                on_click=create_on_click(name_project),
+                                on_click=lambda e, name_city=name_project: go_token(name_city),
                                 bgcolor=ft.Colors.BLUE,
                                 icon_color=ft.Colors.WHITE,
                                 )),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.EDIT,
-                                on_click=call_edit(name_project),
+                                on_click=lambda e, name_city=name_project: go_edit(name_city),
                                 bgcolor=ft.Colors.BLUE,
                                 icon_color=ft.Colors.WHITE,
                                 )),
@@ -2165,10 +1820,7 @@ def create_page_project(page):
                     ft.Text("Projetos", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
                     ft.IconButton(
                         icon=ft.Icons.ADD,
-                        on_click=lambda e: loading.new_loading_page(
-                            page=page,
-                            call_layout=lambda: create_page_new_project(page=page),
-                            ),
+                        on_click=lambda e: page.go("/projects/add"),
                         bgcolor=ft.Colors.GREEN,
                         icon_color=ft.Colors.WHITE,
                     )
@@ -2202,17 +1854,19 @@ def create_page_project(page):
 
     return layout
 # Pagina Lateral de Projetos
-def create_page_project_token(page, project):
+
+def create_page_project_token(page):
 
     loading = LoadingPages(page=page)
     base = SupaBase(page=page)
     buttons = Buttons(page)
+
+    dict_profile = page.client_storage.get("profile")
+    project = dict_profile["project"]
+
     get_base_Project = base.get_one_project_data(project)
     get_info1 = get_base_Project.json()
     get_info2 = get_info1[0]
-
-    def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
 
     # AppBar
     page.appbar = get_app_bar(ft, page)
@@ -2255,7 +1909,7 @@ def create_page_project_token(page, project):
                 response2 = base.edit_projects_data(data_project)
 
                 if response2.status_code in [200, 204]:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_project_token(page=page, project=data_project["name_project"]))
+                    page.go("/projects")
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
@@ -2272,7 +1926,7 @@ def create_page_project_token(page, project):
                 page.update()
         else:
             base.edit_projects_data(data_project)
-            loading.new_loading_page(page=page, call_layout=lambda: create_page_project_token(page=page, project=data_project["name_project"]))
+            page.go("/projects")
             snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
             page.overlay.append(snack_bar)
             snack_bar.open = True
@@ -2380,7 +2034,7 @@ def create_page_project_token(page, project):
             response2 = base.edit_projects_data(data)
 
             if response2.status_code in [200, 204]:
-                loading.new_loading_page(page=page, call_layout=lambda: create_page_project_token(page=page, project=data["name_project"]))
+                page.go("/projects")
                 snack_bar = ft.SnackBar(content=ft.Text(f"{local} excluido"), bgcolor=ft.Colors.GREEN)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
@@ -2914,9 +2568,6 @@ def create_page_new_project(page):
     sp = SupaBase(page)
 
 
-    def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
-
     page.appbar = get_app_bar(ft, page)
 
     containers_list = []
@@ -3068,11 +2719,10 @@ def create_page_new_project(page):
             check = all(item == 201 for item in list_codes)
 
             if check:
-                loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
                 snack_bar = ft.SnackBar(content=ft.Text("Projeto criado com sucesso"), bgcolor=ft.Colors.GREEN)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
-                page.update()
+                page.go("/projects")
             else:
                 snack_bar = ft.SnackBar(content=ft.Text("Erro ao criar subprojetos"), bgcolor=ft.Colors.RED)
                 page.overlay.append(snack_bar)
@@ -3153,15 +2803,15 @@ def create_page_new_project(page):
     return layout
 # Pagina de Fichas Criacionais de Projetos
 
-
-
-
-def create_page_subproject(page, project):
+def create_page_subproject(page):
     
     loading = LoadingPages(page=page)
     base = SupaBase(page=None)
     textthemes = TextTheme()
     texttheme1 = textthemes.create_text_theme1()
+
+    dict_profile = page.client_storage.get("profile")
+    project = dict_profile["project"]
 
     get_base_Project = base.get_one_project_data(project)
     get_info1 = get_base_Project.json()
@@ -3201,6 +2851,14 @@ def create_page_subproject(page, project):
         name_subproject = city["name_subproject"]
         list_subprojects.append(name_subproject)
         data = city
+
+        def go_subproject(subproject):
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "subproject": subproject,
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/projects/token/subproject")
         
         def delete_subproject(name_subproject):
 
@@ -3226,19 +2884,19 @@ def create_page_subproject(page, project):
                     if len(string_subprojects) == 0:
                         response6 = base.delete_project(project)
                         if response6.status_code in [200, 204]:
-                            loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
+                            page.go("/projects")
                             snack_bar = ft.SnackBar(content=ft.Text("Subprojeto e Projeto Excluidos"), bgcolor=ft.Colors.GREEN)
                             page.overlay.append(snack_bar)
                             snack_bar.open = True
                             page.update()
                         else:
-                            loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
+                            page.go("/projects")
                             snack_bar = ft.SnackBar(content=ft.Text("Falha ao excluir projeto"), bgcolor=ft.Colors.RED)
                             page.overlay.append(snack_bar)
                             snack_bar.open = True
                             page.update()
                     else:
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_subproject(page=page, project=project))
+                        page.go("/projects")
                         snack_bar = ft.SnackBar(content=ft.Text("Subprojeto Excluido"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
@@ -3262,10 +2920,7 @@ def create_page_subproject(page, project):
                                 icon=ft.Icons.EDIT,
                                 bgcolor=ft.Colors.BLUE,
                                 icon_color=ft.Colors.WHITE,
-                                on_click=lambda e, subproject_data=data: loading.new_loading_page(
-                                        page=page,
-                                        call_layout=lambda: create_page_subproject_token(page=page, subproject=subproject_data, back_project=project)
-                                    ),
+                                on_click=lambda e, subproject=data: go_subproject(subproject),
                                 )),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.DELETE,
@@ -3275,10 +2930,6 @@ def create_page_subproject(page, project):
                                 )),
             ])
         )
-
-
-    def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
 
 
     page.appbar = get_app_bar(ft, page)
@@ -3294,10 +2945,7 @@ def create_page_subproject(page, project):
                      ft.Text("Subprojetos de Cidades", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_800),
                     ft.IconButton(
                         icon=ft.Icons.ADD,
-                        on_click=lambda e: loading.new_loading_page(
-                            page=page,
-                            call_layout=lambda: create_page_new_subproject(page=page, project=project),
-                            ),
+                        on_click=lambda e: page.go("/projects/token/add"),
                         bgcolor=ft.Colors.GREEN,
                         icon_color=ft.Colors.WHITE,
                     )
@@ -3471,21 +3119,19 @@ def create_page_subproject(page, project):
     return layout
 # Pagina de Subprojetos - Continuação de Projetos
 
-def create_page_subproject_token(page, subproject, back_project=None):
+def create_page_subproject_token(page):
 # Pagina de Ficha edital de subprojeto
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
     sp = SupaBase(page)
 
+    dict_profile = page.client_storage.get("profile")
+    subproject = dict_profile["subproject"]
+
     get_info2 = subproject
 
 
-    def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_subproject(page=page , project=back_project))
-        
-
-    
     file_selected = []
     file_name = []
     file_type =[]
@@ -3534,11 +3180,10 @@ def create_page_subproject_token(page, subproject, back_project=None):
                     response2 = sp.edit_subproject_data(data_subproject)
 
                     if response2.status_code in [200, 204]:
-                        loading.new_loading_page(page=page, call_layout=lambda: create_page_subproject(page=page, project=data_subproject["project"]))
+                        page.go("/projects/token")
                         snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                         page.overlay.append(snack_bar)
                         snack_bar.open = True
-                        page.update()
                     else:
                         snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar tabela: {response2.text}"), bgcolor=ft.Colors.RED)
                         page.overlay.append(snack_bar)
@@ -3553,7 +3198,7 @@ def create_page_subproject_token(page, subproject, back_project=None):
                 response2 = sp.edit_subproject_data(data_subproject)
 
                 if response2.status_code in [200, 204]:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_subproject(page=page, project=data_subproject["project"]))
+                    page.go("/projects/token")
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
@@ -3757,7 +3402,7 @@ def create_page_subproject_token(page, subproject, back_project=None):
 
             if response2.status_code in [200, 204]:
                 get_info2[local] = "."  
-                loading.new_loading_page(page=page, call_layout=lambda: create_page_subproject_token(page=page, subproject=get_info2))
+                page.go("/projects/token")
                 snack_bar = ft.SnackBar(content=ft.Text(f"{local} excluido"), bgcolor=ft.Colors.GREEN)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
@@ -3996,13 +3641,14 @@ def create_page_subproject_token(page, subproject, back_project=None):
 
     return layout
 
-def create_page_new_subproject(page, project):
+def create_page_new_subproject(page):
 
     sp = SupaBase(page=page)
     loading = LoadingPages(page=page)
 
-    def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_project(page=page))
+    dict_profile = page.client_storage.get("profile")
+    project = dict_profile["project"]
+
 
     page.appbar = get_app_bar(ft, page)
 
@@ -4048,7 +3694,7 @@ def create_page_new_subproject(page, project):
                     }
                 )
                 if response2.status_code in [200, 204]:
-                    loading.new_loading_page(page=page, call_layout=lambda: create_page_subproject(page=page, project=project))
+                    page.go("/projects/token"),
                     snack_bar = ft.SnackBar(content=ft.Text("Subrpojeto criado"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
@@ -4111,14 +3757,13 @@ def create_page_new_subproject(page, project):
 
 
 
+
+
 def create_page_new_freelancer(page):
 
     loading = LoadingPages(page=page)
     buttons = Buttons(page)
     
-
-    def go_back():
-        loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
 
     page.appbar = get_app_bar(ft, page)
 
@@ -4176,7 +3821,7 @@ def create_page_new_freelancer(page):
             sp = SupaBase(page)
             response = sp.create_user_data(data_subproject)
             if response.status_code in [200, 201]:
-                loading.new_loading_page(page=page, call_layout=lambda: create_page_see_freelancers(page=page))
+                page.go("/freelancers")
                 snack_bar = ft.SnackBar(content=ft.Text("Usuário criado"), bgcolor=ft.Colors.GREEN)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
@@ -5368,10 +5013,7 @@ def create_page_see_freelancers(page):
                     ft.Text("Freelancers", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
                     ft.IconButton(
                         icon=ft.Icons.ADD,
-                        on_click=lambda e: loading.new_loading_page(
-                            page=page,
-                            call_layout=lambda: create_page_new_freelancer(page=page),
-                            ),
+                        on_click=lambda e: page.go("/freelancers/add"),
                         bgcolor=ft.Colors.GREEN,
                         icon_color=ft.Colors.WHITE,
                     )
