@@ -970,29 +970,21 @@ def create_page_user(page):
                                       )
     
     btn_planner1= buttons.create_button(on_click=lambda e: page.launch_url(row3["planner1"]),
-                                      text="Baixar Planilha 1",
+                                      text="Baixar Planilha",
                                       color=ft.Colors.AMBER,
                                       col=7,
                                       padding=5,
                                       )
     
-    btn_planner2= buttons.create_button(on_click=lambda e: page.launch_url(row3["planner2"]),
-                                      text="Baixar Planilha 2",
-                                      color=ft.Colors.AMBER,
-                                      col=7,
-                                      padding=5,
-                                      )
 
     if dict_profile["current_project"] != ".":
         if row3["type"] == "poligonos":
             btn_planner1.visible = False
-            btn_planner2.visible = False
         else:
             btn_dwg.visible = False
             btn_ecw.visible = False
     else:
         btn_planner1.visible = False
-        btn_planner2.visible = False
         btn_dwg.visible = False
         btn_ecw.visible = False
 
@@ -1046,7 +1038,7 @@ def create_page_user(page):
 
     container_ortofoto2 = ft.Container(
                                     content=ft.Column(
-                                        controls=[container_ortofoto, btn_dwg, btn_ecw, btn_planner1, btn_planner2],
+                                        controls=[container_ortofoto, btn_dwg, btn_ecw, btn_planner1],
                                         alignment=ft.MainAxisAlignment.CENTER,
                                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                         spacing=15,
