@@ -5120,6 +5120,7 @@ def create_page_see_deliverys(page):
                 ft.DataColumn(ft.Text(value="Poligonos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                 ft.DataColumn(ft.Text(value="Fotos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                 ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
             ],
         rows=[]
     )
@@ -5300,6 +5301,10 @@ def create_page_see_deliverys(page):
         
         project = next((k for k, v in dicio_projects.items() if delev['name_subproject'] in v), None)
 
+        def go_download(delev):
+
+            page.launch_url(delev["dwg"])
+
         def go_token(delev):
             profile = page.client_storage.get("profile")
             profile.update({
@@ -5357,6 +5362,15 @@ def create_page_see_deliverys(page):
                                 expand=True,
                                 ),
                                 on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.DOWNLOAD,
+                                bgcolor=ft.Colors.AMBER,
+                                icon_color=ft.Colors.WHITE,
+                                expand=True,
+                                on_click=lambda e, delev=delev: go_download(delev),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_download(delev)
                                 ),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
@@ -6688,6 +6702,7 @@ def create_page_files(page, filtros=[None]):
                 ft.DataColumn(ft.Text(value="Quantidade", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                 ft.DataColumn(ft.Text(value="Meta", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
                 ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
+                ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),
             ],
         rows=[]
     )
@@ -6866,6 +6881,10 @@ def create_page_files(page, filtros=[None]):
 
         project = next((k for k, v in dicio_projects.items() if delev['subproject'] in v), None)
 
+        def go_download(delev):
+
+            page.launch_url(delev["url"])
+
         def go_token(delev):
             profile = page.client_storage.get("profile")
             profile.update({
@@ -6925,6 +6944,15 @@ def create_page_files(page, filtros=[None]):
                                 color=ft.Colors.BLACK,
                                 ),
                                 on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.DOWNLOAD,
+                                bgcolor=ft.Colors.AMBER,
+                                icon_color=ft.Colors.WHITE,
+                                expand=True,
+                                on_click=lambda e, delev=delev: go_download(delev),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_download(delev)
                                 ),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
@@ -7348,6 +7376,7 @@ def create_page_see_models(page):
                         ft.DataColumn(ft.Text(value="Atualização", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="Editor", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
                         ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
+                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
             ],
         rows=[]
     )
@@ -7535,6 +7564,10 @@ def create_page_see_models(page):
             None
         )
         
+        def go_download(delev):
+
+            page.launch_url(delev["dwg"])
+
         def go_token(delev):
             profile = page.client_storage.get("profile")
             profile.update({
@@ -7619,6 +7652,15 @@ def create_page_see_models(page):
                                 expand=True,
                                 ),
                                 on_long_press=lambda e, delev=delev: go_token(delev)
+                                ),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.DOWNLOAD,
+                                bgcolor=ft.Colors.AMBER,
+                                icon_color=ft.Colors.WHITE,
+                                expand=True,
+                                on_click=lambda e, delev=delev: go_download(delev),
+                                ),
+                                on_long_press=lambda e, delev=delev: go_download(delev)
                                 ),
                             ft.DataCell(ft.IconButton(
                                 icon=ft.Icons.SEARCH,
