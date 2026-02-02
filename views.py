@@ -7360,7 +7360,7 @@ def create_page_see_models(page):
 
 
     # Criação da tabela bruta
-    table = return_table(["Usuario","Data","Subprojeto","Poligonos","%","Status","Atualização","Editor","",""])
+    table = return_table(["Usuario","Data","Subprojeto","Poligonos","Codigos","%","Status","Atualização","Editor","",""])
 
     pagination_bar = ft.Row(
         alignment=ft.MainAxisAlignment.CENTER,
@@ -7387,13 +7387,14 @@ def create_page_see_models(page):
     visible_rows = []
 
 
-    headers = ["Usuario","Data","Subprojeto","Poligonos","%","Status","Atualização","Editor","",""]
+    headers = ["Usuario","Data","Subprojeto","Poligonos", "Codigos", "%","Status","Atualização","Editor","",""]
 
     field_map = {
         "Usuario": "username",
         "Data": "date",
         "Subprojeto": "subproject",
         "Poligonos": "polygons",
+        "Codigos": "numbers",
         "Status": "status",
         "Atualização": "update",
         "Editor": "editor",
