@@ -128,6 +128,8 @@ def verificar(username, password, page):
             "current_project": current_project,
             "deliveries_filter": [None],
             "models_filter": [None],
+            "lisps_filter": [None],
+            "logs_filter": [None],
             "freelancers_filter": [None],
             "files_filter": [None],
         })
@@ -7198,20 +7200,14 @@ def create_page_files(page, filtros=[None]):
 # Pagina de Visualização de Arquivos
 def create_page_files_details(page):
 
-    loading = LoadingPages(page=page)
     buttons = Buttons(page)
     dict_profile = page.client_storage.get("profile")
     files = dict_profile["file"]
 
     # Definir o tema global para garantir que o texto seja preto por padrão
 
-    def go_back():
-        page.go("/files")
-
     # AppBar
     page.appbar = get_app_bar(ft, page)
-
-    is_editable1 = dict_profile["permission"] != "adm"
 
 
     view_files = {
@@ -7332,9 +7328,7 @@ def create_page_see_models(page):
     textthemes = TextTheme()
     dict_profile = page.client_storage.get("profile")
     filtros = dict_profile["models_filter"]
-    texttheme1 = textthemes.create_text_theme1()
 
-    buttons = Buttons(page)
 
     from functions import get_menu
     page.drawer = get_menu(ft, page)
@@ -7342,6 +7336,8 @@ def create_page_see_models(page):
     # AppBar
     page.appbar = get_app_bar(ft, page)
 
+
+    # Definir projetos por permissão ...........
     if dict_profile["permission"] != "adm":
         project = ((base.get_one_project_data(dict_profile["current_project"])).json())[0]
         subprojects_list = (project["current_subprojects"]).split(",")
@@ -7360,26 +7356,11 @@ def create_page_see_models(page):
     for item in list_projects:
 
         dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
+    # Definir projetos por permissão ...........
 
-    table = ft.DataTable(
-        data_row_max_height=50,
-        column_spacing=40,
-        expand=True,
-        expand_loose=True,
-        columns=[
-                ft.DataColumn(ft.Text(value="Usuario", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
-                        ft.DataColumn(ft.Text(value="Data", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),  
-                        ft.DataColumn(ft.Text(value="Subprojeto", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="Poligonos", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="%", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="Status", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="Atualização", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="Editor", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-                        ft.DataColumn(ft.Text(value="", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900, expand=True)),
-            ],
-        rows=[]
-    )
+
+    # Criação da tabela bruta
+    table = return_table(["Usuario","Data","Subprojeto","Poligonos","%","Status","Atualização","Editor","",""])
 
     pagination_bar = ft.Row(
         alignment=ft.MainAxisAlignment.CENTER,
@@ -7393,338 +7374,89 @@ def create_page_see_models(page):
         color=ft.Colors.BLACK
     )
 
-    # Lista para exibir as entregas
-    history_list = ft.Column(
-        controls=[
-            ft.Container(
-                padding=0,  
-                expand=True,  
-                theme=texttheme1,
-                clip_behavior=ft.ClipBehavior.NONE,  
-                content=table,
-            ),
-            ft.Row(
-                controls=[lbl_total],
-                alignment=ft.MainAxisAlignment.CENTER,
-            ),
-            pagination_bar,  # Barra com números
-        ],
-        scroll=ft.ScrollMode.AUTO,  
-        alignment=ft.MainAxisAlignment.CENTER,  
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        expand=True,  
-    )
+    # Criação do container da tabela
+    history_list = return_container_table(table, pagination_bar, lbl_total)
+
+
 
     list_filtros = [None]
 
     items_per_page = 10
     current_page = [1]
-    all_rows = []        # Armazena todos os DataRow
+    all_rows = []       
     visible_rows = []
 
-    def update_pagination_bar(initial=True):
 
-        total_pages = (len(visible_rows) + items_per_page - 1) // items_per_page
+    headers = ["Usuario","Data","Subprojeto","Poligonos","%","Status","Atualização","Editor","",""]
 
-        visible_pages = 4
-        many_pages = True
-
-        if total_pages < visible_pages:
-            many_pages = False
-            visible_pages = total_pages 
-
-        pagination_bar.controls.clear()
-
-        if many_pages:
-            pagination_bar.controls.append(
-                ft.IconButton(
-                    icon=ft.Icons.ARROW_BACK,
-                    icon_color=ft.Colors.INDIGO_600,
-                    disabled=current_page[0] == 1,
-                    visible=current_page[0] != 1,
-                    on_click=lambda e: load_page(current_page[0] - 1)
-                )
-            )
-
-        # Números
-        initial_number = current_page[0]
-        last_number = current_page[0] + visible_pages
-
-        def color_button(page):
-            if page == current_page[0]:
-                color = ft.Colors.AMBER
-            else:
-                color = ft.Colors.INDIGO_600
-            
-            return color
-
-        for page in range(initial_number, last_number):
-            pagination_bar.controls.append(
-                ft.ElevatedButton(
-                    text=str(page),
-                    bgcolor = color_button(page),
-                    color = ft.Colors.WHITE,
-                    on_click=lambda e, p=page: load_page(p)
-                )
-            )
-
-        # Limitar a ultima página
-        if current_page[0] + visible_pages > total_pages:
-            pagination_bar.controls.clear()
-            initial_page = 1
-            final = total_pages + 1
-
-            if many_pages:
-                initial_page = total_pages - visible_pages
-                final = total_pages + 1
-                pagination_bar.controls.append(
-                    ft.IconButton(
-                        icon=ft.Icons.ARROW_BACK,
-                        icon_color=ft.Colors.INDIGO_600,
-                        on_click=lambda e: load_page(current_page[0] - 1)
-                    )
-                )
+    field_map = {
+        "Usuario": "username",
+        "Data": "date",
+        "Subprojeto": "subproject",
+        "Poligonos": "polygons",
+        "Status": "status",
+        "Atualização": "update",
+        "Editor": "editor",
+    }
 
 
-            for page in range(initial_page, final):
-                pagination_bar.controls.append(
-                    ft.ElevatedButton(
-                        text=str(page),
-                        bgcolor = color_button(page),
-                        color = ft.Colors.WHITE,
-                        on_click=lambda e, p=page: load_page(p)
-                    )
-                )
-            
-
-        if many_pages:
-            # Botão "Próximo"
-            pagination_bar.controls.append(
-                ft.IconButton(
-                    icon=ft.Icons.ARROW_FORWARD,
-                    icon_color=ft.Colors.INDIGO_600,
-                    disabled=current_page[0] == total_pages,
-                    visible=current_page[0] != total_pages,
-                    on_click=lambda e: load_page(current_page[0] + 1)
-                )
-            )
-
-        if current_page[0] <= total_pages - visible_pages and many_pages:
-            pagination_bar.controls.insert(-1,
-                ft.ElevatedButton(
-                        text=str(f"{total_pages}"),
-                        bgcolor = color_button(current_page[0] + 1),
-                        color = ft.Colors.WHITE,
-                        on_click=lambda e, p=page: load_page(total_pages)
-                    )
-            ) 
-
-        if current_page[0] != 1 and many_pages:
-            pagination_bar.controls.insert(1,
-                ft.ElevatedButton(
-                        text=str("1"),
-                        bgcolor = color_button(current_page[0] + 1),
-                        color = ft.Colors.WHITE,
-                        on_click=lambda e, p=page: load_page(1)
-                    )
-            )
-
-        # Atualiza label "Total de registros"
-        lbl_total.value = f"{len(table.rows)} itens de {len(visible_rows)}"
-        if initial:
-            lbl_total.update()
-            pagination_bar.update()
-
-    def load_page(page, initial=True):
-
-        current_page[0] = page
-
-        start = (page * items_per_page) - items_per_page
-        end = start + items_per_page
-
-        visible_rows.clear()
-        for item in all_rows:
-            if item.visible:
-                visible_rows.append(item)
-    
-        table.rows = visible_rows[start:end]
-        if initial:
-            table.update()
-        update_pagination_bar(initial)
+    # Preenche a tabela com os dados dos modelos ......
+    add_rows(
+        page=page,
+        all_rows=all_rows,
+        get_json=get_json,        
+        dicio_projects=dicio_projects,
+        list_filtros=list_filtros,
+        type="model",
+        headers=headers,
+        field_map=field_map,
+    )
+    # Preenche a tabela com os dados dos modelos ......
 
 
-    # Preenche a lista com os dados das entregas
-    for delev in get_json:
+    load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=False)
 
-        project = next(
-            (
-                k for k, v in dicio_projects.items()
-                if any(delev['subproject'].startswith(item) for item in v)
-            ),
-            None
-        )
-        
-        def go_download(delev):
-
-            page.launch_url(delev["dwg"])
-
-        def go_token(delev):
-            profile = page.client_storage.get("profile")
-            profile.update({
-                "model": { **delev, "dwg": delev.get("dwg") or "" },
-                "logs": { **delev, "dwg": delev.get("dwg") or "" },
-                "models_filter": list_filtros
-            })
-            page.client_storage.set("profile", profile)
-            page.go("/models/token")
-
-        all_rows.append(
-            ft.DataRow(cells=[
-                            ft.DataCell(ft.Text(
-                                value=f"{delev['username']}",
-                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
-                                text_align=ft.TextAlign.CENTER,
-                                color=ft.Colors.BLACK,
-                                expand=True,
-                                ),
-                                on_long_press=lambda e, delev=delev: go_token(delev)
-                                ),
-                            ft.DataCell(ft.Text(
-                                value=f"{delev['date']}",
-                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
-                                text_align=ft.TextAlign.CENTER,
-                                color=ft.Colors.BLACK,
-                                expand=True,
-                                ),
-                                on_long_press=lambda e, delev=delev: go_token(delev)
-                                ),
-                            ft.DataCell(ft.Text(
-                                value=f"{delev['subproject']}",
-                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
-                                text_align=ft.TextAlign.CENTER,
-                                color=ft.Colors.BLACK,
-                                expand=True,
-                                data=project
-                                ),
-                                on_long_press=lambda e, delev=delev: go_token(delev)
-                                ),
-                            ft.DataCell(ft.Text(
-                                value=f"{delev['polygons']}",
-                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
-                                text_align=ft.TextAlign.CENTER,
-                                color=ft.Colors.BLACK,
-                                expand=True,
-                                ),
-                                on_long_press=lambda e, delev=delev: go_token(delev)
-                                ),
-                            ft.DataCell(ft.Text(
-                                value=f"{(int((int(delev['numbers']))/((int(delev['polygons']))/100)))}%",
-                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
-                                text_align=ft.TextAlign.CENTER,
-                                color=ft.Colors.BLACK,
-                                expand=True,
-                                ),
-                                on_long_press=lambda e, delev=delev: go_token(delev)
-                                ),
-                            ft.DataCell(ft.Text(
-                                value=f"{delev['status']}",
-                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
-                                text_align=ft.TextAlign.CENTER,
-                                color=ft.Colors.BLACK,
-                                expand=True,
-                                ),
-                                on_long_press=lambda e, delev=delev: go_token(delev)
-                                ),
-                            ft.DataCell(ft.Text(
-                                value=f"{delev['update']}",
-                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
-                                text_align=ft.TextAlign.CENTER,
-                                color=ft.Colors.BLACK,
-                                expand=True,
-                                ),
-                                on_long_press=lambda e, delev=delev: go_token(delev)
-                                ),
-                            ft.DataCell(ft.Text(
-                                value=f"{delev['editor']}",
-                                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
-                                text_align=ft.TextAlign.CENTER,
-                                color=ft.Colors.BLACK,
-                                expand=True,
-                                ),
-                                on_long_press=lambda e, delev=delev: go_token(delev)
-                                ),
-                            ft.DataCell(ft.IconButton(
-                                icon=ft.Icons.DOWNLOAD,
-                                bgcolor=ft.Colors.AMBER,
-                                icon_color=ft.Colors.WHITE,
-                                expand=True,
-                                on_click=lambda e, delev=delev: go_download(delev),
-                                ),
-                                on_long_press=lambda e, delev=delev: go_download(delev)
-                                ),
-                            ft.DataCell(ft.IconButton(
-                                icon=ft.Icons.SEARCH,
-                                bgcolor=ft.Colors.BLUE,
-                                icon_color=ft.Colors.WHITE,
-                                expand=True,
-                                on_click=lambda e, delev=delev: go_token(delev),
-                                ),
-                                on_long_press=lambda e, delev=delev: go_token(delev)
-                                ),
-                            
-                        ]
-                )
-        )
-
-    load_page(1, initial=False)
 
     # AppBar
     page.appbar = get_app_bar(ft, page)
 
-
     filtros_ativos = {
-    "dia": None,
-    "mes": None,
-    "ano": None,
-    "usuario": None,
-    "projeto": None,
-    "subprojeto": None,
-    "status": None
+        "dia": None,
+        "mes": None,
+        "ano": None,
+        "usuario": None,
+        "projeto": None,
+        "subprojeto": None,
+        "status": None,
+
     }
 
-    # Função para filtrar a tabela
-    def aplicar_filtros(update=True):
-        for item in all_rows:
-            dia = ((item.cells[1].content.value).split("/"))[0]  
-            mes = ((item.cells[1].content.value).split("/"))[1]  
-            ano = ((item.cells[1].content.value).split("/"))[2]  
-            usuario = item.cells[0].content.value
-            project = item.cells[2].content.data  
-            subproject = item.cells[2].content.value  
-            status = item.cells[5].content.value  
+    def aplicar_filtros(update):
 
-            # Verifica se o item atende a TODOS os filtros ativos
-            item.visible = (
-                (filtros_ativos["dia"] is None or filtros_ativos["dia"] == dia) and
-                (filtros_ativos["mes"] is None or filtros_ativos["mes"] == mes) and
-                (filtros_ativos["ano"] is None or filtros_ativos["ano"] == ano) and
-                (filtros_ativos["projeto"] is None or filtros_ativos["projeto"] == project) and
-                (filtros_ativos["subprojeto"] is None or subproject.startswith(filtros_ativos["subprojeto"])) and
-                (filtros_ativos["usuario"] is None or filtros_ativos["usuario"] == usuario) and
-                (filtros_ativos["status"] is None or filtros_ativos["status"] == status)
-            )
+        aplicar = build_filtro_tabela(
+            all_rows=all_rows,
+            filtros_ativos=filtros_ativos,
+            list_filtros=list_filtros,
+            load_page=load_page,
+            pagination_bar=pagination_bar,
+            current_page=current_page,
+            visible_rows=visible_rows,
+            items_per_page=items_per_page,
+            lbl_total=lbl_total,
+            table=table,
+            update=update
+        )
 
-        if update == True:
-            load_page(1)
-        else:
-            load_page(1, initial=False)
+        aplicar()
 
-        list_filtros[0] = filtros_ativos
 
-    # Função chamada quando um Dropdown muda
+
+    # Preparação dos menus de filtros ......
+
     def on_dropdown_change(e, filtro):
-        filtros_ativos[filtro] = e.control.value if e.control.value and e.control.value != "Nulo" else None
-        aplicar_filtros()
+        valor = e.control.value
+        filtros_ativos[filtro] = valor if valor != "Nulo" else None
+        aplicar_filtros(True)
 
     name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in list_projects:
@@ -7743,133 +7475,23 @@ def create_page_see_models(page):
     for item in users:
         name_users.append(ft.dropdown.Option(item["username"], content=ft.Text(value=item["username"], color=ft.Colors.BLACK)))
 
-    list_dropdown = ft.Row(
-        controls=[
-            ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
-                color=ft.Colors.BLACK,
-                bgcolor=ft.Colors.WHITE,
-                fill_color=ft.Colors.WHITE,
-                filled=True,
-                label_style=ft.TextStyle(color=ft.Colors.BLACK),
-                label="Dia",
-                expand=True,
-                options=[
-                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("07", content=ft.Text(value=f"07", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("14", content=ft.Text(value=f"14", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("21", content=ft.Text(value=f"21", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("28", content=ft.Text(value=f"28", color=ft.Colors.BLACK)),
-                ],
-                on_change=lambda e: on_dropdown_change(e, "dia"),
-            ),
-            ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
-                color=ft.Colors.BLACK,
-                bgcolor=ft.Colors.WHITE,
-                fill_color=ft.Colors.WHITE,
-                filled=True,
-                label_style=ft.TextStyle(color=ft.Colors.BLACK),
-                label="Mês",
-                expand=True,
-                options=[
-                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("01", content=ft.Text(value=f"01", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("02", content=ft.Text(value=f"02", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("03", content=ft.Text(value=f"03", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("04", content=ft.Text(value=f"04", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("05", content=ft.Text(value=f"05", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("06", content=ft.Text(value=f"06", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("07", content=ft.Text(value=f"07", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("08", content=ft.Text(value=f"08", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("09", content=ft.Text(value=f"09", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("10", content=ft.Text(value=f"10", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("11", content=ft.Text(value=f"11", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("12", content=ft.Text(value=f"12", color=ft.Colors.BLACK)),  
-                ],
-                on_change=lambda e: on_dropdown_change(e, "mes"),
-            ),
-            ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
-                color=ft.Colors.BLACK,
-                bgcolor=ft.Colors.WHITE,
-                fill_color=ft.Colors.WHITE,
-                filled=True,
-                label_style=ft.TextStyle(color=ft.Colors.BLACK),
-                label="Ano",
-                expand=True,
-                options=[
-                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("2025", content=ft.Text(value=f"2025", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("2026", content=ft.Text(value=f"2026", color=ft.Colors.BLACK)),
-                ],
-                on_change=lambda e: on_dropdown_change(e, "ano"),
-            ),
-            ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
-                color=ft.Colors.BLACK,
-                bgcolor=ft.Colors.WHITE,
-                fill_color=ft.Colors.WHITE,
-                filled=True,
-                label_style=ft.TextStyle(color=ft.Colors.BLACK),
-                label="Usuário",
-                expand=True,
-                options=name_users,
-                on_change= lambda e: on_dropdown_change(e, "usuario"),
-                enable_filter=True,
-                editable=True,
-                width=250,
-            ),
-            ft.Dropdown(
-                color=ft.Colors.BLACK,
-                bgcolor=ft.Colors.WHITE,
-                fill_color=ft.Colors.WHITE,
-                filled=True,
-                label="Projeto",
-                label_style=ft.TextStyle(color=ft.Colors.BLACK),
-                expand=True,
-                options=name_projects,
-                on_change=lambda e: on_dropdown_change(e, "projeto"),
-                enable_filter=True,
-                editable=True,
-                width=250,
-            ),
-            ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
-                color=ft.Colors.BLACK,
-                bgcolor=ft.Colors.WHITE,
-                fill_color=ft.Colors.WHITE,
-                filled=True,
-                label_style=ft.TextStyle(color=ft.Colors.BLACK),
-                label="Subprojeto",
-                expand=True,
-                options=name_subprojects,
-                on_change=lambda e: on_dropdown_change(e, "subprojeto"),
-                enable_filter=True,
-                editable=True,
-                width=250,
-            ),
-            ft.Dropdown(
-                text_style=ft.TextStyle(color=ft.Colors.BLACK),
-                color=ft.Colors.BLACK,
-                bgcolor=ft.Colors.WHITE,
-                fill_color=ft.Colors.WHITE,
-                filled=True,
-                label_style=ft.TextStyle(color=ft.Colors.BLACK),
-                label="Status",
-                expand=True,
-                options=[
-                    ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("Completo", content=ft.Text(value=f"Completo", color=ft.Colors.BLACK)),
-                    ft.dropdown.Option("Incompleto", content=ft.Text(value=f"Incompleto", color=ft.Colors.BLACK)),
-                ],
-                on_change=lambda e: on_dropdown_change(e, "status"),
-            ),
-        ],
-        expand=True,
-        alignment=ft.MainAxisAlignment.CENTER,
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    filtros_config = [
+        {"label": "Dia", "key": "dia", "options": ["Nulo", "07", "14", "21", "28"]},
+        {"label": "Mês", "key": "mes", "options": ["Nulo"] + [f"{i:02d}" for i in range(1, 13)]},
+        {"label": "Ano", "key": "ano", "options": ["Nulo", "2025", "2026"]},
+        {"label": "Usuário", "key": "usuario", "options": name_users, "width": 250, "filter": True},
+        {"label": "Projeto", "key": "projeto", "options": name_projects, "width": 250, "filter": True},
+        {"label": "Subprojeto", "key": "subprojeto", "options": name_subprojects, "width": 250, "filter": True},
+        {"label": "Status", "key": "status", "options": ["Nulo", "Completo", "Incompleto"]},
+    ]
+
+    list_dropdown = build_list_dropdown(
+        on_dropdown_change=on_dropdown_change,
+        filtros_config=filtros_config,
     )
+
+    # Preparação dos menus de filtros ......
+
 
     if filtros[0] != None:
         
@@ -7882,7 +7504,10 @@ def create_page_see_models(page):
         list_dropdown.controls[6].value = filtros[0]["status"]
 
         filtros_ativos = filtros[0]
-        aplicar_filtros(update=False)
+        aplicar_filtros(False)
+
+
+
 
     def go_insert():
             profile = page.client_storage.get("profile")
@@ -7898,53 +7523,35 @@ def create_page_see_models(page):
             page.client_storage.set("profile", profile)
             page.go("/models/insert")
 
+
+
     # Container principal
+    def row(*controls, expand=True):
+        return ft.Row(
+            controls=list(controls),
+            expand=expand,
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+
+
     main_container = ft.Container(
         content=ft.Column(
             controls=[
-                ft.Row(
-                controls=[
+                row(
                     ft.Text("Modelos", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
                     ft.IconButton(
                         icon=ft.Icons.ADD,
-                        on_click=lambda e: go_insert(),
                         bgcolor=ft.Colors.GREEN,
                         icon_color=ft.Colors.WHITE,
-                    )
-                ],  
-                alignment=ft.MainAxisAlignment.CENTER,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                spacing=20,
+                        on_click=lambda e: go_insert(),
+                    ),
+                    expand=False,
                 ),
-                ft.Row(
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    expand=True,
-                    controls=[
-                        list_dropdown.controls[4],
-                        list_dropdown.controls[5],
-                        list_dropdown.controls[3],
-                    ]
-                ),
-                ft.Row(
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    expand=True,
-                    controls=[
-                        list_dropdown.controls[0],
-                        list_dropdown.controls[1],
-                        list_dropdown.controls[2],
-                    ]
-                ),
-                ft.Row(
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    expand=True,
-                    controls=[
-                        list_dropdown.controls[6],
-                    ]
-                ),
-                history_list,  # Adiciona a lista de entregas
+                row(*list_dropdown.controls[4:6], list_dropdown.controls[3]),
+                row(*list_dropdown.controls[0:3]),
+                row(list_dropdown.controls[6]),
+                history_list,
             ],
             expand=True,
             spacing=20,
@@ -7955,7 +7562,6 @@ def create_page_see_models(page):
         padding=10,
         border_radius=10,
         expand=True,
-        clip_behavior=ft.ClipBehavior.NONE,
         alignment=ft.alignment.center,
     )
 
@@ -7976,10 +7582,6 @@ def create_page_models_details(page):
     logs = dict_profile["logs"]
     sp = SupaBase(page)
 
-    # Definir o tema global para garantir que o texto seja preto por padrão
-
-    def go_back():
-        page.go("/models")
 
     # AppBar
     page.appbar = get_app_bar(ft, page)
@@ -8002,6 +7604,7 @@ def create_page_models_details(page):
         data_subproject["polygons"] = view_deliveries["polygons"].value
         data_subproject["numbers"] = view_deliveries["numbers"].value
         data_subproject["status"] = view_deliveries["status"].value
+        data_subproject["key"] = view_deliveries["key"].value
         data_subproject["dwg"] = view_deliveries["dwg"].value
         
         current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
@@ -8032,15 +7635,99 @@ def create_page_models_details(page):
         if logs["status"] == "Completo" and data_subproject["status"] == "Incompleto":
             logs_data["action"] = f"Inativação"
 
+        aproved = True
+
         if any(field == "" or field is None for field in data_subproject.values()):
             snack_bar = ft.SnackBar(content=ft.Text("Preencha todos os campos!"), bgcolor=ft.Colors.RED)
             page.overlay.append(snack_bar)
             snack_bar.open = True
+            aproved = False
             page.update()
-        else:
+
+        data_subproject["key"] = view_deliveries["key"].value
+
+        def show_error(msg):
+            snack_bar = ft.SnackBar(
+                content=ft.Text(msg),
+                bgcolor=ft.Colors.RED,
+            )
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+
+        def str_para_hex(texto: str) -> str | None:
+            try:
+                return texto.encode("utf-8").hex().upper()
+            except Exception:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKMODEL")
+                return None
+
+
+        def hex_para_str(hex_texto: str) -> str | None:
+            try:
+                return bytes.fromhex(hex_texto).decode("utf-8")
+            except Exception:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKMODEL")
+                return None
+
+        if logs["status"] == "Incompleto" and data_subproject["status"] == "Completo":
+
+            key = data_subproject.get("key")
+
+            # 1️⃣ Chave vazia
+            if not key or key == ".":
+                show_error("Insira a senha do CHECKMODEL para marcar como completo")
+                aproved = False
+                return
+
+            version = sp.get_checkmodel().json()[0]["version"]
+
+            decoded = hex_para_str(key)
+            if not decoded:
+                aproved = False
+                return
+
+            parts = decoded.split("_")
+            if len(parts) < 7:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKMODEL")
+                aproved = False
+                return
+
+            poli, num, key_version = parts[4], parts[5], parts[6]
+
+            # 2️⃣ Versão incompatível
+            if key_version != version:
+                show_error("Versão do CHECKMODEL obsoleta, baixe uma nova versão")
+                aproved = False
+                return
+
+            # 3️⃣ Regerar chave esperada
+            expected = str_para_hex(
+                f"{data_subproject['subproject']}_"
+                f"{current_day:02d}/{current_month:02d}/{current_year}_"
+                f"{current_hour}_"
+                f"{poli}_"
+                f"{num}_"
+                f"{version}"
+            )
+
+            if not expected or key != expected:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKMODEL")
+                aproved = False
+                return
+
+            # 4️⃣ Sucesso
+            data_subproject["polygons"] = poli
+            data_subproject["numbers"] = num
+
+
+        if aproved:
+
+            del data_subproject["key"]
 
             if add_file[0] == True:
-            
+
                 response1 = sp.add_subproject_storage(file_selected[0], file_name[0], file_type[0], "models")
 
                 if response1.status_code == 200 or response1.status_code == 201:
@@ -8206,9 +7893,6 @@ def create_page_models_details(page):
 
         )
 
-    def go_download(view_deliveries, object):
-        if view_deliveries[object].value != "." and view_deliveries[object].value != "":
-            page.launch_url(view_deliveries[object].value)
 
     view_deliveries = {
         "username": dropdow1, 
@@ -8217,9 +7901,11 @@ def create_page_models_details(page):
         "polygons":ft.TextField(label="Polígonos", value=f"{model['polygons']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "numbers":ft.TextField(label="Numeros", value=f"{model['numbers']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "status":dropdow5,
+        "key":ft.TextField(label="Senha", value=f".", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=is_editable1), 
         "update":ft.TextField(label="Atualização", value=f"{model['update']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
         "dwg":ft.TextField(label="DWG", value=f"{model['dwg']}", width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True), 
     }
+
 
     def on_file_selected():
 
@@ -8274,21 +7960,106 @@ def create_page_models_details(page):
     page.overlay.append(fp)
 
     def open_gallery(e, type):
-        dict_profile = page.client_storage.get("profile") 
-        model = dict_profile["model"]
-        if model["dwg"] != ".":
-            snack_bar = ft.SnackBar(content=ft.Text("Arquivo existente, exclua para editar"), bgcolor=ft.Colors.AMBER)
+
+        data_subproject = view_deliveries.copy()
+        data_subproject["key"] = view_deliveries["key"].value
+        data_subproject["subproject"] = view_deliveries["subproject"].value
+
+        current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
+        current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
+        current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
+        current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+
+        aproved = True
+
+        def show_error(msg):
+            snack_bar = ft.SnackBar(
+                content=ft.Text(msg),
+                bgcolor=ft.Colors.RED,
+            )
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
-            return
 
-        fp.pick_files(              
-            allow_multiple=False,
-        )
+        def str_para_hex(texto: str) -> str | None:
+            try:
+                return texto.encode("utf-8").hex().upper()
+            except Exception:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKMODEL")
+                return None
 
-        file_type.clear()
-        file_type.append(type)
+
+        def hex_para_str(hex_texto: str) -> str | None:
+            try:
+                return bytes.fromhex(hex_texto).decode("utf-8")
+            except Exception:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKMODEL")
+                return None
+
+        if logs["status"] == "Completo":
+
+            key = data_subproject.get("key")
+
+            # 1️⃣ Chave vazia
+            if not key or key == ".":
+                show_error("Insira a senha do CHECKMODEL para marcar como completo")
+                aproved = False
+                return
+
+            version = sp.get_checkmodel().json()[0]["version"]
+
+            decoded = hex_para_str(key)
+            if not decoded:
+                aproved = False
+                return
+
+            parts = decoded.split("_")
+            if len(parts) < 7:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKMODEL")
+                aproved = False
+                return
+
+            poli, num, key_version = parts[4], parts[5], parts[6]
+
+            # 2️⃣ Versão incompatível
+            if key_version != version:
+                show_error("Versão do CHECKMODEL obsoleta, baixe uma nova versão")
+                aproved = False
+                return
+
+            # 3️⃣ Regerar chave esperada
+            expected = str_para_hex(
+                f"{data_subproject['subproject']}_"
+                f"{current_day:02d}/{current_month:02d}/{current_year}_"
+                f"{current_hour}_"
+                f"{poli}_"
+                f"{num}_"
+                f"{version}"
+            )
+
+            if not expected or key != expected:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKMODEL")
+                aproved = False
+                return
+
+
+        if aproved:
+
+            dict_profile = page.client_storage.get("profile") 
+            model = dict_profile["model"]
+            if model["dwg"] != ".":
+                snack_bar = ft.SnackBar(content=ft.Text("Arquivo existente, exclua para editar"), bgcolor=ft.Colors.AMBER)
+                page.overlay.append(snack_bar)
+                snack_bar.open = True
+                page.update()
+                return
+
+            fp.pick_files(              
+                allow_multiple=False,
+            )
+
+            file_type.clear()
+            file_type.append(type)
 
     def delete_delivery(view_deliveries):
 
@@ -9075,6 +8846,182 @@ def create_page_new_model(page):
 
     return layout
 
+
+
+def create_page_see_lisps(page):
+
+    base = SupaBase(page=None)
+    dict_profile = page.client_storage.get("profile")
+    filtros = dict_profile["lisps_filter"]
+
+
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
+
+    # AppBar
+    page.appbar = get_app_bar(ft, page)
+
+
+    get_json = (base.get_all_lisps()).json()
+
+
+    # Criação da tabela bruta
+    table = return_table(["Lisp","Tipo","Função","Atualização",""])
+
+    pagination_bar = ft.Row(
+        alignment=ft.MainAxisAlignment.CENTER,
+        controls=[]
+    )
+
+    lbl_total = ft.Text(
+        value="10 itens de 0",
+        size=20,
+        weight=ft.FontWeight.W_600,
+        color=ft.Colors.BLACK
+    )
+
+    # Criação do container da tabela
+    history_list = return_container_table(table, pagination_bar, lbl_total)
+
+
+
+    list_filtros = [None]
+
+    items_per_page = 10
+    current_page = [1]
+    all_rows = []       
+    visible_rows = []
+
+
+
+    # Preenche a tabela com os dados das lisps ......
+    headers = ["Nome", "Tipo", "Função", "Atualização", ""]
+
+    field_map = {
+        "Nome": "name",
+        "Tipo": "type",
+        "Função": "function",
+        "Atualização": "update",
+    }
+
+    add_rows(
+        page=page,
+        all_rows=all_rows,
+        get_json=get_json,
+        dicio_projects=None,        
+        list_filtros=list_filtros,
+        type="lisp",
+        headers=headers,
+        field_map=field_map,
+    )
+    # Preenche a tabela com os dados das lisps ......
+
+
+    load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=False)
+
+
+    # AppBar
+    page.appbar = get_app_bar(ft, page)
+
+    filtros_ativos = {
+        "name": None,
+        "type": None,
+    }
+    
+
+    def aplicar_filtros(update):
+
+        aplicar = build_filtro_tabela(
+            all_rows=all_rows,
+            filtros_ativos=filtros_ativos,
+            list_filtros=list_filtros,
+            load_page=load_page,
+            pagination_bar=pagination_bar,
+            current_page=current_page,
+            visible_rows=visible_rows,
+            items_per_page=items_per_page,
+            lbl_total=lbl_total,
+            table=table,
+            update=update
+        )
+
+        aplicar()
+
+
+    # Preparação dos menus de filtros ......
+
+    def on_dropdown_change(e, filtro):
+        valor = e.control.value
+        filtros_ativos[filtro] = valor if valor != "Nulo" else None
+        aplicar_filtros(True)
+
+    name_lisp = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
+    for item in get_json:
+        name_lisp.append(ft.dropdown.Option(item["name"], content=ft.Text(value=item["name"], color=ft.Colors.BLACK)))
+
+    
+    filtros_config = [
+        {"label": "Nome", "key": "name", "options": name_lisp, "width": 250, "filter": True},
+        {"label": "Tipo", "key": "type", "options": ["Nulo", "Revisão", "Topologia", "Texto"]},
+    ]
+
+    list_dropdown = build_list_dropdown(
+        on_dropdown_change,
+        filtros_config,
+    )
+
+    # Preparação dos menus de filtros ......
+
+
+    if filtros[0] != None:
+        
+        list_dropdown.controls[0].value = filtros[0]["name"]
+        list_dropdown.controls[1].value = filtros[0]["type"]
+
+        filtros_ativos = filtros[0]
+        aplicar_filtros(False)
+
+  
+    # Container principal
+    def row(*controls, expand=True):
+        return ft.Row(
+            controls=list(controls),
+            expand=expand,
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+
+
+    main_container = ft.Container(
+        content=ft.Column(
+            controls=[
+                row(
+                    ft.Text("Lisps", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                    expand=False,
+                ),
+                row(*list_dropdown.controls[0:2]),
+                history_list,
+            ],
+            expand=True,
+            spacing=20,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+        bgcolor=ft.Colors.WHITE,
+        padding=10,
+        border_radius=10,
+        expand=True,
+        alignment=ft.alignment.center,
+    )
+
+    # Layout da página
+    layout = ft.Column(
+        controls=[main_container],
+        expand=True,
+        scroll=ft.ScrollMode.AUTO
+    )
+
+    return layout
 
 
 def create_page_see_logs(page):

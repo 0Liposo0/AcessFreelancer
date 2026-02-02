@@ -1568,6 +1568,26 @@ class SupaBase:
 
         return response
     
+    def get_all_lisps(self):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/lisps',
+            headers=headers,
+            params=params,
+        )
+
+        return response
+    
     def get_all_logs(self, offset=0, limit=1000):
 
         headers = {
@@ -1806,6 +1826,28 @@ class SupaBase:
 
         response = requests.get(
             f'{self.supabase_url}/rest/v1/models',
+            headers=headers,
+            params=params,
+        )   
+
+        return response  
+    
+    def get_checkmodel(self):
+
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "name": f"eq.CHECKMODEL",
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/lisps',
             headers=headers,
             params=params,
         )   

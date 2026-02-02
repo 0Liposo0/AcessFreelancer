@@ -34,6 +34,7 @@ def main(page: ft.Page):
             "/models": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_models(page)),
             "/models/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_models_details(page)),
             "/models/insert": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_new_model(page)),
+            "/lisps": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_lisps(page)),
             "/payment": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),
             "/project/user": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_project_token_user(page)),
         }
