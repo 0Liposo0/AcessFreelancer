@@ -1853,6 +1853,28 @@ class SupaBase:
         )   
 
         return response  
+    
+    def get_checkveto(self):
+
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "name": f"eq.CHECKVETO",
+                   "select": "*"
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/lisps',
+            headers=headers,
+            params=params,
+        )   
+
+        return response  
      
 
     def get_user_by_subproject(self, subproject, permission):

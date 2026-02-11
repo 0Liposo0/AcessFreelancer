@@ -581,8 +581,6 @@ def create_page_user(page):
 
     def send_file(file_path):
 
-
-
         container = None
         overlay_copy = list(page.overlay)
         for item in overlay_copy:
@@ -626,7 +624,93 @@ def create_page_user(page):
             page.overlay.append(snack_bar)
             snack_bar.open = True
             page.update()
-        else:
+
+        aproved = True
+
+        def show_error(msg):
+            snack_bar = ft.SnackBar(
+                content=ft.Text(msg),
+                bgcolor=ft.Colors.RED,
+                data="bar",
+            )
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+
+        def str_para_hex(texto: str) -> str | None:
+            try:
+                return texto.encode("utf-8").hex().upper()
+            except Exception:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKVETO")
+                return None
+
+
+        def hex_para_str(hex_texto: str) -> str | None:
+            try:
+                return bytes.fromhex(hex_texto).decode("utf-8")
+            except Exception:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKVETO")
+                return None
+            
+        chek_current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
+        chek_current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
+        chek_current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+        chek_current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
+
+
+        if container.controls[0].content.controls[5].value == "poligonos":
+
+
+            key = container.controls[0].content.controls[9].value
+
+            # 1️⃣ Chave vazia
+            if not key or key == ".":
+                show_error("Insira a senha do CHECKVETO para marcar como completo")
+                aproved = False
+                return
+
+            version = sp.get_checkveto().json()[0]["version"]
+
+            decoded = hex_para_str(key)
+            if not decoded:
+                aproved = False
+                return
+
+            parts = decoded.split("_")
+            if len(parts) < 7:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKVETO")
+                aproved = False
+                return
+
+            poli, num, key_version = parts[4], parts[5], parts[6]
+
+            # 2️⃣ Versão incompatível
+            if key_version != version:
+                show_error("Versão do CHECKVETO obsoleta, baixe uma nova versão")
+                aproved = False
+                return
+
+            # 3️⃣ Regerar chave esperada
+            expected = str_para_hex(
+                f"{dict_profile["current_project"]}_"
+                f"{chek_current_day:02d}/{chek_current_month:02d}/{chek_current_year}_"
+                f"{chek_current_hour}_"
+                f"{poli}_"
+                f"{num}_"
+                f"{version}"
+            )
+
+            if not expected or key != expected:
+                show_error("Senha incorreta, verifique o subprojeto inserido no CHECKVETO")
+                aproved = False
+                return
+
+            # 4️⃣ Sucesso
+            container.controls[0].content.controls[7].value = poli
+
+
+        if aproved:
 
             snack_bar = ft.SnackBar(
                     content=ft.Text(
@@ -872,6 +956,13 @@ def create_page_user(page):
                                         text_style=ft.TextStyle(color=ft.Colors.BLACK),
                                         border_radius=0,
                                     ),
+                                    ft.Text(value="Senha (Caso Poligonos):", color=ft.Colors.BLACK),
+                                    ft.TextField(
+                                        value=".",
+                                        bgcolor=ft.Colors.WHITE,
+                                        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                                        border_radius=0,
+                                    ),
                                     btn_send,
                                     btn_exit, 
                                 ],
@@ -880,7 +971,7 @@ def create_page_user(page):
                             border_radius=20,
                             alignment=ft.alignment.center,
                             width=300,
-                            height=500,
+                            height=600,
                             padding=10,
                             col=6,   
                         )
