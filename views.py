@@ -1069,12 +1069,23 @@ def create_page_user(page):
                                       padding=5,
                                       )
     
+    url_checkveto = sp.get_checkveto().json()[0]["lisp"]
+    
+    btn_checkveto= buttons.create_button(on_click=lambda e: page.launch_url(url_checkveto),
+                                      text="Baixar LISP CHECKVETO",
+                                      color=ft.Colors.AMBER,
+                                      col=7,
+                                      padding=5,
+                                      width=200,
+                                      )
+    
 
     if dict_profile["current_project"] != ".":
         if row3["type"] == "poligonos":
             btn_planner1.visible = False
         else:
             btn_dwg.visible = False
+            btn_checkveto.visible = False
             btn_ecw.visible = False
     else:
         btn_planner1.visible = False
@@ -1131,7 +1142,7 @@ def create_page_user(page):
 
     container_ortofoto2 = ft.Container(
                                     content=ft.Column(
-                                        controls=[container_ortofoto, btn_dwg, btn_ecw, btn_planner1],
+                                        controls=[container_ortofoto, btn_dwg, btn_ecw, btn_planner1, btn_checkveto],
                                         alignment=ft.MainAxisAlignment.CENTER,
                                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                         spacing=15,
