@@ -59,6 +59,11 @@ def get_menu(ft, page):
                                             color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
+    btn_see_planners = buttons.create_button(on_click=lambda e: go_url("/planners"),
+                                            text= "Planilhas",
+                                            color=ft.Colors.INDIGO_600,
+                                            col=12,
+                                            padding=10,)
     btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
                                             text= "Financeiro",
                                             color=ft.Colors.INDIGO_600,
@@ -94,6 +99,7 @@ def get_menu(ft, page):
         btn_see_deliverys,
         btn_see_models,
         btn_see_lisps,
+        btn_see_planners,
         btn_see_logs,
         btn_exit,
         ],
@@ -403,8 +409,14 @@ def add_rows(
         type,
         headers,
         field_map,
+        table,
         subproject_key="subproject",
     ):
+        
+        sp = SupaBase(page)
+        username = page.client_storage.get("profile")["username"]
+        planner = page.client_storage.get("profile").get("planner", 0)
+
         def go_download(d):
             if d.get("dwg"):
                 page.launch_url(d["dwg"])
@@ -441,6 +453,11 @@ def add_rows(
                     "key": "lisp",
                     "filter": "lisps_filter",
                     "route": "/lisps/token",
+                },
+                "city": {
+                    "key": "city",
+                    "filter": "city_filter",
+                    "route": "/city/token",
                 },
             }
 
@@ -503,11 +520,94 @@ def add_rows(
             else:
                 project = None
 
+
+            # caso Models
             polygons = int(d.get("polygons", 0))
             numbers = int(d.get("numbers", 0))
             percent = int(numbers / (polygons / 100)) if polygons else 0
 
+            # caso Planner
+            check = str(d.get("check", "no"))
+
+            color = ft.Colors.WHITE
+            if check == "yes":
+                color = ft.Colors.GREEN
+
+            def toggle_check(d, row):
+                current = str(d.get("check", "no"))
+                new_value = "yes" if current == "no" else "no"
+
+                # Farei isso depois
+                # update_check_city(id=d.get("id"), check=new_value)
+
+                d["check"] = new_value
+
+                if row.cells[10].content.value == "None":
+
+                    data = {
+                        "codigo": row.cells[0].content.value,
+                        "editor": username,
+                        "check": "yes"
+                    }
+
+                    response = sp.edit_planner_data(data, planner=planner)
+
+                    if response.status_code in [200, 204]:
+                        snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+
+                        row.cells[10].content.value = username
+                        row.color = {
+                            ft.ControlState.DEFAULT:
+                                ft.Colors.GREEN if new_value == "yes" else ft.Colors.WHITE
+                        }
+
+                        table.update()
+                    else:
+                        snack_bar = ft.SnackBar(content=ft.Text("Não foi possivel atualizar"), bgcolor=ft.Colors.RED)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+                else:
+                    data = {
+                        "codigo": row.cells[0].content.value,
+                        "editor": "None",
+                        "check": "no"
+                    }
+
+                    response = sp.edit_planner_data(data, planner=planner)
+
+                    if response.status_code in [200, 204]:
+                        snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+
+                        row.cells[10].content.value = "None"
+                        row.color = {
+                            ft.ControlState.DEFAULT:
+                                ft.Colors.GREEN if new_value == "yes" else ft.Colors.WHITE
+                        }
+
+                        table.update()
+                    else:
+                        snack_bar = ft.SnackBar(content=ft.Text("Não foi possivel atualizar"), bgcolor=ft.Colors.RED)
+                        page.overlay.append(snack_bar)
+                        snack_bar.open = True
+                        page.update()
+
+                
+
             cells = []
+
+            row = ft.DataRow(
+                cells=cells,
+                color={
+                    ft.ControlState.DEFAULT: color,
+                },
+            )
 
             empty_headers = headers.count("")
 
@@ -519,9 +619,22 @@ def add_rows(
                 elif h == "":
                     # Caso exista apenas UM header vazio
                     if empty_headers == 1:
-                        cells.append(
-                            icon_cell(ft.Icons.DOWNLOAD, ft.Colors.AMBER, go_download, d)
-                        )
+                        if type != "city":
+                            cells.append(
+                                icon_cell(ft.Icons.DOWNLOAD, ft.Colors.AMBER, go_download, d)
+                            )
+                        else:
+                            # botão que alterna o status
+                            cells.append(
+                                ft.DataCell(
+                                    ft.IconButton(
+                                        icon=ft.Icons.CHECK,
+                                        bgcolor=ft.Colors.GREEN if d.get("check") == "yes" else ft.Colors.GREY,
+                                        icon_color=ft.Colors.WHITE,
+                                        expand=True,
+                                    )
+                                )
+                            )
 
                     # Caso existam DOIS ou mais headers vazios
                     else:
@@ -547,7 +660,14 @@ def add_rows(
                         )
                     )
 
-            all_rows.append(ft.DataRow(cells=cells))
+            # Conecta botão do city ao toggle
+            if type == "city":
+                for cell in row.cells:
+                    if isinstance(cell.content, ft.IconButton):
+                        cell.content.on_click = lambda e, d=d, row=row: toggle_check(d, row)
+
+            all_rows.append(row)
+
 
 def build_list_dropdown(
         on_dropdown_change,
@@ -612,6 +732,7 @@ def build_list_dropdown(
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
         )
 
+
 def build_filtro_tabela(
     all_rows,
     filtros_ativos,
@@ -663,6 +784,18 @@ def build_filtro_tabela(
                     "status": safe_cell_value(cells, 5),
                     "name": safe_cell_value(cells, 0),
                     "type": safe_cell_value(cells, 1),
+                    "codigo": safe_cell_value(cells, 0),
+                    "logradouro": safe_cell_value(cells, 1),
+                    "bairro": safe_cell_value(cells, 2),
+                    "numero": safe_cell_value(cells, 3),
+                    "quadra": safe_cell_value(cells, 4),
+                    "lote": safe_cell_value(cells, 5),
+                    "situacao": safe_cell_value(cells, 6),
+                    "testada": safe_cell_value(cells, 7),
+                    "terreno": safe_cell_value(cells, 8),
+                    "construcao": safe_cell_value(cells, 9),
+                    "editor": safe_cell_value(cells, 10),
+                    "modelo": safe_cell_value(cells, 11),
                 }
 
                 # aplica apenas filtros existentes no dict
@@ -675,6 +808,99 @@ def build_filtro_tabela(
                             if isinstance(valor, str) and chave == "subprojeto"
                             else dados_linha[chave] == valor
                         )
+                    )
+                    for chave, valor in filtros_ativos.items()
+                )
+
+            load_page(
+                1,
+                pagination_bar,
+                current_page,
+                visible_rows,
+                items_per_page,
+                lbl_total,
+                table,
+                all_rows,
+                initial=update,
+            )
+
+            list_filtros[0] = filtros_ativos
+
+        return aplicar_filtros
+
+def build_filtro_tabela_city(
+    all_rows,
+    filtros_ativos,
+    list_filtros,
+    load_page,
+    pagination_bar,
+    current_page,
+    visible_rows,
+    items_per_page,
+    lbl_total,
+    table,
+    update,
+    type="lisp"
+    ):
+
+        def aplicar_filtros(update=update):
+
+            def safe_cell_value(cells, idx, default=None):
+                    try:
+                        cell = cells[idx]
+                        return getattr(cell.content, "value", default)
+                    except Exception:
+                        return default
+
+
+            def safe_cell_data(cells, idx, default=None):
+                try:
+                    return getattr(cells[idx].content, "data", default)
+                except Exception:
+                    return default
+
+            for item in all_rows:
+
+                cells = item.cells
+
+                # Segurança para data
+                date_value = safe_cell_value(cells, 1)
+                if isinstance(date_value, str) and "/" in date_value and type != "planner":
+                    dia, mes, ano = date_value.split("/")
+                else:
+                    dia = mes = ano = None
+
+                dados_linha = {
+                    "dia": dia,
+                    "mes": mes,
+                    "ano": ano,
+                    "usuario": safe_cell_value(cells, 0),
+                    "projeto": safe_cell_data(cells, 2),
+                    "subprojeto": safe_cell_value(cells, 2),
+                    "status": safe_cell_value(cells, 5),
+                    "name": safe_cell_value(cells, 0),
+                    "type": safe_cell_value(cells, 1),
+                    "codigo": safe_cell_value(cells, 0),
+                    "logradouro": safe_cell_value(cells, 1),
+                    "bairro": safe_cell_value(cells, 2),
+                    "numero": safe_cell_value(cells, 3),
+                    "quadra": safe_cell_value(cells, 4),
+                    "lote": safe_cell_value(cells, 5),
+                    "situacao": safe_cell_value(cells, 6),
+                    "testada": safe_cell_value(cells, 7),
+                    "terreno": safe_cell_value(cells, 8),
+                    "construcao": safe_cell_value(cells, 9),
+                    "editor": safe_cell_value(cells, 10),
+                    "modelo": safe_cell_value(cells, 11),
+                }
+
+                # aplica apenas filtros existentes no dict
+                item.visible = all(
+                    valor is None
+                    or str(valor).strip() == ""
+                    or (
+                        dados_linha.get(chave) is not None
+                        and str(valor).lower() in str(dados_linha[chave]).lower()
                     )
                     for chave, valor in filtros_ativos.items()
                 )

@@ -1,6 +1,6 @@
 import flet as ft
 import requests
-import flet.map as map
+
 from datetime import datetime
 from collections import defaultdict
 from datetime import datetime
@@ -1920,6 +1920,27 @@ class SupaBase:
 
         return response
     
+    def get_planners(self, planner, offset=0, limit=1000):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = { 
+                   "select": "*",
+                   "offset": offset,  
+                   "limit": limit, 
+        }
+
+        response = requests.get(
+            f'{self.supabase_url}/rest/v1/{planner}',
+            headers=headers,
+            params=params,
+        )
+
+        return response
 
 
     def post_to_deliverys_data(self, data):
@@ -2273,6 +2294,28 @@ class SupaBase:
 
         response = requests.patch(
             f'{self.supabase_url}/rest/v1/models',
+            headers=headers,
+            json=data,
+            params=params,
+        )
+
+        return response  
+      
+    def edit_planner_data(self, data, planner):
+
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}",
+            "Content-Type": "application/json",
+        }
+
+        params = {
+                   "codigo":  f"eq.{data["codigo"]}", 
+                   "select": "*"
+        }
+
+        response = requests.patch(
+            f'{self.supabase_url}/rest/v1/{planner}',
             headers=headers,
             json=data,
             params=params,

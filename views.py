@@ -1,7 +1,7 @@
 import flet as ft
 from models import *
 from functions import *
-import flet.map as map
+
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import pandas as pd
@@ -2261,92 +2261,9 @@ def create_page_project_token_user(page):
 
 
     buttons = Buttons(page)
-    def go_url(url):
-        profile = page.client_storage.get("profile")
-        profile.update({
-            "deliveries_filter": [None],
-            "models_filter": [None],
-            "freelancers_filter": [None],
-            "files_filter": [None],
-        })
-        page.client_storage.set("profile", profile)
-        page.go(url)
 
-    btn_exit = buttons.create_button(on_click=lambda e: page.go("/"),
-                                      text="Logout",
-                                      color=ft.Colors.RED,
-                                      col=12,
-                                      padding=10,)
-    btn_projeto = buttons.create_button(on_click=lambda e: page.go("/projects"),
-                                      text= "Projetos",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,) 
-    btn_see_file = buttons.create_button(on_click=lambda e: go_url("/files"),
-                                            text= "Arquivos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_deliverys = buttons.create_button(on_click=lambda e: go_url("/deliveries"),
-                                            text= "Entregas",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
-                                            text= "Freelancers",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_models = buttons.create_button(on_click=lambda e: go_url("/models"),
-                                            text= "Modelos",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_see_logs = buttons.create_button(on_click=lambda e: go_url("/logs"),
-                                            text= "Logs",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    btn_payment = buttons.create_button(on_click=lambda e: page.go("/payment"),
-                                            text= "Financeiro",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-    
-    btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
-                                      text= "Projeto",
-                                      color=ft.Colors.GREY,
-                                      col=12,
-                                      padding=10,)
-
-    btn_profile = buttons.create_button(on_click=lambda e:  page.go("/freelancers/token"),
-                                            text= "Perfil",
-                                            color=ft.Colors.GREY,
-                                            col=12,
-                                            padding=10,)
-
-    drawer = ft.NavigationDrawer(
-    controls=[
-        btn_projeto,
-        btn_see_freelancers,
-        btn_payment,
-        btn_see_file,
-        btn_see_deliverys,
-        btn_see_models,
-        btn_see_logs,
-        btn_exit,
-        ]
-    )
-    
-    if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment)
-        drawer.controls.remove(btn_see_logs)
-        drawer.controls.insert(0, btn_profile)
-        drawer.controls.insert(1, btn_projeto_user)
-
-    page.drawer = drawer
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
 
     # AppBar
     page.appbar = get_app_bar(ft, page)
@@ -2432,7 +2349,6 @@ def create_page_project_token_user(page):
                 ),
                 btn_download,
                 btn_ecw,
-                btn_planner
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -7512,6 +7428,7 @@ def create_page_see_models(page):
         list_filtros=list_filtros,
         type="model",
         headers=headers,
+        table=table,
         field_map=field_map,
     )
     # Preenche a tabela com os dados dos modelos ......
@@ -9016,6 +8933,7 @@ def create_page_see_lisps(page):
         type="lisp",
         headers=headers,
         field_map=field_map,
+        table=table
     )
     # Preenche a tabela com os dados das lisps ......
 
@@ -9730,9 +9648,386 @@ def create_page_see_logs(page):
     return layout
 
 
+def create_page_see_planners(page):
+
+    textthemes = TextTheme()
+    texttheme1 = textthemes.create_text_theme1()
+
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
+
+    # AppBar
+    page.appbar = get_app_bar(ft, page)
+
+    base = SupaBase(page=None)
+    get_base = base.get_projects_data()
+    get_json = get_base.json()
+
+    history_list = ft.Column(
+        controls=[
+            ft.Container(
+                padding=0,  
+                expand=True,  
+                theme=texttheme1,
+                content=ft.DataTable(
+                    data_row_max_height=50,
+                    column_spacing=40,  
+                    expand=True,  
+                    columns=[
+                        ft.DataColumn(ft.Text(value="Planilha", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                        ft.DataColumn(ft.Text(value="Visualizar", text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK, weight=ft.FontWeight.W_900)),  
+                    ],
+                    rows=[],  
+                ),
+            )
+        ],
+        scroll=ft.ScrollMode.AUTO,  
+        alignment=ft.MainAxisAlignment.CENTER,  
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        expand=True,  
+    )
+
+    for city in get_json: 
+
+        name_project = city["name_project"]
+
+        def go_token(name_city):
+            profile = page.client_storage.get("profile")
+            profile.update({
+                "planner": name_city,
+            })
+            page.client_storage.set("profile", profile)
+            page.go("/planners/token")
+
+
+        history_list.controls[0].content.rows.append(
+            ft.DataRow(cells=[
+                            ft.DataCell(ft.Text(value=f"{name_project}", theme_style=ft.TextThemeStyle.TITLE_MEDIUM, text_align=ft.TextAlign.CENTER, color=ft.Colors.BLACK)),
+                            ft.DataCell(ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                on_click=lambda e, name_city=name_project: go_token(name_city),
+                                bgcolor=ft.Colors.BLUE,
+                                icon_color=ft.Colors.WHITE,
+                                )),
+                        ]
+                )
+        )
+        
+        
+    def filtrar_usuarios(e):
+        texto = e.control.value.lower().strip()
+        
+        for item in history_list.controls[0].content.rows:
+            item.visible = texto in item.cells[0].content.value.lower() if texto else True
+
+        history_list.update()
+
+    # Campo de pesquisa
+    search_field = ft.TextField(
+        label="Pesquisar",
+        text_style=ft.TextStyle(color=ft.Colors.BLACK),
+        hint_text="Digite para pesquisar...",
+        border_color=ft.Colors.BLUE_800,
+        filled=True,
+        bgcolor=ft.Colors.WHITE,
+        width=350,
+        on_change=filtrar_usuarios,
+    )
+
+    # Container principal
+    main_container = ft.Container(
+        content=ft.Column( 
+            [
+                ft.Row(
+                controls=[
+                    ft.Text("Planilhas", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                ],  
+                alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=20,
+                ),
+                search_field,
+                history_list,
+                # Lista colada ao campo de pesquisa
+            ],
+            expand=True,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            spacing=20,  # Removendo espaçamento entre os elementos da coluna
+        ),
+        bgcolor=ft.Colors.WHITE,
+        padding=10,  # Padding mínimo para o container
+        border_radius=10,
+        expand=True,
+        alignment=ft.alignment.center,
+    )
+
+    # Layout da página
+    layout = ft.Column(
+        controls=[main_container],
+        expand=True,
+        scroll=ft.ScrollMode.AUTO
+    )
+
+    return layout
+# Pagina de visualização dos projetos
+
+def create_page_planners_details(page):
+
+    base = SupaBase(page=None)
+    dict_profile = page.client_storage.get("profile")
+    filtros = dict_profile["models_filter"]
+    planner = dict_profile["planner"]
+
+
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
+
+    # AppBar
+    page.appbar = get_app_bar(ft, page)
+
+
+    get_json = []
+
+    offset = 0
+    limit = 1000
+
+    while True:
+        response = base.get_planners(planner, offset=offset, limit=limit)
+
+        if response.status_code != 200:
+            print("Erro ao buscar dados:", response.text)
+            break
+
+        data = response.json()
+        get_json.extend(data)
+
+        # Se o número de registros retornados for menor que o limite, terminamos
+        if len(data) < limit:
+            break
+
+        offset += limit
+
+
+    # Criação da tabela bruta
+    table = return_table(["Código","Logradouro","Bairro","Numero","Quadra","Lote","Situação","Testada","Terreno","Construção","Editor", ""])
+
+    pagination_bar = ft.Row(
+        alignment=ft.MainAxisAlignment.CENTER,
+        controls=[]
+    )
+
+    lbl_total = ft.Text(
+        value="10 itens de 0",
+        size=20,
+        weight=ft.FontWeight.W_600,
+        color=ft.Colors.BLACK
+    )
+
+    # Criação do container da tabela
+    history_list = return_container_table(table, pagination_bar, lbl_total)
+
+
+    list_filtros = [None]
+
+    items_per_page = 10
+    current_page = [1]
+    all_rows = []       
+    visible_rows = []
+
+
+    headers = ["Código","Logradouro","Bairro","Numero","Quadra","Lote","Situação","Testada","Terreno","Construção","Editor", ""]
+
+    field_map = {
+        "Código": "codigo",
+        "Logradouro": "logradouro",
+        "Bairro": "bairro",
+        "Numero": "numero",
+        "Quadra": "quadra",
+        "Lote": "lote",
+        "Situação": "situacao",
+        "Testada": "testada",
+        "Terreno": "terreno",
+        "Construção": "construcao",
+        "Editor": "editor",
+    }
+
+
+    # Preenche a tabela com os dados dos modelos ......
+    add_rows(
+        page=page,
+        all_rows=all_rows,
+        get_json=get_json,        
+        dicio_projects=None,
+        list_filtros=list_filtros,
+        type="city",
+        headers=headers,
+        table=table,
+        field_map=field_map,
+    )
+    # Preenche a tabela com os dados dos modelos ......
+
+
+    load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=False)
+
+
+    # AppBar
+    page.appbar = get_app_bar(ft, page)
+
+    filtros_ativos = {
+        "codigo": None,
+        "logradouro": None,
+        "bairro": None,
+        "numero": None,
+        "quadra": None,
+        "lote": None,
+        "situacao": None,
+        "testada": None,
+        "terreno": None,
+        "construcao": None,
+        "editor": None,
+    }
+
+    def aplicar_filtros(update):
+
+        aplicar = build_filtro_tabela_city(
+            all_rows=all_rows,
+            filtros_ativos=filtros_ativos,
+            list_filtros=list_filtros,
+            load_page=load_page,
+            pagination_bar=pagination_bar,
+            current_page=current_page,
+            visible_rows=visible_rows,
+            items_per_page=items_per_page,
+            lbl_total=lbl_total,
+            table=table,
+            update=update,
+            type="planner"
+        )
+
+        aplicar()
 
 
 
+    # Preparação dos menus de filtros ......
+
+    def on_text_change(e, filtro):
+        valor = e.control.value.strip()
+        filtros_ativos[filtro] = valor if valor != "" else None
+        aplicar_filtros(True)
+
+
+    filtros_config = [
+        {"label": "Código", "key": "codigo", "width": 250},
+        {"label": "Logradouro", "key": "logradouro", "width": 250},
+        {"label": "Bairro", "key": "bairro", "width": 250},
+        {"label": "Número", "key": "numero", "width": 250},
+        {"label": "Quadra", "key": "quadra", "width": 250},
+        {"label": "Lote", "key": "lote", "width": 250},
+        {"label": "Situação", "key": "situacao", "width": 250},
+        {"label": "Testada", "key": "testada", "width": 250},
+        {"label": "Terreno", "key": "terreno", "width": 250},
+        {"label": "Construção", "key": "construcao", "width": 250},
+        {"label": "Editor", "key": "editor", "width": 250},
+    ]
+
+    def build_list_textfield(on_text_change, filtros_config):
+
+        controls = []
+
+        for f in filtros_config:
+            controls.append(
+                ft.TextField(
+                    label=f["label"],
+                    width=f.get("width", 250),
+                    text_style=ft.TextStyle(color=ft.Colors.BLACK),
+                    filled=True,
+                    bgcolor=ft.Colors.WHITE,
+                    color=ft.Colors.BLACK,
+                    on_change=lambda e, key=f["key"]: on_text_change(e, key),
+                )
+            )
+
+        return ft.Row(
+            controls=controls,
+            expand=True,
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+
+    list_textfields = build_list_textfield(
+        on_text_change,
+        filtros_config,
+    )
+
+    # Preparação dos menus de filtros ......
+
+    if filtros[0] is not None:
+
+        for i, f in enumerate(filtros_config):
+            key = f["key"]
+            list_textfields.controls[i].value = filtros[0].get(key)
+
+        filtros_ativos = filtros[0]
+        aplicar_filtros(False)
+
+
+    
+    # Container principal
+    def row(*controls, expand=True):
+        return ft.Row(
+            controls=list(controls),
+            expand=expand,
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+
+
+    main_container = ft.Container(
+        content=ft.Column(
+            controls=[
+                row(
+                    ft.Text(
+                        planner,
+                        size=24,
+                        weight=ft.FontWeight.BOLD,
+                        color=ft.Colors.BLACK,
+                    ),
+                    expand=False,
+                ),
+
+                # Primeira linha de filtros
+                row(*list_textfields.controls[0:4]),
+
+                # Segunda linha
+                row(*list_textfields.controls[4:8]),
+
+                # Terceira linha
+                row(*list_textfields.controls[8:11]),
+
+                history_list,
+            ],
+            expand=True,
+            spacing=20,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+        bgcolor=ft.Colors.WHITE,
+        padding=10,
+        border_radius=10,
+        expand=True,
+        alignment=ft.alignment.center,
+    )
+
+
+    # Layout da página
+    layout = ft.Column(
+        controls=[main_container],
+        expand=True,
+        scroll=ft.ScrollMode.AUTO
+    )
+
+    return layout
 
 
 
