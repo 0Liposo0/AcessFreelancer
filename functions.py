@@ -1,6 +1,7 @@
 from models import *
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+import time
 
 
 def get_menu(ft, page):
@@ -40,7 +41,7 @@ def get_menu(ft, page):
                                             col=12,
                                             padding=10,)
     btn_see_freelancers = buttons.create_button(on_click=lambda e: go_url("/freelancers"),
-                                            text= "Freelancers",
+                                            text= "Usuários",
                                             color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
@@ -94,7 +95,6 @@ def get_menu(ft, page):
         btn_dashboard,
         btn_projeto,
         btn_see_freelancers,
-        btn_payment,
         btn_see_file,
         btn_see_deliverys,
         btn_see_models,
@@ -110,7 +110,6 @@ def get_menu(ft, page):
         drawer.controls.remove(btn_dashboard) 
         drawer.controls.remove(btn_projeto) 
         drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_payment)
         drawer.controls.remove(btn_see_logs)
         drawer.controls.insert(0, btn_profile)
         drawer.controls.insert(1, btn_projeto_user)
@@ -410,9 +409,10 @@ def add_rows(
         headers,
         field_map,
         table,
-        subproject_key="subproject",
     ):
         
+        #t_inicio = time.perf_counter()
+
         sp = SupaBase(page)
         username = page.client_storage.get("profile")["username"]
         planner = page.client_storage.get("profile").get("planner", 0)
@@ -444,6 +444,11 @@ def add_rows(
                     "filter": "files_filter",
                     "route": "/files/token",
                 },
+                "freelancer": {
+                    "key": "freelancer",
+                    "filter": "freelancers_filter",
+                    "route": "/freelancers/token",
+                },
                 "log": {
                     "key": "logs",
                     "filter": "logs_filter",
@@ -463,20 +468,26 @@ def add_rows(
 
             cfg = type_map[type]
 
-            if type != "model":
-                
-                profile.update({
-                    cfg["key"]: payload,
-                    cfg["filter"]: list_filtros,
-                })
-
-            else:
+            if type == "model":
                 profile.update({
                     cfg["key"]: payload,
                     "logs": payload,
                     cfg["filter"]: list_filtros,
                 })
 
+            elif type == "freelancer":
+                profile.update({
+                    cfg["key"]: payload["username"],
+                    cfg["filter"]: list_filtros,
+                })
+
+            else:   
+                profile.update({
+                    cfg["key"]: payload,
+                    cfg["filter"]: list_filtros,
+                })
+
+            
 
             page.client_storage.set("profile", profile)
             page.go(cfg["route"])
@@ -491,7 +502,7 @@ def add_rows(
                     expand=True,
                     data=data,
                 ),
-                on_long_press=lambda e, d=d: go_token(d),
+                #on_long_press=lambda e, d=d: go_token(d),
             )
 
         def icon_cell(icon, color, action, d):
@@ -505,35 +516,8 @@ def add_rows(
                 ),
                 on_long_press=lambda e, d=d: action(d),
             )
-
-        for d in get_json:
-
-            # Project seguro (quando existir dicio_projects)
-            if dicio_projects:
-                project = next(
-                    (
-                        k for k, v in dicio_projects.items()
-                        if any(d.get(subproject_key, "").startswith(i) for i in v)
-                    ),
-                    None,
-                )
-            else:
-                project = None
-
-
-            # caso Models
-            polygons = int(d.get("polygons", 0))
-            numbers = int(d.get("numbers", 0))
-            percent = int(numbers / (polygons / 100)) if polygons else 0
-
-            # caso Planner
-            check = str(d.get("check", "no"))
-
-            color = ft.Colors.WHITE
-            if check == "yes":
-                color = ft.Colors.GREEN
-
-            def toggle_check(d, row):
+        
+        def toggle_check(d, row):
                 current = str(d.get("check", "no"))
                 new_value = "yes" if current == "no" else "no"
 
@@ -598,8 +582,45 @@ def add_rows(
                         snack_bar.open = True
                         page.update()
 
-                
+        for d in get_json:
 
+
+            # Project seguro (quando existir dicio_projects)
+            if dicio_projects:
+
+                if type == "delivery":
+                    subproject_key = "name_subproject"
+                elif type == "freelancer":
+                    subproject_key = "current_project"
+                else:
+                    subproject_key = "subproject"
+                project = next(
+                    (
+                        k for k, v in dicio_projects.items()
+                        if any(d.get(subproject_key, "").startswith(i) for i in v)
+                    ),
+                    None,
+                )
+    
+            else:
+                project = None
+
+          
+
+
+            # caso Models
+            polygons = int(d.get("polygons", 0))
+            numbers = int(d.get("numbers", 0))
+            percent = int(numbers / (polygons / 100)) if polygons else 0
+
+            # caso Planner
+            check = str(d.get("check", "no"))
+
+            color = ft.Colors.WHITE
+            if check == "yes":
+                color = ft.Colors.GREEN
+
+    
             cells = []
 
             row = ft.DataRow(
@@ -609,35 +630,17 @@ def add_rows(
                 },
             )
 
-            empty_headers = headers.count("")
 
             for h in headers:
 
-                if h == "%":
-                    cells.append(text_cell(f"{percent}%", d))
+                if type in ["model", "delivery", "file"]:
 
-                elif h == "":
-                    # Caso exista apenas UM header vazio
-                    if empty_headers == 1:
-                        if type != "city":
-                            cells.append(
-                                icon_cell(ft.Icons.DOWNLOAD, ft.Colors.AMBER, go_download, d)
-                            )
-                        else:
-                            # botão que alterna o status
-                            cells.append(
-                                ft.DataCell(
-                                    ft.IconButton(
-                                        icon=ft.Icons.CHECK,
-                                        bgcolor=ft.Colors.GREEN if d.get("check") == "yes" else ft.Colors.GREY,
-                                        icon_color=ft.Colors.WHITE,
-                                        expand=True,
-                                    )
-                                )
-                            )
+                    if h == "%":
+                        cells.append(text_cell(f"{percent}%", d))
 
-                    # Caso existam DOIS ou mais headers vazios
-                    else:
+                    elif h == "":
+                        # Caso existam DOIS ou mais headers vazios
+
                         filled_cells = len([c for c in cells if isinstance(c, ft.DataCell)])
 
                         if filled_cells == len(headers) - 2:
@@ -648,8 +651,112 @@ def add_rows(
                             cells.append(
                                 icon_cell(ft.Icons.SEARCH, ft.Colors.BLUE, go_token, d)
                             )
+                    else:
+                        key = field_map.get(h)
+                        value = d.get(key, "") if key else ""
+                        cells.append(
+                            text_cell(
+                                value,
+                                d,
+                                project if h == "Subprojeto" else None
+                            )
+                        )
 
+                elif type in ["lisp"]:
+
+                    if h == "":
+                        cells.append(
+                                icon_cell(ft.Icons.DOWNLOAD, ft.Colors.AMBER, go_download, d)
+                            )
+                    else:
+                        key = field_map.get(h)
+                        value = d.get(key, "") if key else ""
+                        cells.append(
+                            text_cell(
+                                value,
+                                d,
+                                project if h == "Subprojeto" else None
+                            )
+                        )
+                        
+                elif type in ["city"]:
+
+                    if h == "":
+
+                        cells.append(
+                            ft.DataCell(
+                                ft.IconButton(
+                                    icon=ft.Icons.CHECK,
+                                    bgcolor=ft.Colors.GREEN if d.get("check") == "yes" else ft.Colors.GREY,
+                                    icon_color=ft.Colors.WHITE,
+                                    expand=True,
+                                )
+                            )
+                        )
+
+                    else:
+                        key = field_map.get(h)
+                        value = d.get(key, "") if key else ""
+                        cells.append(
+                            text_cell(
+                                value,
+                                d,
+                                project if h == "Subprojeto" else None
+                            )
+                        )
+
+                elif type in ["freelancer"]:
+
+                    if h == "":
+
+                        cells.append(
+                            ft.DataCell(
+                                ft.Column(
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                    controls=[
+                                        ft.Container(
+                                            width=40,
+                                            height=40,
+                                            alignment=ft.alignment.center,
+                                            content=ft.Image(  # Mova a imagem para o content
+                                                src=f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/freelancers//{d.get("username", "")}.jpg",  
+                                                fit=ft.ImageFit.COVER,
+                                                expand=True,
+                                            ),
+                                            border=ft.Border(
+                                                left=ft.BorderSide(2, ft.Colors.BLACK),  
+                                                top=ft.BorderSide(2, ft.Colors.BLACK),    
+                                                right=ft.BorderSide(2, ft.Colors.BLACK), 
+                                                bottom=ft.BorderSide(2, ft.Colors.BLACK) 
+                                            ),
+                                            bgcolor=ft.Colors.BLACK,
+                                            border_radius=ft.border_radius.all(20),
+                                            clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                                        )
+                                    ]
+                                )
+                            )
+                        )
+                        
+                    elif h == "Ficha":
+
+                        cells.append(
+                            icon_cell(ft.Icons.SEARCH, ft.Colors.BLUE, go_token, d)
+                        )
+
+                    else:
+                        key = field_map.get(h)
+                        value = d.get(key, "") if key else ""
+                        cells.append(
+                            text_cell(
+                                value,
+                                d,
+                                project if h == "Projeto Atual" else None
+                            )
+                        )
                 else:
+
                     key = field_map.get(h)
                     value = d.get(key, "") if key else ""
                     cells.append(
@@ -660,6 +767,9 @@ def add_rows(
                         )
                     )
 
+
+                
+
             # Conecta botão do city ao toggle
             if type == "city":
                 for cell in row.cells:
@@ -667,6 +777,9 @@ def add_rows(
                         cell.content.on_click = lambda e, d=d, row=row: toggle_check(d, row)
 
             all_rows.append(row)
+
+        #t_fim = time.perf_counter()
+        #print(f"add_rows levou {t_fim - t_inicio:.4f} segundos")
 
 
 def build_list_dropdown(
@@ -744,7 +857,8 @@ def build_filtro_tabela(
     items_per_page,
     lbl_total,
     table,
-    update
+    update,
+    type="all"
     ):
 
         def aplicar_filtros(update=update):
@@ -778,12 +892,14 @@ def build_filtro_tabela(
                     "dia": dia,
                     "mes": mes,
                     "ano": ano,
+
                     "usuario": safe_cell_value(cells, 0),
                     "projeto": safe_cell_data(cells, 2),
                     "subprojeto": safe_cell_value(cells, 2),
-                    "status": safe_cell_value(cells, 5),
+                    "status": safe_cell_value(cells, 6),
                     "name": safe_cell_value(cells, 0),
                     "type": safe_cell_value(cells, 1),
+
                     "codigo": safe_cell_value(cells, 0),
                     "logradouro": safe_cell_value(cells, 1),
                     "bairro": safe_cell_value(cells, 2),
@@ -798,6 +914,34 @@ def build_filtro_tabela(
                     "modelo": safe_cell_value(cells, 11),
                 }
 
+                if type == "log":
+
+                    # Segurança para data
+                    date_value = safe_cell_value(cells, 0)
+                    if isinstance(date_value, str) and "/" in date_value:
+                        dia, mes, ano, hr = date_value.split("/")
+                    else:
+                        dia = mes = ano = hr = None
+
+                    dados_linha = {
+                    "dia": dia,
+                    "mes": mes,
+                    "ano": ano,
+                    "usuario": safe_cell_value(cells, 4),
+                    "projeto": safe_cell_data(cells, 1),
+                    "subprojeto": safe_cell_value(cells, 1),
+                    }
+
+                if type == "user":
+
+                    dados_linha = {
+
+                    "permission": safe_cell_value(cells, 2),
+                    "projeto": safe_cell_data(cells, 3),
+
+                    }
+                
+
                 # aplica apenas filtros existentes no dict
                 item.visible = all(
                     valor is None or
@@ -805,7 +949,7 @@ def build_filtro_tabela(
                         dados_linha.get(chave) is not None and
                         (
                             dados_linha[chave].startswith(valor)
-                            if isinstance(valor, str) and chave == "subprojeto"
+                            if isinstance(valor, str) and chave == "subprojeto" or chave == "name_subproject"
                             else dados_linha[chave] == valor
                         )
                     )
