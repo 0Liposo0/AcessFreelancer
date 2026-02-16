@@ -4181,7 +4181,6 @@ def create_page_see_freelancers(page):
     dict_profile = page.client_storage.get("profile")
     filtros = dict_profile["freelancers_filter"]
     textthemes = TextTheme()
-    texttheme1 = textthemes.create_text_theme1()
 
     from functions import get_menu
     page.drawer = get_menu(ft, page)
@@ -4237,20 +4236,26 @@ def create_page_see_freelancers(page):
     }
 
     # Preenche a tabela com os dados dos modelos ......
-    add_rows(
-        page=page,
-        all_rows=all_rows,
-        get_json=get_json,        
-        dicio_projects=dicio_projects,
-        list_filtros=list_filtros,
-        type="freelancer",
-        headers=headers,
-        table=table,
-        field_map=field_map,
-    )
+    all_data = get_json
+    filtered_data = all_data.copy()
     # Preenche a tabela com os dados dos modelos ......
 
-    load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=False)
+    load_page(
+        page_number=1,
+        pagination_bar=pagination_bar,
+        current_page=current_page,
+        items_per_page=items_per_page,
+        lbl_total=lbl_total,
+        table=table,
+        filtered_data=filtered_data,
+        headers=headers,
+        field_map=field_map,
+        page=page,
+        planner=None,
+        list_filtros=list_filtros,
+        page_type="freelancer",
+        initial=True,
+    )
 
     filtros_ativos = {
         "permission": None,
@@ -4259,29 +4264,74 @@ def create_page_see_freelancers(page):
     
     def aplicar_filtros(update):
 
-        aplicar = build_filtro_tabela(
-            all_rows=all_rows,
-            filtros_ativos=filtros_ativos,
-            list_filtros=list_filtros,
-            load_page=load_page,
+        nonlocal filtered_data
+
+        filtered_data = []
+
+        for item in all_data:
+
+            match = True
+
+            for chave, valor in filtros_ativos.items():
+
+                if valor is None or str(valor).strip() == "":
+                    continue
+
+                elif chave == "permission":
+                    campo = item.get("permission")
+                    
+
+                elif chave == "projeto":
+                    # descobre projeto pelo subprojeto
+                    sub = item.get("current_project")
+                    campo = next(
+                        (k for k, v in dicio_projects.items() if sub and any(sub.startswith(i) for i in v)),
+                        None
+                    )
+
+                else:
+                    campo = item.get(chave)
+
+                if campo is None:
+                    match = False
+                    break
+
+                if str(valor).lower() not in str(campo).lower():
+                    match = False
+                    break
+
+            if match:
+                filtered_data.append(item)
+
+        
+
+        current_page[0] = 1
+
+        load_page(
+            page_number=1,
             pagination_bar=pagination_bar,
             current_page=current_page,
-            visible_rows=visible_rows,
             items_per_page=items_per_page,
             lbl_total=lbl_total,
             table=table,
-            update=update,
-            type="user"
+            filtered_data=filtered_data,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=None,
+            list_filtros=list_filtros,
+            page_type="freelancer",
+            initial=update,
         )
 
-        aplicar()
+        list_filtros[0] = filtros_ativos.copy()
 
     # Preparação dos menus de filtros ......
 
     def on_dropdown_change(e, filtro):
         valor = e.control.value
         filtros_ativos[filtro] = valor if valor != "Nulo" else None
-        aplicar_filtros(True)
+        aplicar_filtros(False)
 
     name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in list_projects:
@@ -4307,7 +4357,7 @@ def create_page_see_freelancers(page):
         list_dropdown.controls[1].value = filtros[0]["projeto"]
 
         filtros_ativos = filtros[0]
-        aplicar_filtros(False)
+        aplicar_filtros(True)
 
 
     def go_insert():
@@ -4320,39 +4370,50 @@ def create_page_see_freelancers(page):
             page.client_storage.set("profile", profile)
             page.go("/freelancers/add")
 
+
     def filtrar_usuarios(e):
 
-        filtros_ativos = {
-        "permission": None,
-        "projeto": None,
-        }
-
-        list_dropdown.controls[0].value = "Nulo"
-        list_dropdown.controls[0].label = "Nulo"
-        list_dropdown.controls[1].value = "Nulo"
-        list_dropdown.controls[1].label = "Nulo"
-
-        aplicar_filtros(True)
+        nonlocal filtered_data
 
         texto = e.control.value.lower().strip()
-        
-        for item in all_rows:
-            item.visible = texto in item.cells[1].content.value.lower() if texto else True
 
+        # Reseta dropdowns
+        filtros_ativos["permission"] = None
+        filtros_ativos["projeto"] = None
+
+        list_dropdown.controls[0].value = "Nulo"
+        list_dropdown.controls[1].value = "Nulo"
+
+        # Aplica busca diretamente nos dados
+        if texto == "":
+            filtered_data = all_data.copy()
+        else:
+            filtered_data = [
+                item for item in all_data
+                if texto in str(item.get("username", "")).lower()
+            ]
+
+        current_page[0] = 1
+
+        load_page(
+            page_number=1,
+            pagination_bar=pagination_bar,
+            current_page=current_page,
+            items_per_page=items_per_page,
+            lbl_total=lbl_total,
+            table=table,
+            filtered_data=filtered_data,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=None,
+            list_filtros=list_filtros,
+            page_type="freelancer",
+            initial=False,
+        )
 
         list_dropdown.controls[0].update()
         list_dropdown.controls[1].update()
-        load_page(
-                1,
-                pagination_bar,
-                current_page,
-                visible_rows,
-                items_per_page,
-                lbl_total,
-                table,
-                all_rows,
-                initial=True,
-            )
 
     # Campo de pesquisa
     search_field = ft.TextField(
@@ -4927,8 +4988,7 @@ def create_page_see_deliverys(page):
 
     items_per_page = 10
     current_page = [1]
-    all_rows = []        # Armazena todos os DataRow
-    visible_rows = []
+
 
     headers = ["Usuario","Data","Subprojeto","Poligonos", "Fotos","",""]
 
@@ -4941,20 +5001,26 @@ def create_page_see_deliverys(page):
     }
 
     # Preenche a tabela com os dados dos modelos ......
-    add_rows(
-        page=page,
-        all_rows=all_rows,
-        get_json=get_json,        
-        dicio_projects=dicio_projects,
-        list_filtros=list_filtros,
-        type="delivery",
-        headers=headers,
-        table=table,
-        field_map=field_map,
-    )
+    all_data = get_json
+    filtered_data = all_data.copy()
     # Preenche a tabela com os dados dos modelos ......
 
-    load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=False)
+    load_page(
+        page_number=1,
+        pagination_bar=pagination_bar,
+        current_page=current_page,
+        items_per_page=items_per_page,
+        lbl_total=lbl_total,
+        table=table,
+        filtered_data=filtered_data,
+        headers=headers,
+        field_map=field_map,
+        page=page,
+        planner=None,
+        list_filtros=list_filtros,
+        page_type="delivery",
+        initial=True,
+    )
 
     filtros_ativos = {
         "dia": None,
@@ -4967,28 +5033,86 @@ def create_page_see_deliverys(page):
     
     def aplicar_filtros(update):
 
-        aplicar = build_filtro_tabela(
-            all_rows=all_rows,
-            filtros_ativos=filtros_ativos,
-            list_filtros=list_filtros,
-            load_page=load_page,
+        nonlocal filtered_data
+
+        filtered_data = []
+
+        for item in all_data:
+
+            match = True
+
+            for chave, valor in filtros_ativos.items():
+
+                if valor is None or str(valor).strip() == "":
+                    continue
+
+                if chave in ["dia", "mes", "ano"]:
+                    data_value = item.get("date")
+                    if data_value and "/" in data_value:
+                        d, m, a = data_value.split("/")
+                        campo = {"dia": d, "mes": m, "ano": a}.get(chave)
+                    else:
+                        campo = None
+
+                elif chave == "usuario":
+                    campo = item.get("username")
+                    
+
+                elif chave == "subprojeto":
+                    campo = item.get("name_subproject")
+      
+
+                elif chave == "projeto":
+                    # descobre projeto pelo subprojeto
+                    sub = item.get("name_subproject")
+                    campo = next(
+                        (k for k, v in dicio_projects.items() if sub and any(sub.startswith(i) for i in v)),
+                        None
+                    )
+
+                else:
+                    campo = item.get(chave)
+
+                if campo is None:
+                    match = False
+                    break
+
+                if str(valor).lower() not in str(campo).lower():
+                    match = False
+                    break
+
+            if match:
+                filtered_data.append(item)
+
+        
+
+        current_page[0] = 1
+
+        load_page(
+            page_number=1,
             pagination_bar=pagination_bar,
             current_page=current_page,
-            visible_rows=visible_rows,
             items_per_page=items_per_page,
             lbl_total=lbl_total,
             table=table,
-            update=update
+            filtered_data=filtered_data,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=None,
+            list_filtros=list_filtros,
+            page_type="delivery",
+            initial=update,
         )
 
-        aplicar()
+        list_filtros[0] = filtros_ativos.copy()
 
     # Preparação dos menus de filtros ......
 
     def on_dropdown_change(e, filtro):
         valor = e.control.value
         filtros_ativos[filtro] = valor if valor != "Nulo" else None
-        aplicar_filtros(True)
+        aplicar_filtros(False)
 
     name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in list_projects:
@@ -5033,7 +5157,7 @@ def create_page_see_deliverys(page):
         list_dropdown.controls[5].value = filtros[0]["subprojeto"]
 
         filtros_ativos = filtros[0]
-        aplicar_filtros(False)
+        aplicar_filtros(True)
 
 
     def go_insert():
@@ -6155,8 +6279,7 @@ def create_page_files(page, filtros=[None]):
 
     items_per_page = 10
     current_page = [1]
-    all_rows = []        # Armazena todos os DataRow
-    visible_rows = []
+
 
     headers = ["Usuario","Data","Subprojeto","Tipo","Quantidade", "Meta","",""]
 
@@ -6170,20 +6293,26 @@ def create_page_files(page, filtros=[None]):
     }
 
     # Preenche a tabela com os dados dos modelos ......
-    add_rows(
-        page=page,
-        all_rows=all_rows,
-        get_json=get_json,        
-        dicio_projects=dicio_projects,
-        list_filtros=list_filtros,
-        type="file",
-        headers=headers,
-        table=table,
-        field_map=field_map,
-    )
+    all_data = get_json
+    filtered_data = all_data.copy()
     # Preenche a tabela com os dados dos modelos ......
 
-    load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=False)
+    load_page(
+        page_number=1,
+        pagination_bar=pagination_bar,
+        current_page=current_page,
+        items_per_page=items_per_page,
+        lbl_total=lbl_total,
+        table=table,
+        filtered_data=filtered_data,
+        headers=headers,
+        field_map=field_map,
+        page=page,
+        planner=None,
+        list_filtros=list_filtros,
+        page_type="file",
+        initial=True,
+    )
 
     filtros_ativos = {
         "dia": None,
@@ -6196,28 +6325,85 @@ def create_page_files(page, filtros=[None]):
     
     def aplicar_filtros(update):
 
-        aplicar = build_filtro_tabela(
-            all_rows=all_rows,
-            filtros_ativos=filtros_ativos,
-            list_filtros=list_filtros,
-            load_page=load_page,
+        nonlocal filtered_data
+
+        filtered_data = []
+
+        for item in all_data:
+
+            match = True
+
+            for chave, valor in filtros_ativos.items():
+
+                if valor is None or str(valor).strip() == "":
+                    continue
+
+                if chave in ["dia", "mes", "ano"]:
+                    data_value = item.get("date")
+                    if data_value and "/" in data_value:
+                        d, m, a = data_value.split("/")
+                        campo = {"dia": d, "mes": m, "ano": a}.get(chave)
+                    else:
+                        campo = None
+
+                elif chave == "usuario":
+                    campo = item.get("username")
+                    
+
+                elif chave == "subprojeto":
+                    campo = item.get("subproject")
+
+                elif chave == "projeto":
+                    # descobre projeto pelo subprojeto
+                    sub = item.get("subproject")
+                    campo = next(
+                        (k for k, v in dicio_projects.items() if sub and any(sub.startswith(i) for i in v)),
+                        None
+                    )
+
+                else:
+                    campo = item.get(chave)
+
+                if campo is None:
+                    match = False
+                    break
+
+                if str(valor).lower() not in str(campo).lower():
+                    match = False
+                    break
+
+            if match:
+                filtered_data.append(item)
+
+        
+
+        current_page[0] = 1
+
+        load_page(
+            page_number=1,
             pagination_bar=pagination_bar,
             current_page=current_page,
-            visible_rows=visible_rows,
             items_per_page=items_per_page,
             lbl_total=lbl_total,
             table=table,
-            update=update
+            filtered_data=filtered_data,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=None,
+            list_filtros=list_filtros,
+            page_type="file",
+            initial=update,
         )
 
-        aplicar()
+        list_filtros[0] = filtros_ativos.copy()
 
     # Preparação dos menus de filtros ......
 
     def on_dropdown_change(e, filtro):
         valor = e.control.value
         filtros_ativos[filtro] = valor if valor != "Nulo" else None
-        aplicar_filtros(True)
+        aplicar_filtros(False)
 
     name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in list_projects:
@@ -6262,7 +6448,7 @@ def create_page_files(page, filtros=[None]):
         list_dropdown.controls[5].value = filtros[0]["subprojeto"]
 
         filtros_ativos = filtros[0]
-        aplicar_filtros(False)
+        aplicar_filtros(True)
 
 
     # Container principal
@@ -6490,9 +6676,6 @@ def create_page_see_models(page):
 
     items_per_page = 10
     current_page = [1]
-    all_rows = []       
-    visible_rows = []
-
 
     headers = ["Usuario","Data","Subprojeto","Poligonos", "Codigos", "%","Status","Atualização","Editor","",""]
 
@@ -6509,21 +6692,27 @@ def create_page_see_models(page):
 
 
     # Preenche a tabela com os dados dos modelos ......
-    add_rows(
-        page=page,
-        all_rows=all_rows,
-        get_json=get_json,        
-        dicio_projects=dicio_projects,
-        list_filtros=list_filtros,
-        type="model",
-        headers=headers,
-        table=table,
-        field_map=field_map,
-    )
+    all_data = get_json
+    filtered_data = all_data.copy()
     # Preenche a tabela com os dados dos modelos ......
 
 
-    load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=False)
+    load_page(
+        page_number=1,
+        pagination_bar=pagination_bar,
+        current_page=current_page,
+        items_per_page=items_per_page,
+        lbl_total=lbl_total,
+        table=table,
+        filtered_data=filtered_data,
+        headers=headers,
+        field_map=field_map,
+        page=page,
+        planner=None,
+        list_filtros=list_filtros,
+        page_type="model",
+        initial=True,
+    )
 
 
     filtros_ativos = {
@@ -6539,21 +6728,88 @@ def create_page_see_models(page):
 
     def aplicar_filtros(update):
 
-        aplicar = build_filtro_tabela(
-            all_rows=all_rows,
-            filtros_ativos=filtros_ativos,
-            list_filtros=list_filtros,
-            load_page=load_page,
+        nonlocal filtered_data
+
+        filtered_data = []
+
+        for item in all_data:
+
+            match = True
+
+            for chave, valor in filtros_ativos.items():
+
+                if valor is None or str(valor).strip() == "":
+                    continue
+
+                if chave in ["dia", "mes", "ano"]:
+                    data_value = item.get("date")
+                    if data_value and "/" in data_value:
+                        d, m, a = data_value.split("/")
+                        campo = {"dia": d, "mes": m, "ano": a}.get(chave)
+                    else:
+                        campo = None
+
+                elif chave == "usuario":
+                    campo = item.get("username")
+                    
+
+                elif chave == "status":
+                    campo = item.get("status")
+                    if valor != campo:
+                        match = False
+                        break
+
+                elif chave == "subprojeto":
+                    campo = item.get("subproject")
+                    if not campo.startswith(valor):
+                        match = False
+                    break
+                    
+
+                elif chave == "projeto":
+                    # descobre projeto pelo subprojeto
+                    sub = item.get("subproject")
+                    campo = next(
+                        (k for k, v in dicio_projects.items() if sub and any(sub.startswith(i) for i in v)),
+                        None
+                    )
+
+                else:
+                    campo = item.get(chave)
+
+                if campo is None:
+                    match = False
+                    break
+
+                if str(valor).lower() not in str(campo).lower():
+                    match = False
+                    break
+
+            if match:
+                filtered_data.append(item)
+
+        
+
+        current_page[0] = 1
+
+        load_page(
+            page_number=1,
             pagination_bar=pagination_bar,
             current_page=current_page,
-            visible_rows=visible_rows,
             items_per_page=items_per_page,
             lbl_total=lbl_total,
             table=table,
-            update=update
+            filtered_data=filtered_data,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=None,
+            list_filtros=list_filtros,
+            page_type="model",
+            initial=update,
         )
 
-        aplicar()
+        list_filtros[0] = filtros_ativos.copy()
 
 
 
@@ -6562,7 +6818,7 @@ def create_page_see_models(page):
     def on_dropdown_change(e, filtro):
         valor = e.control.value
         filtros_ativos[filtro] = valor if valor != "Nulo" else None
-        aplicar_filtros(True)
+        aplicar_filtros(False)
 
     name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in list_projects:
@@ -6610,7 +6866,7 @@ def create_page_see_models(page):
         list_dropdown.controls[6].value = filtros[0]["status"]
 
         filtros_ativos = filtros[0]
-        aplicar_filtros(False)
+        aplicar_filtros(True)
 
 
     def go_insert():
@@ -8008,21 +8264,26 @@ def create_page_see_lisps(page):
         "Atualização": "update",
     }
 
-    add_rows(
-        page=page,
-        all_rows=all_rows,
-        get_json=get_json,
-        dicio_projects=None,        
-        list_filtros=list_filtros,
-        type="lisp",
+    all_data = get_json
+    filtered_data = all_data.copy()
+
+
+    load_page(
+        page_number=1,
+        pagination_bar=pagination_bar,
+        current_page=current_page,
+        items_per_page=items_per_page,
+        lbl_total=lbl_total,
+        table=table,
+        filtered_data=filtered_data,
         headers=headers,
         field_map=field_map,
-        table=table
+        page=page,
+        planner=None,
+        list_filtros=list_filtros,
+        page_type="lisp",
+        initial=True,
     )
-    # Preenche a tabela com os dados das lisps ......
-
-
-    load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=False)
 
 
     # AppBar
@@ -8036,21 +8297,64 @@ def create_page_see_lisps(page):
 
     def aplicar_filtros(update):
 
-        aplicar = build_filtro_tabela(
-            all_rows=all_rows,
-            filtros_ativos=filtros_ativos,
-            list_filtros=list_filtros,
-            load_page=load_page,
+        nonlocal filtered_data
+
+        filtered_data = []
+
+        for item in all_data:
+
+            match = True
+
+            for chave, valor in filtros_ativos.items():
+
+                if valor is None or str(valor).strip() == "":
+                    continue
+
+
+                elif chave == "name":
+                    campo = item.get("name")
+                    
+
+                elif chave == "type":
+                    campo = item.get("type")
+
+
+                else:
+                    campo = item.get(chave)
+
+                if campo is None:
+                    match = False
+                    break
+
+                if str(valor).lower() not in str(campo).lower():
+                    match = False
+                    break
+
+            if match:
+                filtered_data.append(item)
+
+        
+
+        current_page[0] = 1
+
+        load_page(
+            page_number=1,
             pagination_bar=pagination_bar,
             current_page=current_page,
-            visible_rows=visible_rows,
             items_per_page=items_per_page,
             lbl_total=lbl_total,
             table=table,
-            update=update
+            filtered_data=filtered_data,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=None,
+            list_filtros=list_filtros,
+            page_type="lisp",
+            initial=update,
         )
 
-        aplicar()
+        list_filtros[0] = filtros_ativos.copy()
 
 
     # Preparação dos menus de filtros ......
@@ -8058,7 +8362,7 @@ def create_page_see_lisps(page):
     def on_dropdown_change(e, filtro):
         valor = e.control.value
         filtros_ativos[filtro] = valor if valor != "Nulo" else None
-        aplicar_filtros(True)
+        aplicar_filtros(False)
 
     name_lisp = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in get_json:
@@ -8084,7 +8388,7 @@ def create_page_see_lisps(page):
         list_dropdown.controls[1].value = filtros[0]["type"]
 
         filtros_ativos = filtros[0]
-        aplicar_filtros(False)
+        aplicar_filtros(True)
 
   
     # Container principal
@@ -8220,20 +8524,26 @@ def create_page_see_logs(page):
     }
 
     # Preenche a tabela com os dados dos modelos ......
-    add_rows(
-        page=page,
-        all_rows=all_rows,
-        get_json=get_json,        
-        dicio_projects=dicio_projects,
-        list_filtros=list_filtros,
-        type="log",
-        headers=headers,
-        table=table,
-        field_map=field_map,
-    )
+    all_data = get_json
+    filtered_data = all_data.copy()
     # Preenche a tabela com os dados dos modelos ......
 
-    load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=False)
+    load_page(
+        page_number=1,
+        pagination_bar=pagination_bar,
+        current_page=current_page,
+        items_per_page=items_per_page,
+        lbl_total=lbl_total,
+        table=table,
+        filtered_data=filtered_data,
+        headers=headers,
+        field_map=field_map,
+        page=page,
+        planner=None,
+        list_filtros=list_filtros,
+        page_type="log",
+        initial=True,
+    )
 
     filtros_ativos = {
         "dia": None,
@@ -8246,29 +8556,85 @@ def create_page_see_logs(page):
     
     def aplicar_filtros(update):
 
-        aplicar = build_filtro_tabela(
-            all_rows=all_rows,
-            filtros_ativos=filtros_ativos,
-            list_filtros=list_filtros,
-            load_page=load_page,
+        nonlocal filtered_data
+
+        filtered_data = []
+
+        for item in all_data:
+
+            match = True
+
+            for chave, valor in filtros_ativos.items():
+
+                if valor is None or str(valor).strip() == "":
+                    continue
+
+                if chave in ["dia", "mes", "ano"]:
+                    data_value = item.get("date")
+                    if data_value and "/" in data_value:
+                        d, m, a, h = data_value.split("/")
+                        campo = {"dia": d, "mes": m, "ano": a}.get(chave)
+                    else:
+                        campo = None
+
+                elif chave == "usuario":
+                    campo = item.get("user")
+                    
+
+                elif chave == "subprojeto":
+                    campo = item.get("subproject")
+
+                elif chave == "projeto":
+                    # descobre projeto pelo subprojeto
+                    sub = item.get("subproject")
+                    campo = next(
+                        (k for k, v in dicio_projects.items() if sub and any(sub.startswith(i) for i in v)),
+                        None
+                    )
+
+                else:
+                    campo = item.get(chave)
+
+                if campo is None:
+                    match = False
+                    break
+
+                if str(valor).lower() not in str(campo).lower():
+                    match = False
+                    break
+
+            if match:
+                filtered_data.append(item)
+
+        
+
+        current_page[0] = 1
+
+        load_page(
+            page_number=1,
             pagination_bar=pagination_bar,
             current_page=current_page,
-            visible_rows=visible_rows,
             items_per_page=items_per_page,
             lbl_total=lbl_total,
             table=table,
-            update=update,
-            type="log"
+            filtered_data=filtered_data,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=None,
+            list_filtros=list_filtros,
+            page_type="log",
+            initial=update,
         )
 
-        aplicar()
+        list_filtros[0] = filtros_ativos.copy()
 
     # Preparação dos menus de filtros ......
 
     def on_dropdown_change(e, filtro):
         valor = e.control.value
         filtros_ativos[filtro] = valor if valor != "Nulo" else None
-        aplicar_filtros(True)
+        aplicar_filtros(False)
 
     name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
     for item in list_projects:
@@ -8313,7 +8679,7 @@ def create_page_see_logs(page):
         list_dropdown.controls[5].value = filtros[0]["subprojeto"]
 
         filtros_ativos = filtros[0]
-        aplicar_filtros(False)
+        aplicar_filtros(True)
 
 
     # Container principal
@@ -8372,7 +8738,13 @@ def create_page_see_planners(page):
     page.appbar = get_app_bar(ft, page)
 
     base = SupaBase(page=None)
-    get_base = base.get_projects_data()
+    dict_profile = page.client_storage.get("profile")
+    project = dict_profile["current_project"]
+
+    if dict_profile["permission"] != "adm":
+        get_base = base.get_one_project_data(project)
+    else:
+        get_base = base.get_projects_data()
     get_json = get_base.json()
 
     history_list = ft.Column(
@@ -8543,8 +8915,9 @@ def create_page_planners_details(page):
 
     items_per_page = 10
     current_page = [1]
-    all_rows = []       
-    visible_rows = []
+    all_data = []
+    filtered_data = []
+           
 
 
     headers = ["Código","Logradouro","Bairro","Numero","Quadra","Lote","Situação","Testada","Terreno","Construção","Editor", ""]
@@ -8564,22 +8937,29 @@ def create_page_planners_details(page):
     }
 
 
-    # Preenche a tabela com os dados dos modelos ......
-    add_rows(
-        page=page,
-        all_rows=all_rows,
-        get_json=get_json,        
-        dicio_projects=None,
-        list_filtros=list_filtros,
-        type="city",
+    all_data = prepare_data(
+        get_json=get_json,
         headers=headers,
-        table=table,
         field_map=field_map,
     )
-    # Preenche a tabela com os dados dos modelos ......
+    filtered_data = all_data.copy()
 
 
-    load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=False)
+
+    load_page(
+        page_number=1,
+        pagination_bar=pagination_bar,
+        current_page=current_page,
+        items_per_page=items_per_page,
+        lbl_total=lbl_total,
+        table=table,
+        filtered_data=filtered_data,
+        headers=headers,
+        field_map=field_map,
+        page=page,
+        planner=planner,
+        initial=True,
+    )
 
 
     # AppBar
@@ -8601,22 +8981,78 @@ def create_page_planners_details(page):
 
     def aplicar_filtros(update):
 
-        aplicar = build_filtro_tabela_city(
-            all_rows=all_rows,
-            filtros_ativos=filtros_ativos,
-            list_filtros=list_filtros,
-            load_page=load_page,
+        nonlocal filtered_data
+
+        filtered_data = []
+
+        for item in all_data:
+
+            match = True
+
+            for chave, valor in filtros_ativos.items():
+
+                if valor is None or str(valor).strip() == "":
+                    continue
+
+                campo = item.get(chave)
+
+                if campo is None:
+                    match = False
+                    break
+
+                if str(valor).lower() not in str(campo).lower():
+                    match = False
+                    break
+
+            if match:
+                filtered_data.append(item)
+
+        # 🔥 Ordenação por relevância (exato > começa com > contém)
+
+        # Descobre qual filtro está ativo
+        for chave, valor in filtros_ativos.items():
+            if valor is not None and str(valor).strip() != "":
+                search_key = chave
+                search_value = str(valor).lower().strip()
+                break
+        else:
+            search_key = None
+            search_value = None
+
+        if search_key and search_value:
+
+            def relevance_score(row):
+                value = str(row.get(search_key, "")).lower()
+
+                if value == search_value:
+                    return 0
+                elif value.startswith(search_value):
+                    return 1
+                elif search_value in value:
+                    return 2
+                else:
+                    return 3
+
+            filtered_data.sort(key=relevance_score)
+
+        current_page[0] = 1
+
+        load_page(
+            page_number=1,
             pagination_bar=pagination_bar,
             current_page=current_page,
-            visible_rows=visible_rows,
             items_per_page=items_per_page,
             lbl_total=lbl_total,
             table=table,
-            update=update,
-            type="planner"
+            filtered_data=filtered_data,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=planner,
+            initial=False,
         )
 
-        aplicar()
+        list_filtros[0] = filtros_ativos.copy()
 
 
 
@@ -8673,7 +9109,7 @@ def create_page_planners_details(page):
 
     # Preparação dos menus de filtros ......
 
-    if filtros[0] is not None:
+    if filtros and filtros[0] is not None:
 
         for i, f in enumerate(filtros_config):
             key = f["key"]

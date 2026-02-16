@@ -269,522 +269,201 @@ def return_container_table(table, pagination_bar, lbl_total):
                 expand=True,  
             )
 
-def update_pagination_bar(pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=True):
+def update_pagination_bar(
+    pagination_bar,
+    current_page,
+    total_pages,
+    load_page_callback,
+    initial=False
+):
 
-        total_pages = (len(visible_rows) + items_per_page - 1) // items_per_page
+    pagination_bar.controls.clear()
 
-        visible_pages = 4
-        many_pages = True
-
-        if total_pages < visible_pages:
-            many_pages = False
-            visible_pages = total_pages 
-
-        pagination_bar.controls.clear()
-
-        if many_pages:
-            pagination_bar.controls.append(
-                ft.IconButton(
-                    icon=ft.Icons.ARROW_BACK,
-                    icon_color=ft.Colors.INDIGO_600,
-                    disabled=current_page[0] == 1,
-                    visible=current_page[0] != 1,
-                    on_click=lambda e: load_page((current_page[0] - 1), pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=True)
-                )
-            )
-
-        # Números
-        initial_number = current_page[0]
-        last_number = current_page[0] + visible_pages
-
-        def color_button(page):
-            if page == current_page[0]:
-                color = ft.Colors.AMBER
-            else:
-                color = ft.Colors.INDIGO_600
-            
-            return color
-
-        for page in range(initial_number, last_number):
-            pagination_bar.controls.append(
-                ft.ElevatedButton(
-                    text=str(page),
-                    bgcolor = color_button(page),
-                    color = ft.Colors.WHITE,
-                    on_click=lambda e, p=page: load_page(p, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=True)
-                )
-            )
-
-        # Limitar a ultima página
-        if current_page[0] + visible_pages > total_pages:
-            pagination_bar.controls.clear()
-            initial_page = 1
-            final = total_pages + 1
-
-            if many_pages:
-                initial_page = total_pages - visible_pages
-                final = total_pages + 1
-                pagination_bar.controls.append(
-                    ft.IconButton(
-                        icon=ft.Icons.ARROW_BACK,
-                        icon_color=ft.Colors.INDIGO_600,
-                        on_click=lambda e: load_page((current_page[0] - 1), pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=True)
-                    )
-                )
-
-
-            for page in range(initial_page, final):
-                pagination_bar.controls.append(
-                    ft.ElevatedButton(
-                        text=str(page),
-                        bgcolor = color_button(page),
-                        color = ft.Colors.WHITE,
-                        on_click=lambda e, p=page: load_page(p, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=True)
-                    )
-                )
-            
-
-        if many_pages:
-            # Botão "Próximo"
-            pagination_bar.controls.append(
-                ft.IconButton(
-                    icon=ft.Icons.ARROW_FORWARD,
-                    icon_color=ft.Colors.INDIGO_600,
-                    disabled=current_page[0] == total_pages,
-                    visible=current_page[0] != total_pages,
-                    on_click=lambda e: load_page((current_page[0] + 1), pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=True)
-                )
-            )
-
-        if current_page[0] <= total_pages - visible_pages and many_pages:
-            pagination_bar.controls.insert(-1,
-                ft.ElevatedButton(
-                        text=str(f"{total_pages}"),
-                        bgcolor = color_button(current_page[0] + 1),
-                        color = ft.Colors.WHITE,
-                        on_click=lambda e, p=page: load_page(total_pages, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=True)
-                    )
-            ) 
-
-        if current_page[0] != 1 and many_pages:
-            pagination_bar.controls.insert(1,
-                ft.ElevatedButton(
-                        text=str("1"),
-                        bgcolor = color_button(current_page[0] + 1),
-                        color = ft.Colors.WHITE,
-                        on_click=lambda e, p=page: load_page(1, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=True)
-                    )
-            )
-
-        # Atualiza label "Total de registros"
-        lbl_total.value = f"{len(table.rows)} itens de {len(visible_rows)}"
-        if initial:
-            lbl_total.update()
+    if total_pages <= 1:
+        if not initial:
             pagination_bar.update()
+        return
 
-def load_page(page, pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=True):
+    max_visible = 5  # máximo de botões numéricos visíveis
 
-        current_page[0] = page
+    # Define janela deslizante
+    start_page = max(1, current_page[0] - 2)
+    end_page = start_page + max_visible - 1
 
-        start = (page * items_per_page) - items_per_page
-        end = start + items_per_page
+    if end_page > total_pages:
+        end_page = total_pages
+        start_page = max(1, end_page - max_visible + 1)
 
-        visible_rows.clear()
-        for item in all_rows:
-            if item.visible:
-                visible_rows.append(item)
-    
-        table.rows = visible_rows[start:end]
-        if initial:
-            table.update()
-        update_pagination_bar(pagination_bar, current_page, visible_rows, items_per_page, lbl_total, table, all_rows, initial=initial)
+    # Botão voltar
+    if current_page[0] > 1:
+        pagination_bar.controls.append(
+            ft.IconButton(
+                icon=ft.Icons.ARROW_BACK,
+                icon_color=ft.Colors.INDIGO_600,
+                on_click=lambda e: load_page_callback(current_page[0] - 1)
+            )
+        )
 
-def add_rows(
-        page,
-        all_rows,
-        get_json,
-        dicio_projects,
-        list_filtros,
-        type,
-        headers,
-        field_map,
-        table,
-    ):
-        
-        #t_inicio = time.perf_counter()
+    # Sempre mostrar botão 1 se estiver fora da janela
+    if start_page > 1:
+        pagination_bar.controls.append(
+            ft.ElevatedButton(
+                text="1",
+                bgcolor=ft.Colors.INDIGO_600,
+                color=ft.Colors.WHITE,
+                on_click=lambda e: load_page_callback(1)
+            )
+        )
 
-        sp = SupaBase(page)
-        username = page.client_storage.get("profile")["username"]
-        planner = page.client_storage.get("profile").get("planner", 0)
+        if start_page > 2:
+            pagination_bar.controls.append(
+                ft.Text("...")
+            )
 
-        def go_download(d):
-            if d.get("dwg"):
-                page.launch_url(d["dwg"])
-            else: 
-                page.launch_url(d["lisp"])
+    # Botões centrais
+    for p in range(start_page, end_page + 1):
+        pagination_bar.controls.append(
+            ft.ElevatedButton(
+                text=str(p),
+                bgcolor=ft.Colors.AMBER if p == current_page[0] else ft.Colors.INDIGO_600,
+                color=ft.Colors.WHITE,
+                on_click=lambda e, page=p: load_page_callback(page)
+            )
+        )
 
-        def go_token(d):
-            profile = page.client_storage.get("profile") or {}
+    # Sempre mostrar última página se estiver fora da janela
+    if end_page < total_pages:
+        if end_page < total_pages - 1:
+            pagination_bar.controls.append(
+                ft.Text("...")
+            )
 
-            payload = {**d, "dwg": d.get("dwg") or ""}
+        pagination_bar.controls.append(
+            ft.ElevatedButton(
+                text=str(total_pages),
+                bgcolor=ft.Colors.INDIGO_600,
+                color=ft.Colors.WHITE,
+                on_click=lambda e: load_page_callback(total_pages)
+            )
+        )
 
-            type_map = {
-                "model": {
-                    "key": "model",
-                    "filter": "models_filter",
-                    "route": "/models/token",
-                },
-                "delivery": {
-                    "key": "delivery",
-                    "filter": "deliveries_filter",
-                    "route": "/deliveries/token",
-                },
-                "file": {
-                    "key": "file",
-                    "filter": "files_filter",
-                    "route": "/files/token",
-                },
-                "freelancer": {
-                    "key": "freelancer",
-                    "filter": "freelancers_filter",
-                    "route": "/freelancers/token",
-                },
-                "log": {
-                    "key": "logs",
-                    "filter": "logs_filter",
-                    "route": "/logs/token",
-                },
-                "lisp": {
-                    "key": "lisp",
-                    "filter": "lisps_filter",
-                    "route": "/lisps/token",
-                },
-                "city": {
-                    "key": "city",
-                    "filter": "city_filter",
-                    "route": "/city/token",
-                },
-            }
+    # Botão avançar
+    if current_page[0] < total_pages:
+        pagination_bar.controls.append(
+            ft.IconButton(
+                icon=ft.Icons.ARROW_FORWARD,
+                icon_color=ft.Colors.INDIGO_600,
+                on_click=lambda e: load_page_callback(current_page[0] + 1)
+            )
+        )
 
-            cfg = type_map[type]
+    if not initial:
+        pagination_bar.update()
 
-            if type == "model":
-                profile.update({
-                    cfg["key"]: payload,
-                    "logs": payload,
-                    cfg["filter"]: list_filtros,
-                })
+def load_page(
+    page_number,
+    pagination_bar,
+    current_page,
+    items_per_page,
+    lbl_total,
+    table,
+    filtered_data,
+    headers,
+    field_map,
+    page,
+    planner,
+    list_filtros = None,
+    page_type = None,
+    initial=False,
+):
 
-            elif type == "freelancer":
-                profile.update({
-                    cfg["key"]: payload["username"],
-                    cfg["filter"]: list_filtros,
-                })
+    current_page[0] = page_number
 
-            else:   
-                profile.update({
-                    cfg["key"]: payload,
-                    cfg["filter"]: list_filtros,
-                })
+    total_items = len(filtered_data)
+    total_pages = (total_items + items_per_page - 1) // items_per_page
 
+    start = (page_number - 1) * items_per_page
+    end = start + items_per_page
+
+    page_slice = filtered_data[start:end]
+
+    table.rows.clear()
+
+    for d in page_slice:
+        row = build_row(
+            d=d,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=planner,
+            list_filtros=list_filtros,
+            table=table,
+            page_type=page_type,
             
-
-            page.client_storage.set("profile", profile)
-            page.go(cfg["route"])
-
-        def text_cell(value, d, data=None):
-            return ft.DataCell(
-                ft.Text(
-                    value=str(value),
-                    theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
-                    text_align=ft.TextAlign.CENTER,
-                    color=ft.Colors.BLACK,
-                    expand=True,
-                    data=data,
-                ),
-                #on_long_press=lambda e, d=d: go_token(d),
-            )
-
-        def icon_cell(icon, color, action, d):
-            return ft.DataCell(
-                ft.IconButton(
-                    icon=icon,
-                    bgcolor=color,
-                    icon_color=ft.Colors.WHITE,
-                    expand=True,
-                    on_click=lambda e, d=d: action(d),
-                ),
-                on_long_press=lambda e, d=d: action(d),
-            )
-        
-        def toggle_check(d, row):
-                current = str(d.get("check", "no"))
-                new_value = "yes" if current == "no" else "no"
-
-                # Farei isso depois
-                # update_check_city(id=d.get("id"), check=new_value)
-
-                d["check"] = new_value
-
-                if row.cells[10].content.value == "None":
-
-                    data = {
-                        "codigo": row.cells[0].content.value,
-                        "editor": username,
-                        "check": "yes"
-                    }
-
-                    response = sp.edit_planner_data(data, planner=planner)
-
-                    if response.status_code in [200, 204]:
-                        snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
-                        page.overlay.append(snack_bar)
-                        snack_bar.open = True
-                        page.update()
-
-                        row.cells[10].content.value = username
-                        row.color = {
-                            ft.ControlState.DEFAULT:
-                                ft.Colors.GREEN if new_value == "yes" else ft.Colors.WHITE
-                        }
-
-                        table.update()
-                    else:
-                        snack_bar = ft.SnackBar(content=ft.Text("Não foi possivel atualizar"), bgcolor=ft.Colors.RED)
-                        page.overlay.append(snack_bar)
-                        snack_bar.open = True
-                        page.update()
-                else:
-                    data = {
-                        "codigo": row.cells[0].content.value,
-                        "editor": "None",
-                        "check": "no"
-                    }
-
-                    response = sp.edit_planner_data(data, planner=planner)
-
-                    if response.status_code in [200, 204]:
-                        snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
-                        page.overlay.append(snack_bar)
-                        snack_bar.open = True
-                        page.update()
-
-                        row.cells[10].content.value = "None"
-                        row.color = {
-                            ft.ControlState.DEFAULT:
-                                ft.Colors.GREEN if new_value == "yes" else ft.Colors.WHITE
-                        }
-
-                        table.update()
-                    else:
-                        snack_bar = ft.SnackBar(content=ft.Text("Não foi possivel atualizar"), bgcolor=ft.Colors.RED)
-                        page.overlay.append(snack_bar)
-                        snack_bar.open = True
-                        page.update()
-
-        for d in get_json:
-
-
-            # Project seguro (quando existir dicio_projects)
-            if dicio_projects:
-
-                if type == "delivery":
-                    subproject_key = "name_subproject"
-                elif type == "freelancer":
-                    subproject_key = "current_project"
-                else:
-                    subproject_key = "subproject"
-                project = next(
-                    (
-                        k for k, v in dicio_projects.items()
-                        if any(d.get(subproject_key, "").startswith(i) for i in v)
-                    ),
-                    None,
-                )
+        )
+        table.rows.append(row)
     
-            else:
-                project = None
-
-          
-
-
-            # caso Models
-            polygons = int(d.get("polygons", 0))
-            numbers = int(d.get("numbers", 0))
-            percent = int(numbers / (polygons / 100)) if polygons else 0
-
-            # caso Planner
-            check = str(d.get("check", "no"))
-
-            color = ft.Colors.WHITE
-            if check == "yes":
-                color = ft.Colors.GREEN
-
     
-            cells = []
+    lbl_total.value = f"{len(page_slice)} itens de {total_items}"
 
-            row = ft.DataRow(
-                cells=cells,
-                color={
-                    ft.ControlState.DEFAULT: color,
-                },
-            )
+    if not initial:
+        page.update()
 
+    update_pagination_bar(
+        pagination_bar=pagination_bar,
+        current_page=current_page,
+        total_pages=total_pages,
+        load_page_callback=lambda p: load_page(
+            p,
+            pagination_bar,
+            current_page,
+            items_per_page,
+            lbl_total,
+            table,
+            filtered_data,
+            headers,
+            field_map,
+            page,
+            planner,
+            list_filtros=list_filtros,
+            page_type=page_type,
+            initial=False,
+        ),
+        initial=initial
+    )
 
-            for h in headers:
-
-                if type in ["model", "delivery", "file"]:
-
-                    if h == "%":
-                        cells.append(text_cell(f"{percent}%", d))
-
-                    elif h == "":
-                        # Caso existam DOIS ou mais headers vazios
-
-                        filled_cells = len([c for c in cells if isinstance(c, ft.DataCell)])
-
-                        if filled_cells == len(headers) - 2:
-                            cells.append(
-                                icon_cell(ft.Icons.DOWNLOAD, ft.Colors.AMBER, go_download, d)
-                            )
-                        else:
-                            cells.append(
-                                icon_cell(ft.Icons.SEARCH, ft.Colors.BLUE, go_token, d)
-                            )
-                    else:
-                        key = field_map.get(h)
-                        value = d.get(key, "") if key else ""
-                        cells.append(
-                            text_cell(
-                                value,
-                                d,
-                                project if h == "Subprojeto" else None
-                            )
-                        )
-
-                elif type in ["lisp"]:
-
-                    if h == "":
-                        cells.append(
-                                icon_cell(ft.Icons.DOWNLOAD, ft.Colors.AMBER, go_download, d)
-                            )
-                    else:
-                        key = field_map.get(h)
-                        value = d.get(key, "") if key else ""
-                        cells.append(
-                            text_cell(
-                                value,
-                                d,
-                                project if h == "Subprojeto" else None
-                            )
-                        )
-                        
-                elif type in ["city"]:
-
-                    if h == "":
-
-                        cells.append(
-                            ft.DataCell(
-                                ft.IconButton(
-                                    icon=ft.Icons.CHECK,
-                                    bgcolor=ft.Colors.GREEN if d.get("check") == "yes" else ft.Colors.GREY,
-                                    icon_color=ft.Colors.WHITE,
-                                    expand=True,
-                                )
-                            )
-                        )
-
-                    else:
-                        key = field_map.get(h)
-                        value = d.get(key, "") if key else ""
-                        cells.append(
-                            text_cell(
-                                value,
-                                d,
-                                project if h == "Subprojeto" else None
-                            )
-                        )
-
-                elif type in ["freelancer"]:
-
-                    if h == "":
-
-                        cells.append(
-                            ft.DataCell(
-                                ft.Column(
-                                    alignment=ft.MainAxisAlignment.CENTER,
-                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                                    controls=[
-                                        ft.Container(
-                                            width=40,
-                                            height=40,
-                                            alignment=ft.alignment.center,
-                                            content=ft.Image(  # Mova a imagem para o content
-                                                src=f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/freelancers//{d.get("username", "")}.jpg",  
-                                                fit=ft.ImageFit.COVER,
-                                                expand=True,
-                                            ),
-                                            border=ft.Border(
-                                                left=ft.BorderSide(2, ft.Colors.BLACK),  
-                                                top=ft.BorderSide(2, ft.Colors.BLACK),    
-                                                right=ft.BorderSide(2, ft.Colors.BLACK), 
-                                                bottom=ft.BorderSide(2, ft.Colors.BLACK) 
-                                            ),
-                                            bgcolor=ft.Colors.BLACK,
-                                            border_radius=ft.border_radius.all(20),
-                                            clip_behavior=ft.ClipBehavior.HARD_EDGE,
-                                        )
-                                    ]
-                                )
-                            )
-                        )
-                        
-                    elif h == "Ficha":
-
-                        cells.append(
-                            icon_cell(ft.Icons.SEARCH, ft.Colors.BLUE, go_token, d)
-                        )
-
-                    else:
-                        key = field_map.get(h)
-                        value = d.get(key, "") if key else ""
-                        cells.append(
-                            text_cell(
-                                value,
-                                d,
-                                project if h == "Projeto Atual" else None
-                            )
-                        )
-                else:
-
-                    key = field_map.get(h)
-                    value = d.get(key, "") if key else ""
-                    cells.append(
-                        text_cell(
-                            value,
-                            d,
-                            project if h == "Subprojeto" else None
-                        )
-                    )
+def prepare_data(get_json, headers, field_map):
 
 
-                
 
-            # Conecta botão do city ao toggle
-            if type == "city":
-                for cell in row.cells:
-                    if isinstance(cell.content, ft.IconButton):
-                        cell.content.on_click = lambda e, d=d, row=row: toggle_check(d, row)
+    prepared = []
 
-            all_rows.append(row)
+    for d in get_json:
 
-        #t_fim = time.perf_counter()
-        #print(f"add_rows levou {t_fim - t_inicio:.4f} segundos")
+        row_data = {}
+
+        for header in headers:
+            if header == "":
+                continue
+
+            field = field_map.get(header)
+            row_data[field] = d.get(field)
+
+        # garantir que check também venha
+        row_data["check"] = d.get("check", "no")
+        row_data["editor"] = d.get("editor")
+
+        prepared.append(row_data)
+
+
+
+    return prepared
 
 
 def build_list_dropdown(
         on_dropdown_change,
         filtros_config,
+        initial=False
     ):
         def dd(label, key, options, *, width=None, filter=False):
             return ft.Dropdown(
@@ -845,224 +524,291 @@ def build_list_dropdown(
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
         )
 
+def build_row(
+    d,
+    headers,
+    field_map,
+    page,
+    planner,
+    list_filtros=None,
+    table=None,
+    page_type=None
 
-def build_filtro_tabela(
-    all_rows,
-    filtros_ativos,
-    list_filtros,
-    load_page,
-    pagination_bar,
-    current_page,
-    visible_rows,
-    items_per_page,
-    lbl_total,
-    table,
-    update,
-    type="all"
-    ):
+):
 
-        def aplicar_filtros(update=update):
+    sp = SupaBase(page)
+    username = page.client_storage.get("profile")["username"]
 
-            def safe_cell_value(cells, idx, default=None):
-                    try:
-                        cell = cells[idx]
-                        return getattr(cell.content, "value", default)
-                    except Exception:
-                        return default
+    check = str(d.get("check", "no"))
+    row_color = ft.Colors.GREEN if check == "yes" else ft.Colors.WHITE
+
+    def text_cell(value):
+        return ft.DataCell(
+            ft.Text(
+                value=str(value) if value is not None else "",
+                theme_style=ft.TextThemeStyle.TITLE_MEDIUM,
+                text_align=ft.TextAlign.CENTER,
+                color=ft.Colors.BLACK,
+                expand=True,
+            )
+        )
+
+    def toggle_check(e):
+
+        current = str(d.get("check", "no"))
+        new_value = "yes" if current == "no" else "no"
+
+    
+        if new_value == "yes":
+            editor_value = username
+        else:
+            editor_value = None
+
+        data = {
+            "codigo": row.cells[0].content.value,
+            "editor": editor_value,
+            "check": new_value
+        }
+
+        response = sp.edit_planner_data(data, planner=planner)
+
+        if response.status_code in [200, 204]:
+
+            d["check"] = new_value
+
+            d["editor"] = editor_value
+
+            # Atualiza dados locais
+            row.cells[10].content.value = editor_value if editor_value else ""
+
+            row.color = {
+                ft.ControlState.DEFAULT:
+                    ft.Colors.GREEN if new_value == "yes" else ft.Colors.WHITE
+            }
+
+            btn = row.cells[-1].content
+            btn.bgcolor = ft.Colors.GREEN if new_value == "yes" else ft.Colors.GREY
+
+            # Atualiza SOMENTE a linha
+            row.update()
+
+            snack_bar = ft.SnackBar(
+                content=ft.Text("Dados atualizados com sucesso"),
+                bgcolor=ft.Colors.GREEN
+            )
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+        else:
+
+            snack_bar = ft.SnackBar(
+                content=ft.Text("Não foi possivel atualizar"),
+                bgcolor=ft.Colors.RED
+            )
+            page.overlay.append(snack_bar)
+            snack_bar.open = True
+            page.update()
+
+    cells = []
+
+    row = ft.DataRow(
+        cells=cells,
+        color={ft.ControlState.DEFAULT: row_color},
+    )
+
+    empty_count = 0
+
+    def go_download(d, file):
+                   
+        page.launch_url(d[file])
 
 
-            def safe_cell_data(cells, idx, default=None):
-                try:
-                    return getattr(cells[idx].content, "data", default)
-                except Exception:
-                    return default
+    def go_token(d, type, filter, route, log):
+        
+        profile = page.client_storage.get("profile") 
 
-            for item in all_rows:
+        if log:
+            profile.update({
+                f"{type}": d,
+                "logs": d,
+                f"{filter}": list_filtros,
+            })
+        else:
+            profile.update({
+                f"{type}": d,
+                f"{filter}": list_filtros,
+            })
 
-                cells = item.cells
 
-                # Segurança para data
-                date_value = safe_cell_value(cells, 1)
-                if isinstance(date_value, str) and "/" in date_value:
-                    dia, mes, ano = date_value.split("/")
-                else:
-                    dia = mes = ano = None
+        page.client_storage.set("profile", profile)
 
-                dados_linha = {
-                    "dia": dia,
-                    "mes": mes,
-                    "ano": ano,
+        page.go(route)
 
-                    "usuario": safe_cell_value(cells, 0),
-                    "projeto": safe_cell_data(cells, 2),
-                    "subprojeto": safe_cell_value(cells, 2),
-                    "status": safe_cell_value(cells, 6),
-                    "name": safe_cell_value(cells, 0),
-                    "type": safe_cell_value(cells, 1),
+    type_map = {
+                "model": {
+                    "key": "model",
+                    "filter": "models_filter",
+                    "route": "/models/token",
+                    "file": "dwg",
+                },
+                "delivery": {
+                    "key": "delivery",
+                    "filter": "deliveries_filter",
+                    "route": "/deliveries/token",
+                    "file": "dwg",
+                },
+                "file": {
+                    "key": "file",
+                    "filter": "files_filter",
+                    "route": "/files/token",
+                    "file": "url",
+                },
+                "freelancer": {
+                    "key": "freelancer",
+                    "filter": "freelancers_filter",
+                    "route": "/freelancers/token",
+                },
+                "log": {
+                    "key": "logs",
+                    "filter": "logs_filter",
+                    "route": "/logs/token",
+                },
+                "lisp": {
+                    "key": "lisp",
+                    "filter": "lisps_filter",
+                    "route": "/lisps/token",
+                    "file": "lisp",
+                },
+                "city": {
+                    "key": "city",
+                    "filter": "city_filter",
+                    "route": "/city/token",
+                },
+            }
 
-                    "codigo": safe_cell_value(cells, 0),
-                    "logradouro": safe_cell_value(cells, 1),
-                    "bairro": safe_cell_value(cells, 2),
-                    "numero": safe_cell_value(cells, 3),
-                    "quadra": safe_cell_value(cells, 4),
-                    "lote": safe_cell_value(cells, 5),
-                    "situacao": safe_cell_value(cells, 6),
-                    "testada": safe_cell_value(cells, 7),
-                    "terreno": safe_cell_value(cells, 8),
-                    "construcao": safe_cell_value(cells, 9),
-                    "editor": safe_cell_value(cells, 10),
-                    "modelo": safe_cell_value(cells, 11),
-                }
+    for h in headers:
 
-                if type == "log":
+        if h == "":
+            empty_count += 1
 
-                    # Segurança para data
-                    date_value = safe_cell_value(cells, 0)
-                    if isinstance(date_value, str) and "/" in date_value:
-                        dia, mes, ano, hr = date_value.split("/")
-                    else:
-                        dia = mes = ano = hr = None
+            if page_type in ["model", "delivery", "file"]:
 
-                    dados_linha = {
-                    "dia": dia,
-                    "mes": mes,
-                    "ano": ano,
-                    "usuario": safe_cell_value(cells, 4),
-                    "projeto": safe_cell_data(cells, 1),
-                    "subprojeto": safe_cell_value(cells, 1),
-                    }
-
-                if type == "user":
-
-                    dados_linha = {
-
-                    "permission": safe_cell_value(cells, 2),
-                    "projeto": safe_cell_data(cells, 3),
-
-                    }
-                
-
-                # aplica apenas filtros existentes no dict
-                item.visible = all(
-                    valor is None or
-                    (
-                        dados_linha.get(chave) is not None and
-                        (
-                            dados_linha[chave].startswith(valor)
-                            if isinstance(valor, str) and chave == "subprojeto" or chave == "name_subproject"
-                            else dados_linha[chave] == valor
+                # Primeiro botão vazio = DOWNLOAD
+                if empty_count == 1:
+                    cells.append(
+                        ft.DataCell(
+                            ft.IconButton(
+                                icon=ft.Icons.DOWNLOAD,
+                                icon_color=ft.Colors.WHITE,
+                                bgcolor=ft.Colors.AMBER,
+                                on_click=lambda e,
+                                                d=d,
+                                                file=type_map[page_type]["file"]: go_download(d, file),
+                            )
                         )
                     )
-                    for chave, valor in filtros_ativos.items()
-                )
 
-            load_page(
-                1,
-                pagination_bar,
-                current_page,
-                visible_rows,
-                items_per_page,
-                lbl_total,
-                table,
-                all_rows,
-                initial=update,
-            )
-
-            list_filtros[0] = filtros_ativos
-
-        return aplicar_filtros
-
-def build_filtro_tabela_city(
-    all_rows,
-    filtros_ativos,
-    list_filtros,
-    load_page,
-    pagination_bar,
-    current_page,
-    visible_rows,
-    items_per_page,
-    lbl_total,
-    table,
-    update,
-    type="lisp"
-    ):
-
-        def aplicar_filtros(update=update):
-
-            def safe_cell_value(cells, idx, default=None):
-                    try:
-                        cell = cells[idx]
-                        return getattr(cell.content, "value", default)
-                    except Exception:
-                        return default
-
-
-            def safe_cell_data(cells, idx, default=None):
-                try:
-                    return getattr(cells[idx].content, "data", default)
-                except Exception:
-                    return default
-
-            for item in all_rows:
-
-                cells = item.cells
-
-                # Segurança para data
-                date_value = safe_cell_value(cells, 1)
-                if isinstance(date_value, str) and "/" in date_value and type != "planner":
-                    dia, mes, ano = date_value.split("/")
-                else:
-                    dia = mes = ano = None
-
-                dados_linha = {
-                    "dia": dia,
-                    "mes": mes,
-                    "ano": ano,
-                    "usuario": safe_cell_value(cells, 0),
-                    "projeto": safe_cell_data(cells, 2),
-                    "subprojeto": safe_cell_value(cells, 2),
-                    "status": safe_cell_value(cells, 5),
-                    "name": safe_cell_value(cells, 0),
-                    "type": safe_cell_value(cells, 1),
-                    "codigo": safe_cell_value(cells, 0),
-                    "logradouro": safe_cell_value(cells, 1),
-                    "bairro": safe_cell_value(cells, 2),
-                    "numero": safe_cell_value(cells, 3),
-                    "quadra": safe_cell_value(cells, 4),
-                    "lote": safe_cell_value(cells, 5),
-                    "situacao": safe_cell_value(cells, 6),
-                    "testada": safe_cell_value(cells, 7),
-                    "terreno": safe_cell_value(cells, 8),
-                    "construcao": safe_cell_value(cells, 9),
-                    "editor": safe_cell_value(cells, 10),
-                    "modelo": safe_cell_value(cells, 11),
-                }
-
-                # aplica apenas filtros existentes no dict
-                item.visible = all(
-                    valor is None
-                    or str(valor).strip() == ""
-                    or (
-                        dados_linha.get(chave) is not None
-                        and str(valor).lower() in str(dados_linha[chave]).lower()
+                # Segundo botão vazio = SEARCH
+                elif empty_count == 2:
+                    cells.append(
+                        ft.DataCell(
+                            ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                icon_color=ft.Colors.WHITE,
+                                bgcolor=ft.Colors.BLUE,
+                                on_click=lambda e,
+                                                d=d,
+                                                type=type_map[page_type]["key"],
+                                                filter=type_map[page_type]["filter"],
+                                                route=type_map[page_type]["route"],
+                                                log=True: go_token(d, type, filter, route, log),
+                            )
+                        )
                     )
-                    for chave, valor in filtros_ativos.items()
+
+            elif page_type in ["lisp"]:
+                cells.append(
+                    ft.DataCell(
+                            ft.IconButton(
+                                icon=ft.Icons.DOWNLOAD,
+                                icon_color=ft.Colors.WHITE,
+                                bgcolor=ft.Colors.AMBER,
+                                on_click=lambda e,
+                                                d=d,
+                                                file=type_map[page_type]["file"]: go_download(d, file),
+                            )
+                        )
                 )
 
-            load_page(
-                1,
-                pagination_bar,
-                current_page,
-                visible_rows,
-                items_per_page,
-                lbl_total,
-                table,
-                all_rows,
-                initial=update,
-            )
+            elif page_type in ["freelancer"]:
+                cells.append(
+                            ft.DataCell(
+                                ft.Column(
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                    controls=[
+                                        ft.Container(
+                                            width=40,
+                                            height=40,
+                                            alignment=ft.alignment.center,
+                                            content=ft.Image(  # Mova a imagem para o content
+                                                src=f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/freelancers//{d.get("username", "")}.jpg",  
+                                                fit=ft.ImageFit.COVER,
+                                                expand=True,
+                                            ),
+                                            border=ft.Border(
+                                                left=ft.BorderSide(2, ft.Colors.BLACK),  
+                                                top=ft.BorderSide(2, ft.Colors.BLACK),    
+                                                right=ft.BorderSide(2, ft.Colors.BLACK), 
+                                                bottom=ft.BorderSide(2, ft.Colors.BLACK) 
+                                            ),
+                                            bgcolor=ft.Colors.BLACK,
+                                            border_radius=ft.border_radius.all(20),
+                                            clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                                        )
+                                    ]
+                                )
+                            )
+                        )
 
-            list_filtros[0] = filtros_ativos
+            else:
+                cells.append(
+                    ft.DataCell(
+                        ft.IconButton(
+                            icon=ft.Icons.CHECK,
+                            bgcolor=ft.Colors.GREEN if check == "yes" else ft.Colors.GREY,
+                            icon_color=ft.Colors.WHITE,
+                            expand=True,
+                            on_click=toggle_check,
+                        )
+                    )
+                )
 
-        return aplicar_filtros
+        elif h == "Ficha":
+            cells.append(
+                        ft.DataCell(
+                            ft.IconButton(
+                                icon=ft.Icons.SEARCH,
+                                icon_color=ft.Colors.WHITE,
+                                bgcolor=ft.Colors.BLUE,
+                                on_click=lambda e,
+                                                d=d["username"],
+                                                type=type_map[page_type]["key"],
+                                                filter=type_map[page_type]["filter"],
+                                                route=type_map[page_type]["route"],
+                                                log=False: go_token(d, type, filter, route, log),
+                            )
+                        )
+                    )
+        else:
+            key = field_map.get(h)
+            value = d.get(key, "")
+            cells.append(text_cell(value))
+
+
+    return row
+
+
 
 
