@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import pandas as pd
 import numpy as np
+import threading
+
 
 
 def create_page_login(page):
@@ -131,6 +133,7 @@ def verificar(username, password, page):
             "logs_filter": [None],
             "freelancers_filter": [None],
             "files_filter": [None],
+            "planners_filter": [None],
         })
         
         if permission == "user":
@@ -8739,6 +8742,10 @@ def create_page_see_planners(page):
 
     base = SupaBase(page=None)
     dict_profile = page.client_storage.get("profile")
+    dict_profile.update({
+        f"planners_filter": [None],
+    })
+    page.client_storage.set("profile", dict_profile)
     project = dict_profile["current_project"]
 
     if dict_profile["permission"] != "adm":
@@ -8859,7 +8866,7 @@ def create_page_planners_details(page):
 
     base = SupaBase(page=None)
     dict_profile = page.client_storage.get("profile")
-    filtros = dict_profile["models_filter"]
+    filtros = dict_profile["planners_filter"]
     planner = dict_profile["planner"]
 
     
@@ -9049,7 +9056,7 @@ def create_page_planners_details(page):
             field_map=field_map,
             page=page,
             planner=planner,
-            initial=False,
+            initial=update,
         )
 
         list_filtros[0] = filtros_ativos.copy()
@@ -9058,10 +9065,30 @@ def create_page_planners_details(page):
 
     # Preparação dos menus de filtros ......
 
+    debounce_timer = [None]
+
     def on_text_change(e, filtro):
-        valor = e.control.value.strip()
-        filtros_ativos[filtro] = valor if valor != "" else None
-        aplicar_filtros(False)
+
+        # Cancela timer anterior
+        if debounce_timer[0]:
+            debounce_timer[0].cancel()
+
+        def run_filter():
+            valor = e.control.value.strip()
+            filtros_ativos[filtro] = valor if valor != "" else None
+            aplicar_filtros(False)
+
+            profile = page.client_storage.get("profile") 
+            profile.update({
+                f"planners_filter": [filtros_ativos],
+            })
+            page.client_storage.set("profile", profile)
+
+            
+
+        # Cria novo timer
+        debounce_timer[0] = threading.Timer(0.5, run_filter)
+        debounce_timer[0].start()
 
 
     filtros_config = [
@@ -9116,7 +9143,7 @@ def create_page_planners_details(page):
             list_textfields.controls[i].value = filtros[0].get(key)
 
         filtros_ativos = filtros[0]
-        aplicar_filtros(False)
+        aplicar_filtros(True)
 
 
     
