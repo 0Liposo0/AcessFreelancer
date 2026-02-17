@@ -9061,7 +9061,7 @@ def create_page_planners_details(page):
     def on_text_change(e, filtro):
         valor = e.control.value.strip()
         filtros_ativos[filtro] = valor if valor != "" else None
-        aplicar_filtros(True)
+        aplicar_filtros(False)
 
 
     filtros_config = [
