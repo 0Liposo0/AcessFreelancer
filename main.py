@@ -35,6 +35,8 @@ def main(page: ft.Page):
             "/models/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_models_details(page)),
             "/models/insert": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_new_model(page)),
             "/lisps": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_lisps(page)),
+            "/ibge": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_ibge(page)),
+            "/ortofotos": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_ortos(page)),
             "/planners": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_see_planners(page)),
             "/planners/token": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_planners_details(page)),
             "/payment": lambda : loading.new_loading_page(page=page, call_layout=lambda:create_page_payment(page)),

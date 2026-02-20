@@ -14,8 +14,13 @@ def get_menu(ft, page):
         profile.update({
             "deliveries_filter": [None],
             "models_filter": [None],
+            "ortos_filter": [None],
+            "lisps_filter": [None],
+            "ibge_filter": [None],
+            "logs_filter": [None],
             "freelancers_filter": [None],
             "files_filter": [None],
+            "planners_filter": [None],
         })
         page.client_storage.set("profile", profile)
         page.go(url)
@@ -60,6 +65,16 @@ def get_menu(ft, page):
                                             color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
+    btn_see_ibge = buttons.create_button(on_click=lambda e: go_url("/ibge"),
+                                            text= "IBGE",
+                                            color=ft.Colors.INDIGO_600,
+                                            col=12,
+                                            padding=10,)
+    btn_see_orto = buttons.create_button(on_click=lambda e: go_url("/ortofotos"),
+                                            text= "Ortofotos",
+                                            color=ft.Colors.INDIGO_600,
+                                            col=12,
+                                            padding=10,)
     btn_see_planners = buttons.create_button(on_click=lambda e: go_url("/planners"),
                                             text= "Planilhas",
                                             color=ft.Colors.INDIGO_600,
@@ -71,6 +86,11 @@ def get_menu(ft, page):
                                             col=12,
                                             padding=10,)
     
+    btn_user = buttons.create_button(on_click=lambda e: page.go("/user"),
+                                      text= "Início",
+                                      color=ft.Colors.INDIGO_600,
+                                      col=12,
+                                      padding=10,)
     btn_projeto_user = buttons.create_button(on_click=lambda e: page.go("/project/user"),
                                       text= "Projeto",
                                       color=ft.Colors.INDIGO_600,
@@ -98,8 +118,10 @@ def get_menu(ft, page):
         btn_see_file,
         btn_see_deliverys,
         btn_see_models,
-        btn_see_lisps,
+        btn_see_orto,
         btn_see_planners,
+        btn_see_lisps,
+        btn_see_ibge,
         btn_see_logs,
         btn_exit,
         ],
@@ -107,12 +129,34 @@ def get_menu(ft, page):
     )
     
     if dict_profile["permission"] != "adm":
-        drawer.controls.remove(btn_dashboard) 
-        drawer.controls.remove(btn_projeto) 
-        drawer.controls.remove(btn_see_freelancers) 
-        drawer.controls.remove(btn_see_logs)
-        drawer.controls.insert(0, btn_profile)
-        drawer.controls.insert(1, btn_projeto_user)
+        if dict_profile["permission"] == "user":
+            drawer.controls.remove(btn_dashboard) 
+            drawer.controls.remove(btn_projeto) 
+            drawer.controls.remove(btn_see_freelancers) 
+            drawer.controls.remove(btn_see_logs)
+            drawer.controls.remove(btn_see_ibge)
+            drawer.controls.remove(btn_see_file)
+            drawer.controls.remove(btn_see_deliverys)
+            drawer.controls.remove(btn_see_models)
+            drawer.controls.remove(btn_see_planners)
+            drawer.controls.insert(0, btn_user)
+        elif dict_profile["permission"] == "ldr":
+            drawer.controls.remove(btn_dashboard) 
+            drawer.controls.remove(btn_projeto) 
+            drawer.controls.remove(btn_see_freelancers) 
+            drawer.controls.remove(btn_see_logs)
+            drawer.controls.remove(btn_see_ibge)
+            drawer.controls.insert(0, btn_profile)
+            drawer.controls.insert(1, btn_projeto_user)
+        else:
+            drawer.controls.remove(btn_dashboard) 
+            drawer.controls.remove(btn_projeto) 
+            drawer.controls.remove(btn_see_freelancers) 
+            drawer.controls.remove(btn_see_logs)
+            drawer.controls.remove(btn_see_ibge)
+            drawer.controls.insert(0, btn_profile)
+
+
 
     return drawer
 

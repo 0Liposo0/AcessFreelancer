@@ -129,7 +129,9 @@ def verificar(username, password, page):
             "current_project": current_project,
             "deliveries_filter": [None],
             "models_filter": [None],
+            "ortos_filter": [None],
             "lisps_filter": [None],
+            "ibge_filter": [None],
             "logs_filter": [None],
             "freelancers_filter": [None],
             "files_filter": [None],
@@ -169,6 +171,12 @@ def create_page_user(page):
     sp = SupaBase(page)
     texttheme1 = textthemes.create_text_theme1()
     dict_profile = page.client_storage.get("profile")
+
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
+
+    # AppBar
+    page.appbar = get_app_bar(ft, page)
 
     
     perfil = ft.Column(
@@ -1057,8 +1065,8 @@ def create_page_user(page):
     if dict_profile["current_project"] not in [".", "", None]:
         url = (((sp.get_one_project_data(row3["project"])).json())[0])["ecw"]
 
-    btn_ecw = buttons.create_button(on_click=lambda e: page.launch_url(url),
-                                      text="Baixar Ortofoto",
+    btn_ecw = buttons.create_button(on_click=lambda e: page.go("/ortofotos"),
+                                      text="Ortofotos",
                                       color=ft.Colors.AMBER,
                                       col=7,
                                       padding=5,
@@ -1074,11 +1082,11 @@ def create_page_user(page):
     url_checkveto = sp.get_checkveto().json()[0]["lisp"]
     
     btn_checkveto= buttons.create_button(on_click=lambda e: page.launch_url(url_checkveto),
-                                      text="Baixar LISP CHECKVETO",
+                                      text="LISP CHECKVETO",
                                       color=ft.Colors.AMBER,
                                       col=7,
                                       padding=5,
-                                      width=200,
+
                                       )
     
 
@@ -2547,21 +2555,6 @@ def create_page_project_token_user(page):
         controls=[
             ft.Column(
             [
-                ft.Container(
-                    preview_image,
-                    alignment=ft.alignment.center
-                ),
-            ],
-            col={"sm": 12, "md": 6},
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            alignment=ft.MainAxisAlignment.CENTER
-            ),
-            ft.Column(
-            [
-                ft.Container(
-                    history_list,
-                    alignment=ft.alignment.center
-                ),
                 ft.Container(
                     data,
                     alignment=ft.alignment.center
@@ -8211,6 +8204,463 @@ def create_page_new_model(page):
 
 
 
+def create_page_see_ortos(page):
+
+    base = SupaBase(page=None)
+    dict_profile = page.client_storage.get("profile")
+    filtros = dict_profile["ortos_filter"]
+
+
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
+
+    # AppBar
+    page.appbar = get_app_bar(ft, page)
+
+    # Definir projetos por permissão ...........
+
+    dicio_projects = {}
+    list_projects = (base.get_all_project_data()).json()
+
+    for item in list_projects:
+
+        dicio_projects[item["name_project"]] = (item["current_subprojects"]).split(",")
+        dicio_projects[item["name_project"]].append(item["name_project"])
+
+    if dict_profile["permission"] != "adm":
+        if dict_profile["permission"] == "user":
+            sub = dict_profile["current_project"]
+            project = next(
+                (k for k, v in dicio_projects.items() if sub and any(sub.startswith(i) for i in v)),
+                None
+            )
+            list_projects = (base.get_one_project_data(project)).json()
+        else:
+            project = dict_profile["current_project"]
+            list_projects = (base.get_one_project_data(project)).json()
+        get_json = (base.get_one_ortofoto_data(project)).json()
+    else:
+        get_json = (base.get_all_ortofotos()).json()
+
+    # Definir projetos por permissão ...........
+
+
+    # Criação da tabela bruta
+    table = return_table(["Nome", "Projeto", "Atualização", ""])
+
+    pagination_bar = ft.Row(
+        alignment=ft.MainAxisAlignment.CENTER,
+        controls=[]
+    )
+
+    lbl_total = ft.Text(
+        value="10 itens de 0",
+        size=20,
+        weight=ft.FontWeight.W_600,
+        color=ft.Colors.BLACK
+    )
+
+    # Criação do container da tabela
+    history_list = return_container_table(table, pagination_bar, lbl_total)
+
+
+
+    list_filtros = [None]
+
+    items_per_page = 10
+    current_page = [1]
+
+
+    # Preenche a tabela com os dados das lisps ......
+    headers = ["Nome", "Projeto", "Atualização", ""]
+
+    field_map = {
+        "Nome": "name",
+        "Projeto": "project",
+        "Atualização": "update",
+    }
+
+    all_data = get_json
+    filtered_data = all_data.copy()
+
+
+    load_page(
+        page_number=1,
+        pagination_bar=pagination_bar,
+        current_page=current_page,
+        items_per_page=items_per_page,
+        lbl_total=lbl_total,
+        table=table,
+        filtered_data=filtered_data,
+        headers=headers,
+        field_map=field_map,
+        page=page,
+        planner=None,
+        list_filtros=list_filtros,
+        page_type="lisp",
+        initial=True,
+    )
+
+
+    # AppBar
+    page.appbar = get_app_bar(ft, page)
+
+    filtros_ativos = {
+        "project": None,
+    }
+    
+
+    def aplicar_filtros(update):
+
+        nonlocal filtered_data
+
+        filtered_data = []
+
+        for item in all_data:
+
+            match = True
+
+            for chave, valor in filtros_ativos.items():
+
+                if valor is None or str(valor).strip() == "":
+                    continue
+
+
+                elif chave == "project":
+                    campo = item.get("project")
+                    
+                else:
+                    campo = item.get(chave)
+
+                if campo is None:
+                    match = False
+                    break
+
+                if str(valor).lower() not in str(campo).lower():
+                    match = False
+                    break
+
+            if match:
+                filtered_data.append(item)
+
+        
+
+        current_page[0] = 1
+
+        load_page(
+            page_number=1,
+            pagination_bar=pagination_bar,
+            current_page=current_page,
+            items_per_page=items_per_page,
+            lbl_total=lbl_total,
+            table=table,
+            filtered_data=filtered_data,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=None,
+            list_filtros=list_filtros,
+            page_type="lisp",
+            initial=update,
+        )
+
+        list_filtros[0] = filtros_ativos.copy()
+
+
+    # Preparação dos menus de filtros ......
+
+    def on_dropdown_change(e, filtro):
+        valor = e.control.value
+        filtros_ativos[filtro] = valor if valor != "Nulo" else None
+        aplicar_filtros(False)
+
+    name_projects = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
+    for item in list_projects:
+        name_projects.append(ft.dropdown.Option(item["name_project"], content=ft.Text(value=item["name_project"], color=ft.Colors.BLACK)))
+
+    
+    filtros_config = [
+        {"label": "Projeto", "key": "project", "options": name_projects, "width": 250, "filter": True},
+    ]
+
+    list_dropdown = build_list_dropdown(
+        on_dropdown_change,
+        filtros_config,
+    )
+
+    # Preparação dos menus de filtros ......
+
+
+    if filtros[0] != None:
+        
+        list_dropdown.controls[0].value = filtros[0]["project"]
+
+        filtros_ativos = filtros[0]
+        aplicar_filtros(True)
+
+  
+    # Container principal
+    def row(*controls, expand=True):
+        return ft.Row(
+            controls=list(controls),
+            expand=expand,
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+
+
+    main_container = ft.Container(
+        content=ft.Column(
+            controls=[
+                row(
+                    ft.Text("Ortofotos", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                    expand=False,
+                ),
+                row(*list_dropdown.controls[0:1]),
+                history_list,
+            ],
+            expand=True,
+            spacing=20,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+        bgcolor=ft.Colors.WHITE,
+        padding=10,
+        border_radius=10,
+        expand=True,
+        alignment=ft.alignment.center,
+    )
+
+    # Layout da página
+    layout = ft.Column(
+        controls=[main_container],
+        expand=True,
+        scroll=ft.ScrollMode.AUTO
+    )
+
+    return layout
+
+def create_page_see_ibge (page):
+
+    base = SupaBase(page=None)
+    dict_profile = page.client_storage.get("profile")
+    filtros = dict_profile["ibge_filter"]
+
+
+    from functions import get_menu
+    page.drawer = get_menu(ft, page)
+
+    # AppBar
+    page.appbar = get_app_bar(ft, page)
+
+
+    get_json = (base.get_all_ibge()).json()
+
+
+    # Criação da tabela bruta
+    table = return_table(["Arquivo","Tipo","Função","Atualização",""])
+
+    pagination_bar = ft.Row(
+        alignment=ft.MainAxisAlignment.CENTER,
+        controls=[]
+    )
+
+    lbl_total = ft.Text(
+        value="10 itens de 0",
+        size=20,
+        weight=ft.FontWeight.W_600,
+        color=ft.Colors.BLACK
+    )
+
+    # Criação do container da tabela
+    history_list = return_container_table(table, pagination_bar, lbl_total)
+
+
+
+    list_filtros = [None]
+
+    items_per_page = 10
+    current_page = [1]
+
+
+    # Preenche a tabela com os dados das lisps ......
+    headers = ["Nome", "Tipo", "Função", "Atualização", ""]
+
+    field_map = {
+        "Nome": "name",
+        "Tipo": "type",
+        "Função": "function",
+        "Atualização": "update",
+    }
+
+    all_data = get_json
+    filtered_data = all_data.copy()
+
+
+    load_page(
+        page_number=1,
+        pagination_bar=pagination_bar,
+        current_page=current_page,
+        items_per_page=items_per_page,
+        lbl_total=lbl_total,
+        table=table,
+        filtered_data=filtered_data,
+        headers=headers,
+        field_map=field_map,
+        page=page,
+        planner=None,
+        list_filtros=list_filtros,
+        page_type="lisp",
+        initial=True,
+    )
+
+
+    # AppBar
+    page.appbar = get_app_bar(ft, page)
+
+    filtros_ativos = {
+        "name": None,
+        "type": None,
+    }
+    
+
+    def aplicar_filtros(update):
+
+        nonlocal filtered_data
+
+        filtered_data = []
+
+        for item in all_data:
+
+            match = True
+
+            for chave, valor in filtros_ativos.items():
+
+                if valor is None or str(valor).strip() == "":
+                    continue
+
+
+                elif chave == "name":
+                    campo = item.get("name")
+                    
+
+                elif chave == "type":
+                    campo = item.get("type")
+
+
+                else:
+                    campo = item.get(chave)
+
+                if campo is None:
+                    match = False
+                    break
+
+                if str(valor).lower() not in str(campo).lower():
+                    match = False
+                    break
+
+            if match:
+                filtered_data.append(item)
+
+        
+
+        current_page[0] = 1
+
+        load_page(
+            page_number=1,
+            pagination_bar=pagination_bar,
+            current_page=current_page,
+            items_per_page=items_per_page,
+            lbl_total=lbl_total,
+            table=table,
+            filtered_data=filtered_data,
+            headers=headers,
+            field_map=field_map,
+            page=page,
+            planner=None,
+            list_filtros=list_filtros,
+            page_type="lisp",
+            initial=update,
+        )
+
+        list_filtros[0] = filtros_ativos.copy()
+
+
+    # Preparação dos menus de filtros ......
+
+    def on_dropdown_change(e, filtro):
+        valor = e.control.value
+        filtros_ativos[filtro] = valor if valor != "Nulo" else None
+        aplicar_filtros(False)
+
+    name_lisp = [ft.dropdown.Option("Nulo", content=ft.Text(value=f"Nulo", color=ft.Colors.BLACK))]
+    for item in get_json:
+        name_lisp.append(ft.dropdown.Option(item["name"], content=ft.Text(value=item["name"], color=ft.Colors.BLACK)))
+
+    
+    filtros_config = [
+        {"label": "Nome", "key": "name", "options": name_lisp, "width": 250, "filter": True},
+        {"label": "Tipo", "key": "type", "options": ["Nulo", "IBGE"]},
+    ]
+
+    list_dropdown = build_list_dropdown(
+        on_dropdown_change,
+        filtros_config,
+    )
+
+    # Preparação dos menus de filtros ......
+
+
+    if filtros[0] != None:
+        
+        list_dropdown.controls[0].value = filtros[0]["name"]
+        list_dropdown.controls[1].value = filtros[0]["type"]
+
+        filtros_ativos = filtros[0]
+        aplicar_filtros(True)
+
+  
+    # Container principal
+    def row(*controls, expand=True):
+        return ft.Row(
+            controls=list(controls),
+            expand=expand,
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+
+
+    main_container = ft.Container(
+        content=ft.Column(
+            controls=[
+                row(
+                    ft.Text("Arquivos IBGE", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                    expand=False,
+                ),
+                row(*list_dropdown.controls[0:2]),
+                history_list,
+            ],
+            expand=True,
+            spacing=20,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+        bgcolor=ft.Colors.WHITE,
+        padding=10,
+        border_radius=10,
+        expand=True,
+        alignment=ft.alignment.center,
+    )
+
+    # Layout da página
+    layout = ft.Column(
+        controls=[main_container],
+        expand=True,
+        scroll=ft.ScrollMode.AUTO
+    )
+
+    return layout
+
 def create_page_see_lisps(page):
 
     base = SupaBase(page=None)
@@ -8252,9 +8702,6 @@ def create_page_see_lisps(page):
 
     items_per_page = 10
     current_page = [1]
-    all_rows = []       
-    visible_rows = []
-
 
 
     # Preenche a tabela com os dados das lisps ......
