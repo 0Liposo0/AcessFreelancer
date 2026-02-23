@@ -61,7 +61,7 @@ def get_menu(ft, page):
                                             col=12,
                                             padding=10,)
     btn_see_lisps = buttons.create_button(on_click=lambda e: go_url("/lisps"),
-                                            text= "Lisps",
+                                            text= "CAD e Lisps",
                                             color=ft.Colors.INDIGO_600,
                                             col=12,
                                             padding=10,)
