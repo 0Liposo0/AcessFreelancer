@@ -8821,7 +8821,7 @@ def create_page_see_lisps(page):
     
     filtros_config = [
         {"label": "Nome", "key": "name", "options": name_lisp, "width": 250, "filter": True},
-        {"label": "Tipo", "key": "type", "options": ["Nulo", "Revisão", "Topologia", "Texto"]},
+        {"label": "Tipo", "key": "type", "options": ["Nulo","AutoCAD", "Auditoria", "Revisão", "Topologia", "Texto"]},
     ]
 
     list_dropdown = build_list_dropdown(
