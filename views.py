@@ -1996,6 +1996,7 @@ def create_page_project_token(page):
 
     file_config = {
             "dwg": ["dwg", "dwg"],
+            "zip": ["zip", "project"],
             "planner1": ["xlsx", "planner1"],
             "planner2": ["xlsx", "planner2"],
             "preview": ["jpg", "preview"],
@@ -2009,10 +2010,10 @@ def create_page_project_token(page):
         data_project["current_subprojects"] = view_project["current_subprojects"].value
         data_project["final_delivery"] = view_project["final_delivery"].value
         data_project["predicted_lots"] = view_project["predicted_lots"].value
-        data_project["ecw"] = view_project["ecw"].value
-        data_project["planner"] = view_project["planner"].value
         data_project["preview"] = view_project["preview"].value
         data_project["dwg"] = view_project["dwg"].value
+        data_project["editor"] = view_project["editor"].value
+        data_project["update"] = view_project["update"].value
 
         
         if add_file[0] == True:
@@ -2022,15 +2023,27 @@ def create_page_project_token(page):
 
             if response1.status_code == 200 or response1.status_code == 201:
 
-                data_project[local] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/{local}//{file_name[0]}"
+                current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
+                current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
+                current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+                current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
+                current_minute = datetime.now(ZoneInfo("America/Sao_Paulo")).minute
+
+                if file_type == "preview":
+                    data_project["preview"] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/{local}//{file_name[0]}"
+                else:
+                    data_project["dwg"] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/{local}//{file_name[0]}"
+                    data_project["editor"] = dict_profile["username"]
+                    data_project["update"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
+
                 response2 = base.edit_projects_data(data_project)
 
                 if response2.status_code in [200, 204]:
-                    page.go("/projects")
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
+                    page.go("/projects")
                 else:
                     snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar tabela: {response2.text}"), bgcolor=ft.Colors.RED)
                     page.overlay.append(snack_bar)
@@ -2051,14 +2064,14 @@ def create_page_project_token(page):
 
     
     view_project = {
-        "name_project": ft.TextField(label="Nome do projeto", value=get_info2["name_project"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), disabled=True),
-        "current_subprojects": ft.TextField(label="Subprojetos", value=get_info2["current_subprojects"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), disabled=True),
+        "name_project": ft.TextField(label="Nome do projeto", value=get_info2["name_project"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
+        "current_subprojects": ft.TextField(label="Subprojetos", value=get_info2["current_subprojects"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
         "final_delivery": ft.TextField(label="Entrega final", value=get_info2["final_delivery"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "predicted_lots": ft.TextField(label="Lotes Previstos", value=get_info2["predicted_lots"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "ecw": ft.TextField(label="Ortofotos", value=get_info2["ecw"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
-        "planner": ft.TextField(label="Planilha", value=get_info2["planner"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK)),
         "preview": ft.TextField(label="Prévia", value=get_info2["preview"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
-        "dwg": ft.TextField(label="Dwg", value=get_info2["dwg"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
+        "dwg": ft.TextField(label="Projeto", value=get_info2["dwg"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
+        "editor": ft.TextField(label="Editor", value=get_info2["editor"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
+        "update": ft.TextField(label="Atualização", value=get_info2["update"], width=300, text_style=ft.TextStyle(color=ft.Colors.BLACK), read_only=True),
     }
 
 
@@ -2076,7 +2089,14 @@ def create_page_project_token(page):
         file_name.clear()
         file_name.append(name_file)
 
-        view_project[file_config[file_type[0]][1]].value = file_old_name[0]
+        if file_type == "preview":
+
+            view_project["preview"].value = file_old_name[0]
+
+        else:
+
+            view_project["dwg"].value = file_old_name[0]
+
 
         add_file[0] = True
 
@@ -2147,15 +2167,25 @@ def create_page_project_token(page):
         if response1.status_code in [200, 204]:
             data = {}
             data["name_project"] = get_info2["name_project"]
-            data[local] = "."
+            data["dwg"] = "."
+
+            current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
+            current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
+            current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+            current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
+            current_minute = datetime.now(ZoneInfo("America/Sao_Paulo")).minute
+
+            data["editor"] = dict_profile["username"]
+            data["update"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
+
             response2 = base.edit_projects_data(data)
 
             if response2.status_code in [200, 204]:
-                page.go("/projects")
                 snack_bar = ft.SnackBar(content=ft.Text(f"{local} excluido"), bgcolor=ft.Colors.GREEN)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
                 page.update()
+                page.go("/projects")
             else:
                 snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
                 page.overlay.append(snack_bar)
@@ -2196,14 +2226,14 @@ def create_page_project_token(page):
                         icon=ft.Icons.UPLOAD,
                         bgcolor=ft.Colors.BLUE,
                         icon_color=ft.Colors.WHITE,
-                        on_click=lambda e: open_gallery(e, type="dwg"),
+                        on_click=lambda e: open_gallery(e, type="zip"),
                         ),
                     item[1],
                     ft.IconButton(
                         icon=ft.Icons.DELETE,
                         bgcolor=ft.Colors.RED,
                         icon_color=ft.Colors.WHITE,
-                        on_click=lambda e: delete_dwg("dwg", "image/vnd.dwg", "dwg"),
+                        on_click=lambda e: delete_dwg("project", "image/vnd.dwg", "zip"),
                         ),
 
                 ],

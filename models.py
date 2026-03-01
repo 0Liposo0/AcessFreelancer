@@ -2220,6 +2220,8 @@ class SupaBase:
             content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         elif type == "jpg":
             content_type = "image/jpeg"
+        elif type == "zip":
+            content_type = "application/zip"
     
         headers = {
             'Authorization': f'Bearer {self.supabase_key}',
