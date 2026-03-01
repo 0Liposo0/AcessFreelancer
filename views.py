@@ -2029,7 +2029,7 @@ def create_page_project_token(page):
                 current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
                 current_minute = datetime.now(ZoneInfo("America/Sao_Paulo")).minute
 
-                if file_type == "preview":
+                if file_type[0] == "preview":
                     data_project["preview"] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/{local}//{file_name[0]}"
                 else:
                     data_project["dwg"] = f"https://kowtaxtvpawukwzeyoif.supabase.co/storage/v1/object/public/{local}//{file_name[0]}"
@@ -2039,11 +2039,11 @@ def create_page_project_token(page):
                 response2 = base.edit_projects_data(data_project)
 
                 if response2.status_code in [200, 204]:
+                    page.go("/projects")
                     snack_bar = ft.SnackBar(content=ft.Text("Dados atualizados com sucesso"), bgcolor=ft.Colors.GREEN)
                     page.overlay.append(snack_bar)
                     snack_bar.open = True
                     page.update()
-                    page.go("/projects")
                 else:
                     snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao editar tabela: {response2.text}"), bgcolor=ft.Colors.RED)
                     page.overlay.append(snack_bar)
@@ -2089,7 +2089,7 @@ def create_page_project_token(page):
         file_name.clear()
         file_name.append(name_file)
 
-        if file_type == "preview":
+        if file_type[0] == "preview":
 
             view_project["preview"].value = file_old_name[0]
 
@@ -2184,11 +2184,12 @@ def create_page_project_token(page):
             response2 = base.edit_projects_data(data)
 
             if response2.status_code in [200, 204]:
+                page.go("/projects")
                 snack_bar = ft.SnackBar(content=ft.Text(f"{local} excluido"), bgcolor=ft.Colors.GREEN)
                 page.overlay.append(snack_bar)
                 snack_bar.open = True
                 page.update()
-                page.go("/projects")
+
             else:
                 snack_bar = ft.SnackBar(content=ft.Text(f"Falha ao excluir tabela: {response2.text}"), bgcolor=ft.Colors.RED)
                 page.overlay.append(snack_bar)
