@@ -2167,16 +2167,19 @@ def create_page_project_token(page):
         if response1.status_code in [200, 204]:
             data = {}
             data["name_project"] = get_info2["name_project"]
-            data["dwg"] = "."
+            if local == "preview":
+                data["preview"] = "."
+            else:
 
-            current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
-            current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
-            current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
-            current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
-            current_minute = datetime.now(ZoneInfo("America/Sao_Paulo")).minute
+                data["dwg"] = "."
+                current_day = datetime.now(ZoneInfo("America/Sao_Paulo")).day
+                current_month = datetime.now(ZoneInfo("America/Sao_Paulo")).month
+                current_year = datetime.now(ZoneInfo("America/Sao_Paulo")).year
+                current_hour = datetime.now(ZoneInfo("America/Sao_Paulo")).hour
+                current_minute = datetime.now(ZoneInfo("America/Sao_Paulo")).minute
 
-            data["editor"] = dict_profile["username"]
-            data["update"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
+                data["editor"] = dict_profile["username"]
+                data["update"] = f"{current_day:02d}/{current_month:02d}/{current_year}/ {current_hour:02d}:{current_minute:02d}"
 
             response2 = base.edit_projects_data(data)
 
